@@ -1,0 +1,131 @@
+language: python
+
+matrix:
+  fast_finish: true
+  include:
+
+# linux + python
+
+    - os: linux
+      python: "2.6"
+      name: ubuntu 14.04 - python@2.6
+      env:
+        - MATRIX_EVAL=""
+
+    - os: linux
+      python: "2.7"
+      name: ubuntu 14.04 - python@2.7
+      env:
+        - MATRIX_EVAL=""
+
+    - os: linux
+      python: "3.3"
+      name: ubuntu 14.04 - python@3.3
+      env:
+        - MATRIX_EVAL=""
+
+    - os: linux
+      python: "3.4"
+      name: ubuntu 14.04 - python@3.4
+      env:
+        - MATRIX_EVAL=""
+
+    - os: linux
+      python: "3.5"
+      name: ubuntu 14.04 - python@3.5
+      env:
+        - MATRIX_EVAL=""
+
+    - os: linux
+      python: "3.5-dev"
+      name: ubuntu 14.04 - python@3.5-dev
+      env:
+        - MATRIX_EVAL=""
+
+    - os: linux
+      python: "3.6"
+      name: ubuntu 14.04 - python@3.6
+      env:
+        - MATRIX_EVAL=""
+
+    - os: linux
+      python: "3.6-dev"
+      name: ubuntu 14.04 - python@3.6-dev
+      env:
+        - MATRIX_EVAL=""
+
+# osx + python
+
+    - os: osx
+      osx_image: xcode10.1
+      python: "2.6"
+      name: macOS - python2.6
+      env:
+        - MATRIX_EVAL=""
+
+    - os: osx
+      osx_image: xcode10.1
+      python: "2.7"
+      name: macOS - python2.7
+      env:
+        - MATRIX_EVAL=""
+
+    - os: osx
+      osx_image: xcode10.1
+      python: "3.3"
+      name: macOS - python3.3
+      env:
+        - MATRIX_EVAL=""
+
+    - os: osx
+      osx_image: xcode10.1
+      python: "3.4"
+      name: macOS - python3.4
+      env:
+        - MATRIX_EVAL=""
+
+    - os: osx
+      osx_image: xcode10.1
+      python: "3.5"
+      name: macOS - python3.5
+      env:
+        - MATRIX_EVAL=""
+
+    - os: osx
+      osx_image: xcode10.1
+      python: "3.5-dev"
+      name: macOS - python3.5-dev
+      env:
+        - MATRIX_EVAL=""
+
+    - os: osx
+      osx_image: xcode10.1
+      python: "3.6"
+      name: macOS - python3.6
+      env:
+        - MATRIX_EVAL=""
+
+    - os: osx
+      osx_image: xcode10.1
+      python: "3.6-dev"
+      name: macOS - python3.6
+      env:
+        - MATRIX_EVAL=""
+
+  allow_failures:
+    - name: ubuntu 14.04 - python@2.6
+    - name: ubuntu 14.04 - python@2.7
+    - name: macOs - python2.6
+    - name: macOs - python2.7
+
+
+before_install:
+  - travis_retry eval "${MATRIX_EVAL}"
+  - pip install --user codecov
+  - sudo pip install -r requirements.txt
+
+install:
+  - python setup.py install
+
+script:
+  - pytest

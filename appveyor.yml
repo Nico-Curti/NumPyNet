@@ -1,0 +1,35 @@
+clone_folder: c:\projects\NumPyNet
+configuration: Release
+
+environment:
+  WORKSPACE: C:\projects
+
+  matrix:
+
+  - platform: Win32
+    MSVC_SETUP_ARG: x86
+    PYTHON: "C:\\Python36"
+    PYTHON_VERSION: "3.6.3"
+    PYTHON_ARCH: "32"
+    MINICONDA: "C:\\Miniconda36"
+
+  - platform: Win64
+    MSVC_SETUP_ARG: x64
+    PYTHON: "C:\\Python36-x64"
+    PYTHON_VERSION: "3.6.3"
+    PYTHON_ARCH: "64"
+    MINICONDA: "C:\\Miniconda36-x64"
+
+install:
+  # Miniconda is pre-installed in the worker build
+  - set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%
+  - python -m pip install -U pip
+  - python --version
+  - pip install -r requirements.txt
+  - cd %WORKSPACE%\NumPyNet
+  - python setup.py install
+
+
+test_script:
+  - pytest
+
