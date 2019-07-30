@@ -31,7 +31,7 @@ KEYWORDS = 'neural-networks deep-neural-networks deep-learning image-classificat
 
 README_FILENAME = os.path.join(here, 'README.md')
 REQUIREMENTS_FILENAME = os.path.join(here, 'requirements.txt')
-VERSION_FILENAME = os.path.join(here, 'Pyron', '__version__.py')
+VERSION_FILENAME = os.path.join(here, 'NumPyNet', '__version__.py')
 
 # Import the README and use it as the long-description.
 # Note: this will only work if 'README.md' is present in your MANIFEST.in file!

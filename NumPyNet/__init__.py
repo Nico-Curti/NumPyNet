@@ -6,6 +6,8 @@
 from __future__ import division
 from __future__ import print_function
 
+from . import activations
+
 __all__ = ['NumPyNet']
 
 __package__ = 'NumPyNet'
