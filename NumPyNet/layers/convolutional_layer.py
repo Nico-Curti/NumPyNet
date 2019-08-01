@@ -63,6 +63,13 @@ class Convolutional_layer(object):
     self.filters_updates, self.bias_updates = (None,None)
 
 
+  def __str__(self):
+    batch, out_w, out_h, out_c = self.out_shape()
+    return 'Convolutional     {} x {} / {}  {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}'.format(
+           self.size[0], self.size[1], self.stride[0],
+           self.batch, self.w, self.h, self.c,
+           batch, out_w, out_h, out_c)
+
   def out_shape(self):
     return (self.batch, self.out_w, self.out_h, self.channels_out)
 
@@ -278,10 +285,14 @@ if __name__ == "__main__":
                               size=size, stride=stride,
                               padding=pad)
 
+
   #FORWARD
 
   layer.forward(inpt)
   forward_out = layer.output.copy()
+
+#  after the forward to load all the attribute
+  print(layer)
 
   #BACKWARD
 
@@ -302,7 +313,7 @@ if __name__ == "__main__":
   ax1.set_title("Original image")
   ax1.axis("off")
                         #here every filter effect on the image can be shown
-  ax2.imshow(float_2_img(forward_out[0,:,:,0]))
+  ax2.imshow(float_2_img(forward_out[0,:,:,2]))
   ax2.set_title("Forward")
   ax2.axis("off")
 
