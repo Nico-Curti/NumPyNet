@@ -18,8 +18,8 @@ __package__ = 'Convolutional layer'
 
 class Convolutional_layer(object):
 
-  def __init__(self, inputs, channels_out, weights=None, bias=None,
-               size=(3,3), stride=(1,1),
+  def __init__(self, inputs, channels_out, size, stride,
+               weights=None, bias=None,
                padding=False,
                activation=Activations):
     """
@@ -30,7 +30,9 @@ class Convolutional_layer(object):
       inputs       : tuple, shape of the input batch of image (batch, w, h, channels_in)
       channels_out : int, Number of filters to be slided over the input, and also
               the number of channels of the output
-      weights     :  filters array, with shape (kx, ky, channels_in, channels_out)
+      size        : tuple of int, size of the kernel of shape (kx, ky)
+      stride      : tuple of int, step of the kernel of shape (st1, st2)
+      weights     : filters array, with shape (kx, ky, channels_in, channels_out)
       padding     : boolean, if False the image is cutted along the last raws and columns, if True
                     the input is padded following keras SAME padding
       activation  : activation function of the layer
@@ -39,7 +41,12 @@ class Convolutional_layer(object):
     self.batch, self.w, self.h, self.c = inputs
     self.channels_out = channels_out
     self.size = size
-    self.stride = stride
+
+    if stride is not None:
+      self.stride = stride
+    else :
+      self.stride = size
+
     self.pad = padding
 
     #Activation function
