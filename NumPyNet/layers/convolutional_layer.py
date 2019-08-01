@@ -285,7 +285,6 @@ if __name__ == "__main__":
                               size=size, stride=stride,
                               padding=pad)
 
-
   #FORWARD
 
   layer.forward(inpt)

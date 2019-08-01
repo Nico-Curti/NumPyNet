@@ -4,18 +4,18 @@
 
 from __future__ import division
 from __future__ import print_function
+
 import numpy as np
 
-__author__ = ['Nico Curti']
-__email__ = ['nico.curti2@unibo.it']
+__author__ = ['Mattia Ceccarelli', 'Nico Curti']
+__email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 __package__ = 'Dropout Layer'
-
 
 class Dropout_layer(object):
 
   def __init__(self, prob):
     """
-    DropOut Layer
+    DropOut Layer: drop a random selection of Inputs. This helps avoid overfitting
 
     Parameters:
       prob : float between 0. and 1., probability for every entry to be set to zero
@@ -30,7 +30,7 @@ class Dropout_layer(object):
 
   def __str__(self):
     batch, out_width, out_height, out_channels = self.out_shape()
-    return 'dropout       p = {:.2f}            {:4d}, {:4d}, {:4d}, {:4d}  ->  {:4d}, {:4d}, {:4d}, {:4d}'.format(
+    return 'Dropout       p = {:.2f}        {:4d}, {:4d}, {:4d}, {:4d}  ->  {:4d}, {:4d}, {:4d}, {:4d}'.format(
            self.probability,
            batch, out_width , out_height , out_channels,
            batch, out_width , out_height , out_channels)
@@ -81,8 +81,6 @@ if __name__ == '__main__':
   import pylab as plt
   from PIL import Image
 
-  from NumPyNet import activations
-
   img_2_float = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 1.)).astype(float)
   float_2_img = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 255.)).astype(np.uint8)
 
@@ -101,6 +99,8 @@ if __name__ == '__main__':
 
   layer.forward(inpt)
   forward_out = layer.output
+
+  print(layer)
 
 #  BACKWARD
 
