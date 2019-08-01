@@ -85,7 +85,7 @@ class BatchNorm_layer(object):
 #    output_shape = (batch, w, h, c)
 
 
-  def backward(self, delta):
+  def backward(self, delta = None):
     """
     BackPropagation function of the BatchNormalization layer. Every formula is a derivative
     computed by chain rules: dbeta = derivative of output w.r.t. bias, dgamma = derivative of
@@ -117,7 +117,8 @@ class BatchNorm_layer(object):
                   self.var_delta * 2 * (self.x - self.mean) * invN +
                   self.mean_delta * invN)
 
-    delta[:] = self.delta
+    if delta is not None:
+      delta[:] = self.delta
 
     def update(self, momentum=0., decay=0., lr=1e-2, lr_scale=1.):
       """
@@ -195,22 +196,26 @@ if __name__ == '__main__':
 
 #  Visualizations
 
-  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize = (10,5))
+  fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=2, figsize = (10,5))
   fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
 
   fig.suptitle('BatchNormalization Layer')
 
-  ax1.imshow(float_2_img(inpt[0]))
-  ax1.set_title("Original image")
-  ax1.axis("off")
+  ax1[0].imshow(float_2_img(inpt[0]))
+  ax1[0].set_title("first Original image")
+  ax1[0].axis("off")
 
-  ax2.imshow(float_2_img(forward_out_byron[0]))
-  ax2.set_title("Forward")
-  ax2.axis("off")
+  ax1[1].imshow(float_2_img(byron.mean))
+  ax1[1].set_title("Mean Image")
+  ax1[1].axis("off")
 
-  ax3.imshow(float_2_img(delta[0]))
-  ax3.set_title("Backward")
-  ax3.axis("off")
+  ax2[0].imshow(float_2_img(forward_out_byron[0]))
+  ax2[0].set_title("Forward")
+  ax2[0].axis("off")
+
+  ax2[1].imshow(float_2_img(delta[0]))
+  ax2[1].set_title("Backward")
+  ax2[1].axis("off")
 
   plt.show()
 
