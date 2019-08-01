@@ -232,7 +232,7 @@ if __name__ == '__main__':
   byron.delta = forward_out_byron
   byron.backward(delta)
 
-    #Visualizationa
+  #Visualizations
 
   fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize = (10,10))
   fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
