@@ -93,6 +93,8 @@ class Avgpool_layer(object):
   def _pad(self, inpt, size, stride):
     """
     Padd every image in a batch with np.nan following keras SAME padding
+    See also:
+      https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
 
     Parameters:
       inpt    : input images in the format (batch, width, height, channels)
