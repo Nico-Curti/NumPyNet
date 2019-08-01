@@ -141,7 +141,7 @@ class Convolutional_layer(object):
       pad_h = max(size[1] - (h % stride[1]), 0)
 
     #Number of raws/columns to be added for every directons
-    self.pad_top    = pad_w >> 1
+    self.pad_top    = pad_w >> 1 # bit shift, integer division by two
     self.pad_bottom = pad_w - self.pad_top
     self.pad_left   = pad_h >> 1
     self.pad_right  = pad_h - self.pad_left

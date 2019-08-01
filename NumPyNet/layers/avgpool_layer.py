@@ -5,8 +5,9 @@
 from __future__ import division
 from __future__ import print_function
 
-import numpy as np
 import itertools
+
+import numpy as np
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -196,7 +197,6 @@ class Avgpool_layer(object):
       delta[:] = mat_pad
 
 
-
 if __name__ == '__main__':
 
   import os
@@ -217,26 +217,28 @@ if __name__ == '__main__':
   inpt = np.expand_dims(inpt, axis = 0)
   pad = True
 
-  size = (3, 3)
-  stride = (2, 2)
+  size = (20, 20)
+  stride = (10, 10)
 
   # Model initialization
-  byron = Avgpool_layer(size, stride, padding = pad) # False == valid
+  layer = Avgpool_layer(size, stride, padding = pad)
 
   #FORWARD
 
-  byron.forward(inpt)
-  forward_out_byron = byron.output.copy()
+  layer.forward(inpt)
+  forward_out = layer.output.copy()
+
+  print(layer)
 
   #BACKWARD
 
   delta = np.zeros(shape = inpt.shape)
-  byron.delta = forward_out_byron
-  byron.backward(delta)
+  layer.delta = np.ones(layer.out_shape())
+  layer.backward(delta)
 
   #Visualizations
 
-  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize = (10,10))
+  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize = (10,5))
   fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
 
   fig.suptitle('Average Pool Layer \n\n size : {}, stride : {}, padding : {}'.format(size, stride, pad))
@@ -245,11 +247,11 @@ if __name__ == '__main__':
   ax1.set_title("Original image")
   ax1.axis("off")
 
-  ax2.imshow(float_2_img(byron.output)[0])
+  ax2.imshow(float_2_img(layer.output[0]))
   ax2.set_title("Forward")
   ax2.axis("off")
 
-  ax3.imshow(delta[0])
+  ax3.imshow(float_2_img(delta[0]))
   ax3.set_title("Backward")
   ax3.axis("off")
 
