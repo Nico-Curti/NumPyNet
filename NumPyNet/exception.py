@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import division
+from __future__ import print_function
+
+__author__ = ['Mattia Ceccarelli', 'Nico Curti']
+__email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
+__package__ = 'Exceptions'
+
+
+class CfgfmtError (Exception):
+
+  def __init__ (self, message, error):
+
+    super().__init__(message)
+
+    self.errors = errors
+
+class CfgVariableError (Exception):
+
+  def __init__ (self, message, error):
+
+    super().__init__(message)
+
+    self.errors = errors
+
+
+class DataVariableError (Exception):
+
+  def __init__ (self, message, error):
+
+    super().__init__(message)
+
+    self.errors = errors
+
