@@ -19,7 +19,7 @@ class Softmax_layer():
 
     Parameters:
       groups       : int, default is 1, indicates how many groups
-        every images is divided into
+        every images is divided into. Used only if spatial is False
       spatial      : boolean, default is False. if True performs the softmax
         computing max and sum over the entire image. if False max and sum are computed over
         the last axes (channels)
@@ -108,7 +108,9 @@ if __name__ == "__main__":
 
   inpt = np.expand_dims(inpt, axis=0)
 
-  spatial = False
+  spatial     = False
+  groups      = 1
+  temperature = 1.
 
   if spatial:
     axis = -1
@@ -143,7 +145,7 @@ if __name__ == "__main__":
 
   fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10,5))
   fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
-  fig.suptitle("MaxPool Layer \n\n loss : {:3.1f}".format(layer_loss))
+  fig.suptitle("SoftMax Layer \n\n loss : {:3.1f}, \n spatial : {}, temperature : {}, groups : {}".format(layer_loss, spatial, temperature, groups))
 
   ax1.imshow(float_2_img(inpt[0]))
   ax1.set_title("Original Image")
