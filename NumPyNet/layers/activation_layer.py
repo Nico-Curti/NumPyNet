@@ -17,12 +17,12 @@ __package__ = 'Activation Layer'
 class Activation_layer(object):
 
   def __init__(self, activation=Activations):
-    """
+    '''
     Activation layer
 
     Parameters :
       activation : activation function of the layer
-    """
+    '''
 
     self.activation = activation.activate
     self.gradient = activation.gradient
@@ -37,8 +37,8 @@ class Activation_layer(object):
   def out_shape(self):
     return self.output.shape
 
-  def forward(self, inpt, copy = True):
-    """
+  def forward(self, inpt, copy=True):
+    '''
     Forward of the activation layer, apply the selected activation function to
     the input
 
@@ -46,19 +46,19 @@ class Activation_layer(object):
       inpt: the input to be activated
       copy: default value is True. If True make a copy of the input before
             applying the activation
-    """
+    '''
     self.output = self.activation(inpt, copy=copy)
     self.delta = np.zeros(shape=self.output.shape)
 
     self.delta = np.ones(shape=self.out_shape())
 
   def backward(self, delta, copy=False):
-    """
+    '''
     Compute the backward of the activation layer
 
     Parameter:
       delta : global error to be backpropagated
-    """
+    '''
 
     self.delta *= self.gradient(self.output, copy=copy)
     delta[:] = self.delta
@@ -82,38 +82,48 @@ if __name__ == '__main__':
   inpt = np.asarray(Image.open(filename), dtype=float)
   inpt.setflags(write=1)
   inpt = img_2_float(inpt)
-#  Relu activation constrain
+  # Relu activation constrain
   inpt = inpt * 2 - 1
 
+<<<<<<< HEAD
   layer = Activation_layer(activation = activation_func)
+=======
+  byron = Activation_layer(activation=activation_func)
+>>>>>>> 6e77fbab952caaa8c155692a82ba00ca5232a41d
 
-#  FORWARD
+  # FORWARD
 
   layer.forward(inpt)
   forward_out_byron = layer.output
 
-#  BACKWARD
+  # BACKWARD
 
   delta = np.empty(shape=inpt.shape)
   layer.backward(delta, copy=True)
 
-#  Visualizations
+  # Visualizations
 
-  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize = (10,10))#, figsize=(10, 20))
+  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10,10))
   fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
 
   fig.suptitle('Activation Layer : {}'.format(activation_func.name))
 
   ax1.imshow(float_2_img(inpt))
-  ax1.set_title("Original image")
-  ax1.axis("off")
+  ax1.set_title('Original image')
+  ax1.axis('off')
 
+<<<<<<< HEAD
   ax2.imshow(float_2_img(layer.output))
   ax2.set_title("Forward")
   ax2.axis("off")
+=======
+  ax2.imshow(float_2_img(byron.output))
+  ax2.set_title('Forward')
+  ax2.axis('off')
+>>>>>>> 6e77fbab952caaa8c155692a82ba00ca5232a41d
 
   ax3.imshow(delta)
-  ax3.set_title("Backward")
-  ax3.axis("off")
+  ax3.set_title('Backward')
+  ax3.axis('off')
 
   plt.show()

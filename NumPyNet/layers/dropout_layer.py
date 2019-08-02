@@ -14,12 +14,12 @@ __package__ = 'Dropout Layer'
 class Dropout_layer(object):
 
   def __init__(self, prob):
-    """
+    '''
     DropOut Layer: drop a random selection of Inputs. This helps avoid overfitting
 
     Parameters:
       prob : float between 0. and 1., probability for every entry to be set to zero
-    """
+    '''
 
     self.probability = prob
     self.scale = 1. / (1. - prob)
@@ -39,14 +39,14 @@ class Dropout_layer(object):
     return (self.batch, self.w, self.h, self.c)
 
   def forward(self, inpt):
-    """
+    '''
     Forward function of the Dropout layer: it create a random mask for every input
       in the batch and set to zero the chosen values. Other pixels are scaled
       with the scale variable.
 
     Parameters :
       inpt : array of shape (batch, w, h, c), input of the layer
-    """
+    '''
 
     self.batch, self.w, self.h, self.c = inpt.shape
 
@@ -58,7 +58,7 @@ class Dropout_layer(object):
     self.output[self.rnd] *= self.scale
 
   def backward(self, delta = None):
-    """
+    '''
     Backward function of the Dropout layer: given the same mask as the layer
       it backprogates delta only to those pixel which values has not been set to zero
       in the forward.
@@ -66,7 +66,7 @@ class Dropout_layer(object):
     Parameters :
       delta : array of shape (batch, w, h, c), default value is None.
             If given, is the global delta to be backpropagated
-    """
+    '''
 
     if delta is not None:
       delta[self.rnd] *= self.scale
@@ -95,37 +95,37 @@ if __name__ == '__main__':
 
   layer = Dropout_layer(prob)
 
-#  FORWARD
+  # FORWARD
 
   layer.forward(inpt)
   forward_out = layer.output
 
   print(layer)
 
-#  BACKWARD
+  # BACKWARD
 
   delta = np.ones(shape=inpt.shape)
   layer.delta = np.ones(shape=layer.out_shape())
   layer.backward(delta)
 
-#  Visualitations
+  # Visualitations
 
   fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10,5))
   fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
 
   fig.suptitle('Activation Layer \n\n Drop Probability : {}'.format(prob))
-                        # Shown first image of the batch
+  # Shown first image of the batch
   ax1.imshow(float_2_img(inpt[0]))
-  ax1.set_title("Original image")
-  ax1.axis("off")
+  ax1.set_title('Original image')
+  ax1.axis('off')
 
   ax2.imshow(float_2_img(layer.output[0]))
-  ax2.set_title("Forward")
-  ax2.axis("off")
+  ax2.set_title('Forward')
+  ax2.axis('off')
 
   ax3.imshow(float_2_img(delta[0]))
-  ax3.set_title("Backward")
-  ax3.axis("off")
+  ax3.set_title('Backward')
+  ax3.axis('off')
 
   plt.show()
 
