@@ -85,17 +85,17 @@ if __name__ == '__main__':
 #  Relu activation constrain
   inpt = inpt * 2 - 1
 
-  byron = Activation_layer(activation = activation_func)
+  layer = Activation_layer(activation = activation_func)
 
 #  FORWARD
 
-  byron.forward(inpt)
-  forward_out_byron = byron.output
+  layer.forward(inpt)
+  forward_out_byron = layer.output
 
 #  BACKWARD
 
   delta = np.empty(shape=inpt.shape)
-  byron.backward(delta, copy=True)
+  layer.backward(delta, copy=True)
 
 #  Visualizations
 
@@ -108,7 +108,7 @@ if __name__ == '__main__':
   ax1.set_title("Original image")
   ax1.axis("off")
 
-  ax2.imshow(float_2_img(byron.output))
+  ax2.imshow(float_2_img(layer.output))
   ax2.set_title("Forward")
   ax2.axis("off")
 

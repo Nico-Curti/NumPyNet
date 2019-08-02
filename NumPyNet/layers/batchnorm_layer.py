@@ -181,18 +181,18 @@ if __name__ == '__main__':
   scales = np.ones(shape=(w,h,c))
 
 #  Model Initialization
-  byron = BatchNorm_layer(scales=scales, bias=bias)
+  layer = BatchNorm_layer(scales=scales, bias=bias)
 
 #  FORWARD
 
-  byron.forward(inpt)
-  forward_out_byron = byron.output
+  layer.forward(inpt)
+  forward_out_byron = layer.output
 
 #  BACKWARD
 
-  byron.delta = np.random.uniform(0., 100., size=byron.out_shape())
+  layer.delta = np.random.uniform(0., 100., size=layer.out_shape())
   delta = np.ones(shape=inpt.shape) # delta same shape as the Input
-  byron.backward(delta)
+  layer.backward(delta)
 
 #  Visualizations
 
@@ -205,7 +205,7 @@ if __name__ == '__main__':
   ax1[0].set_title("first Original image")
   ax1[0].axis("off")
 
-  ax1[1].imshow(float_2_img(byron.mean))
+  ax1[1].imshow(float_2_img(layer.mean))
   ax1[1].set_title("Mean Image")
   ax1[1].axis("off")
 
