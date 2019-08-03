@@ -193,7 +193,7 @@ class Maxpool_layer(object):
 
     # those indexes are usefull to acces 'Atomically'(one at a time) every element in net_delta_view
     # that needs to be modified
-    for b,i, j, k, x, y in zip(combo[0], combo[1], combo[2], combo[3], self.indexes[0], self.indexes[1]):
+    for b, i, j, k, x, y in zip(combo[0], combo[1], combo[2], combo[3], self.indexes[0], self.indexes[1]):
       net_delta_view[b, i, j, k, x, y] += self.delta[b, i, j, k]
 
     # Here delta is correctly modified
@@ -259,14 +259,3 @@ if __name__ == '__main__':
   ax3.axis('off')
 
   plt.show()
-
-
-
-
-
-
-
-
-
-
-

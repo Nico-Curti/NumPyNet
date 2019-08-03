@@ -85,11 +85,7 @@ if __name__ == '__main__':
   # Relu activation constrain
   inpt = inpt * 2 - 1
 
-<<<<<<< HEAD
-  layer = Activation_layer(activation = activation_func)
-=======
-  byron = Activation_layer(activation=activation_func)
->>>>>>> 6e77fbab952caaa8c155692a82ba00ca5232a41d
+  layer = Activation_layer(activation=activation_func)
 
   # FORWARD
 
@@ -112,15 +108,9 @@ if __name__ == '__main__':
   ax1.set_title('Original image')
   ax1.axis('off')
 
-<<<<<<< HEAD
   ax2.imshow(float_2_img(layer.output))
   ax2.set_title("Forward")
   ax2.axis("off")
-=======
-  ax2.imshow(float_2_img(byron.output))
-  ax2.set_title('Forward')
-  ax2.axis('off')
->>>>>>> 6e77fbab952caaa8c155692a82ba00ca5232a41d
 
   ax3.imshow(delta)
   ax3.set_title('Backward')

@@ -273,11 +273,11 @@ class Image (object):
 
   @property
   def width(self):
-    return self._data.shape[1]
+    return self._data.shape[0]
 
   @property
   def height(self):
-    return self._data.shape[0]
+    return self._data.shape[1]
 
   @property
   def channels(self):

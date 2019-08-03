@@ -179,7 +179,7 @@ if __name__ == '__main__':
   bias = np.zeros(shape=(w,h,c))
   scales = np.ones(shape=(w,h,c))
 
-#  Model Initialization
+  # Model Initialization
   layer = BatchNorm_layer(scales=scales, bias=bias)
 
   # FORWARD
