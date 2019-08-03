@@ -208,7 +208,6 @@ if __name__ == '__main__':
   ax1[1].set_title("Mean Image")
   ax1[1].axis("off")
 
-
   ax2[0].imshow(float_2_img(forward_out_byron[0]))
   ax2[0].set_title('Forward')
   ax2[0].axis('off')
