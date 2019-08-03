@@ -84,7 +84,7 @@ class Box (object):
     if not isinstance(other, box):
       raise ValueError('union requires a Box object')
 
-    return self.w * self.h + other.w * other.h - self.intersection(other)
+    return self.area + other.area - self.intersection(other)
 
   __add__ = union
 

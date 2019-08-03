@@ -8,7 +8,7 @@ import numpy as np
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = "Softmax layer"
+__package__ = 'Softmax layer'
 
 class Softmax_layer():
 
@@ -26,8 +26,8 @@ class Softmax_layer():
         used only is spatial is False
     '''
 
-    self.batch, self.w,self.h,self.c = (0, 0, 0, 0)
-    self.output, self.delta, self.loss  = (None,None,None)
+    self.batch, self.w, self.h, self.c = (0, 0, 0, 0)
+    self.output, self.delta, self.loss  = (None, None, None)
 
     self.groups = groups
     self.spatial = spatial
@@ -60,7 +60,7 @@ class Softmax_layer():
       s = self.output.sum(axis=-1, keepdims=True)
 
     else : # groups is still fixed to 1
-      self.output = np.exp((inpt - np.max(inpt, axis=(1,2,3), keepdims=True))*self.temperature)
+      self.output = np.exp((inpt - np.max(inpt, axis=(1,2,3), keepdims=True)) * self.temperature)
       s = self.output.sum(axis=(1,2,3), keepdims=True)
 
     s = 1./s
@@ -71,9 +71,9 @@ class Softmax_layer():
 
     if truth is not None:
       out = self.output * (1. / self.output.sum())
-      self.cost = -np.sum(truth*np.log(out))
+      self.cost = - np.sum(truth * np.log(out))
       # Update of delta given truth
-      self.delta = truth-out
+      self.delta = truth - out
 
   def backward(self, delta=None):
     '''
@@ -117,7 +117,7 @@ if __name__ == '__main__':
   batch, w, h, c = inpt.shape
 
   # truth definition, it's random so don't expect much
-  truth = np.random.choice([0., 1.], p = [.5,.5], size=(batch,w,h,c))
+  truth = np.random.choice([0., 1.], p=[.5, .5], size=(batch, w, h, c))
 
   # Model initialization
   layer = Softmax_layer(groups=1, temperature=1., spatial=spatial)
@@ -133,7 +133,7 @@ if __name__ == '__main__':
 
   # BACKWARD
 
-  delta = np.zeros(shape = inpt.shape)
+  delta = np.zeros(shape=inpt.shape)
   layer.backward(delta)
 
   # Visualizations
@@ -157,12 +157,3 @@ if __name__ == '__main__':
   ax3.axis('off')
 
   plt.show()
-
-
-
-
-
-
-
-
-

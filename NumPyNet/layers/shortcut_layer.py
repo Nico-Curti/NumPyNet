@@ -17,7 +17,7 @@ class Shortcut_layer(object):
 
   def __init__(self, layer1_shape, layer2_shape, activation=Activations, alpha=1., beta=1.):
 
-    """
+    '''
     Shortcut layer: activation of the linear combination of the output of two layers
 
                 layer1 * alpha + layer2 * beta = output
@@ -31,18 +31,14 @@ class Shortcut_layer(object):
       alpha        : float, default = 1., first weight of the combination
       beta         : float, default = 1., second weight of the combination
 
-    """
+    '''
 
     self.activation = activation.activate
     self.gradient = activation.gradient
 
-    self.alpha = alpha
-    self.beta = beta
+    self.alpha, self.beta = alpha, beta
 
-    self.delta = None
-    self.output = None
-
-    self.out = None
+    self.output, self.delta, self.out = (None, None, None)
 
     self.layer1_shape = layer1_shape
     self.layer2_shape = layer2_shape
@@ -56,13 +52,13 @@ class Shortcut_layer(object):
     return self.layer2_shape
 
   def forward(self, inpt, prev_output):
-    """
+    '''
     Forward function of the Shortcut layer: activation of the linear combination between input
 
     Parameters:
       inpt        : array of shape (batch, w, h, c), first input of the layer
       prev_output : array of shape (batch, w, h, c), second input of the layer
-    """
+    '''
 
     self.output = inpt.copy()
 
@@ -71,16 +67,16 @@ class Shortcut_layer(object):
     self.output = self.activation(self.output)
 
   def backward(self, delta, prev_delta):
-    """
+    '''
     Backward function of the Shortcut layer
 
     Parameters:
       delta      : array of shape (batch, w, h, c), first delta to be backpropagated
       delta_prev : array of shape (batch, w, h, c), second delta to be backporpagated
 
-    """
+    '''
 
-#    derivatives of the activation funtion w.r.t. to input
+    # derivatives of the activation funtion w.r.t. to input
     self.out = self.gradient(self.output)
     self.delta *= self.out
 
@@ -98,7 +94,7 @@ if __name__ == '__main__':
   img_2_float = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 1.)).astype(float)
   float_2_img = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 255.)).astype(np.uint8)
 
-# Set seed to have same input
+  # Set seed to have same input
   np.random.seed(123)
 
   layer_activ = activations.Relu()
@@ -108,51 +104,46 @@ if __name__ == '__main__':
   alpha = 0.75
   beta  = 0.5
 
-#  Random input
+  # Random input
   inpt1      = np.random.uniform(-1., 1., size=(batch,100,100,3))
   inpt2      = np.random.uniform(-1., 1., size=inpt1.shape)
   b, w, h, c = inpt1.shape
 
 
-#   model initialization s
+  # model initialization
   layer = Shortcut_layer(inpt1.shape, inpt2.shape,
                          activation=layer_activ,
                          alpha=alpha, beta=beta)
 
-  #FORWARD
+  # FORWARD
 
-  layer.forward(inpt1,inpt2)
+  layer.forward(inpt1, inpt2)
   forward_out = layer.output.copy()
 
-  #BACKWARD
+  # BACKWARD
 
-  delta      = np.zeros(inpt1.shape)
-  delta_prev = np.zeros(inpt2.shape)
+  delta      = np.zeros(shape=inpt1.shape)
+  delta_prev = np.zeros(shape=inpt2.shape)
 
-  layer.delta = np.ones(layer.out_shape())
+  layer.delta = np.ones(shape=layer.out_shape())
   layer.backward(delta, delta_prev)
 
-  #Visualizations
+  # Visualizations
 
   fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10,5))
   fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
-  fig.suptitle("Shortcut Layer \n\n alpha : {}, beta : {}, activation : {} ".format(alpha, beta, layer_activ.name))
+  fig.suptitle('Shortcut Layer \n\n alpha : {}, beta : {}, activation : {} '.format(alpha, beta, layer_activ.name))
 
   ax1.imshow(float_2_img(inpt1[0]))
-  ax1.set_title("Original Image")
-  ax1.axis("off")
+  ax1.set_title('Original Image')
+  ax1.axis('off')
 
   ax2.imshow(float_2_img(forward_out[0]))
-  ax2.set_title("Forward")
-  ax2.axis("off")
+  ax2.set_title('Forward')
+  ax2.axis('off')
 
   ax3.imshow(float_2_img(delta[0]))
-  ax3.set_title("Backward")
-  ax3.axis("off")
+  ax3.set_title('Backward')
+  ax3.axis('off')
 
   plt.show()
-
-
-
-
-

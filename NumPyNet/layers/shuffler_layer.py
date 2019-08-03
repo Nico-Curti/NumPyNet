@@ -182,7 +182,3 @@ if __name__ == '__main__':
   ax3.axis('off')
 
   plt.show()
-
-
-
-
