@@ -201,7 +201,7 @@ if __name__ == '__main__':
   fig.suptitle('BatchNormalization Layer')
 
   ax1[0].imshow(float_2_img(inpt[0]))
-  ax1[0].set_title('first Original image')
+  ax1[0].set_title('Original image')
   ax1[0].axis('off')
 
   ax1[1].imshow(float_2_img(layer.mean))
