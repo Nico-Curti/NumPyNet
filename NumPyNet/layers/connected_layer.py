@@ -175,9 +175,9 @@ if __name__ == '__main__':
 
   # Visualizations
 
-  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10,5))
+  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
   fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
-  fig.suptitle('Connected Layer with activation : {}'.format(layer_activation.name))
+  fig.suptitle('Connected Layer\nactivation : {}'.format(layer_activation.name))
 
   ax1.imshow(float_2_img(inpt[0]))
   ax1.set_title('Original Image')

@@ -57,12 +57,12 @@ class Convolutional_layer(object):
 
     # Weights and bias
     if weights is None:
-      self.weights = np.random.uniform(0., 1., size=(*size, self.c, self.channels_out))
+      self.weights = np.random.uniform(low=0., high=1., size=(*size, self.c, self.channels_out))
     else :
       self.weights = weights
 
     if bias is None:
-      self.bias = np.random.uniform(0., 1., size=(self.channels_out))
+      self.bias = np.random.uniform(low=0., high=1., size=(self.channels_out))
     else :
       self.bias = bias
 
@@ -245,10 +245,10 @@ class Convolutional_layer(object):
     lr /= self.batch
 
     # Bias updates
-    self.bias += self.bias_updates*lr
+    self.bias += self.bias_updates * lr
 
     # Weights_updates
-    self.weights_updates += (-decay)*self.batch*self.filters
+    self.weights_updates += (-decay) * self.batch * self.filters
     self.filters         += lr * self.weights_updates
     self.weights_updates *= momentum
 
@@ -310,10 +310,10 @@ if __name__ == '__main__':
 
   # Visualization
 
-  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10,5))
+  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
   fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
 
-  fig.suptitle(('Convolutional Layer \n\n activation: {}, '+
+  fig.suptitle(('Convolutional Layer\n activation : {}, '+
                 'size : {}, stride : {}, '+
                 'output channels : {}').format(layer_activation.name, size, stride, channels_out))
 

@@ -46,6 +46,6 @@ class Route_layer():
       delta += net.layers[layer_idx].delta
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
 
-  pass
+  print('Insert test visualization here')

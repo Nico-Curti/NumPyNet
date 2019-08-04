@@ -12,7 +12,7 @@ __package__ = 'Softmax layer'
 
 class Softmax_layer():
 
-  def __init__(self, groups = 1, spatial = False, temperature = 1.):
+  def __init__(self, groups=1, spatial=False, temperature=1.):
     '''
     Softmax layer: perfoms a Softmax transformation of its input
 
@@ -79,8 +79,8 @@ class Softmax_layer():
       self.output = flat_outpt.reshape(inpt.shape)
 
       # Original implementation
-#      self.output = np.exp((inpt - np.max(inpt, axis=(1,2,3), keepdims=True)) * self.temperature)
-#      s = self.output.sum(axis=(1,2,3), keepdims=True)
+      # self.output = np.exp((inpt - np.max(inpt, axis=(1,2,3), keepdims=True)) * self.temperature)
+      # s = self.output.sum(axis=(1,2,3), keepdims=True)
 
     # value of delta if truth is None
     self.delta = np.zeros(shape=self.out_shape())
@@ -156,7 +156,7 @@ if __name__ == '__main__':
 
   fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10,5))
   fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
-  fig.suptitle(('SoftMax Layer \n\n' +
+  fig.suptitle(('SoftMax Layer\n' +
                'loss : {:.3f}, \n' +
                'spatial : {}, temperature : {}, groups : {}').format(layer_loss, spatial, temperature, groups))
 

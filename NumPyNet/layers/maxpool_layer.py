@@ -39,7 +39,7 @@ class Maxpool_layer(object):
 
     # for padding
     self.pad = padding
-    self.pad_left, self.pad_right, self.pad_bottom, self.pad_top  = (0,0,0,0)
+    self.pad_left, self.pad_right, self.pad_bottom, self.pad_top = (0, 0, 0, 0)
 
     self.output, self.indexes, self.delta = (None, None, None)
 
@@ -221,8 +221,8 @@ if __name__ == '__main__':
   inpt = np.expand_dims(inpt, axis=0) # Add the batch shape.
   b, w, h, c = inpt.shape
 
-  size = (30,30)
-  stride = (20,20)
+  size = (30, 30)
+  stride = (20, 20)
   pad = False
 
   layer = Maxpool_layer(size=size, stride=stride, padding=pad)
@@ -242,9 +242,9 @@ if __name__ == '__main__':
 
   # Visualizations
 
-  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10,5))
+  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
   fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
-  fig.suptitle('MaxPool Layer \n\n size : {}, stride : {}, padding : {} '.format(size, stride, pad))
+  fig.suptitle('MaxPool Layer\nsize : {}, stride : {}, padding : {} '.format(size, stride, pad))
 
   ax1.imshow(float_2_img(inpt[0]))
   ax1.set_title('Original Image')

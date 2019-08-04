@@ -153,7 +153,7 @@ class Avgpool_layer(object):
     view = self._asStride(mat_pad, self.size, self.stride)
 
     # Mean of every sub matrix, computed without considering the padd(np.nan)
-    self.output = np.nanmean(view, axis=(4,5))
+    self.output = np.nanmean(view, axis=(4, 5))
 
     self.delta = np.ones(shape=self.out_shape())
 
@@ -238,10 +238,10 @@ if __name__ == '__main__':
 
   # Visualizations
 
-  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10,5))
+  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
   fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
 
-  fig.suptitle('Average Pool Layer \n\n size : {}, stride : {}, padding : {}'.format(size, stride, pad))
+  fig.suptitle('Average Pool Layer\n\nsize : {}, stride : {}, padding : {}'.format(size, stride, pad))
 
   ax1.imshow(float_2_img(inpt)[0])
   ax1.set_title('Original image')

@@ -105,8 +105,8 @@ if __name__ == '__main__':
   beta  = 0.5
 
   # Random input
-  inpt1      = np.random.uniform(-1., 1., size=(batch,100,100,3))
-  inpt2      = np.random.uniform(-1., 1., size=inpt1.shape)
+  inpt1      = np.random.uniform(low=-1., high=1., size=(batch, 100, 100, 3))
+  inpt2      = np.random.uniform(low=-1., high=1., size=inpt1.shape)
   b, w, h, c = inpt1.shape
 
 
@@ -130,9 +130,9 @@ if __name__ == '__main__':
 
   # Visualizations
 
-  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10,5))
+  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
   fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
-  fig.suptitle('Shortcut Layer \n\n alpha : {}, beta : {}, activation : {} '.format(alpha, beta, layer_activ.name))
+  fig.suptitle('Shortcut Layer\nalpha : {}, beta : {}, activation : {} '.format(alpha, beta, layer_activ.name))
 
   ax1.imshow(float_2_img(inpt1[0]))
   ax1.set_title('Original Image')

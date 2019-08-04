@@ -99,7 +99,7 @@ class Shuffler_layer(object):
     self.output = np.concatenate([self._phase_shift(inpt[:, :, :, range(i, self.c, channel_output)], self.scale)
                                   for i in range(channel_output)], axis=3)
 
-    #output shape = (batch, in_w * scale, in_h * scale, in_c // scale**2)
+    # output shape = (batch, in_w * scale, in_h * scale, in_c // scale**2)
 
   def backward(self, delta):
     '''
@@ -112,13 +112,13 @@ class Shuffler_layer(object):
 
     channel_out = self.c // self.scale_step  #out_c
 
-    #I apply the reverse function  only for a single channel
+    # I apply the reverse function  only for a single channel
     X = np.concatenate([self._reverse(self.delta[:, :, :, i],self.scale)
                                       for i in range(channel_out)], axis=3)
 
 
-    #The 'reverse' concatenate actually put the correct channels toghether but in a
-    # weird order, so this part sorts the 'layers' correctly
+    # The 'reverse' concatenate actually put the correct channels toghether but in a
+    #  weird order, so this part sorts the 'layers' correctly
     idx = sum([list(range(i, self.c, channel_out)) for i in range(channel_out)], [])
     idx = np.argsort(idx)
 
@@ -143,8 +143,8 @@ if __name__ == '__main__':
   height      = 50
   scale       = 4
 
-  inpt = np.arange(0,batch * width * height * channels_in).reshape(batch, channels_in, width, height)
-  inpt = inpt.transpose(0,2,3,1) # Nice visualizations with the transpose arange
+  inpt = np.arange(0, batch * width * height * channels_in).reshape(batch, channels_in, width, height)
+  inpt = inpt.transpose(0, 2, 3, 1) # Nice visualizations with the transpose arange
 
   batch, w, h, c = inpt.shape
 
@@ -165,9 +165,9 @@ if __name__ == '__main__':
 
   # Visualizations
 
-  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10,5))
+  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
   fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
-  fig.suptitle('Shuffler Layer \n\n scale : {}'.format(scale))
+  fig.suptitle('Shuffler Layer\nscale : {}'.format(scale))
 
   ax1.imshow(inpt[0,:,:,0])
   ax1.set_title('Original Image')

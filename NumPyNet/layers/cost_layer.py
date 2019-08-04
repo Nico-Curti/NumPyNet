@@ -112,7 +112,7 @@ class Cost_layer(object):
     Parameters:
       delta: array, error of the network, to be backpropagated
     '''
-    delta += self.scale * self.delta
+    delta[:] += self.scale * self.delta
 
   def _smoothing(self, truth):
     '''
@@ -125,7 +125,7 @@ class Cost_layer(object):
     scale = 1. / self.smoothing
     bias  = self.smoothing / self.outputs
 
-    truth = truth * scale + bias
+    truth[:] = truth * scale + bias
 
   def _smooth_l1(self, inpt, truth):
     '''
@@ -173,7 +173,7 @@ class Cost_layer(object):
       truth : array, truth values
     '''
     mask_index = truth != 0
-#    mask_index = truth[ truth != 0 ]
+    # mask_index = truth[ truth != 0 ]
     self.output[mask_index] = -inpt[mask_index]
     mask_index = ~mask_index
     self.output[mask_index] =  inpt[mask_index]
@@ -274,7 +274,7 @@ if __name__ == '__main__':
 
   print(layer)
   print(layer.out_shape())
-  print('Byron loss: {:.3f}'.format(byron_loss))
+  print('Loss: {:.3f}'.format(byron_loss))
 
   # BACKWARD
 

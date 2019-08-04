@@ -85,7 +85,7 @@ class BatchNorm_layer(object):
     # output_shape = (batch, w, h, c)
 
 
-  def backward(self, delta = None):
+  def backward(self, delta=None):
     '''
     BackPropagation function of the BatchNormalization layer. Every formula is a derivative
     computed by chain rules: dbeta = derivative of output w.r.t. bias, dgamma = derivative of
@@ -176,8 +176,8 @@ if __name__ == '__main__':
   # bias   = np.random.uniform(0., 1., size=(w, h, c)) # random biases
   # scales = np.random.uniform(0., 1., size=(w, h, c)) # random scales
 
-  bias = np.zeros(shape=(w,h,c))
-  scales = np.ones(shape=(w,h,c))
+  bias = np.zeros(shape=(w, h, c))
+  scales = np.ones(shape=(w, h, c))
 
   # Model Initialization
   layer = BatchNorm_layer(scales=scales, bias=bias)
@@ -189,13 +189,13 @@ if __name__ == '__main__':
 
   # BACKWARD
 
-  layer.delta = np.random.uniform(0., 100., size=layer.out_shape())
+  layer.delta = np.random.uniform(low=0., high=100., size=layer.out_shape())
   delta = np.ones(shape=inpt.shape) # delta same shape as the Input
   layer.backward(delta)
 
   # Visualizations
 
-  fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=2, figsize=(10,5))
+  fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=2, figsize=(10, 5))
   fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
 
   fig.suptitle('BatchNormalization Layer')

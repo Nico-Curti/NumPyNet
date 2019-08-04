@@ -43,14 +43,14 @@ class Logistic_layer(object):
     '''
 
     self.batch, self.w, self.h, self.c = inpt.shape
-#    inpt = np.log(inpt/(1-inpt))
+    # inpt = np.log(inpt/(1-inpt))
     self.output = 1. / (1. + np.exp(-inpt)) # as for darknet
-#    self.output = inpt
+    # self.output = inpt
 
     if truth is not None:
       self.loss = -truth * np.log(self.output) - (1. - truth) * np.log(1. - self.output)
       self.delta = truth - self.output
-#      self.cost = np.mean(self.loss)
+      # self.cost = np.mean(self.loss)
       self.cost = np.sum(self.loss) # as for darknet
     else :
       self.delta = np.zeros(shape = self.out_shape())
@@ -59,7 +59,7 @@ class Logistic_layer(object):
     '''
     Backward function of the Logistic Layer
 
-    Paramters:
+    Parameters:
       delta : array same shape as the input.
     '''
     if delta is not None:
@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
 
   np.random.seed(123)
-  batch, w, h, c = (5,10,10,3)
+  batch, w, h, c = (5, 10, 10, 3)
 
   # Binary truth, or 0 or 1
   truth = np.random.choice([0., 1.], p=[.5, .5], size=(w, h, c))
@@ -88,7 +88,7 @@ if __name__ == '__main__':
   byron_loss = layer.cost
 
   print(layer)
-  print('Byron loss: {:.3f}'.format(byron_loss))
+  print('Loss: {:.3f}'.format(byron_loss))
 
   # BACKWARD
 
