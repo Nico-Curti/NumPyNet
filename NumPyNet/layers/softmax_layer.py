@@ -57,14 +57,30 @@ class Softmax_layer():
 
     if self.spatial:
       self.output = np.exp(inpt - inpt.max(axis=-1, keepdims=True))
-      s = self.output.sum(axis=-1, keepdims=True)
+      s = 1. / self.output.sum(axis=-1, keepdims=True)
+      self.output *= s
 
-    else : # groups is still fixed to 1
-      self.output = np.exp((inpt - np.max(inpt, axis=(1,2,3), keepdims=True)) * self.temperature)
-      s = self.output.sum(axis=(1,2,3), keepdims=True)
+    else : # first implementation with groups, inspired from darknet, mhe
+      self.output = np.empty(inpt.shape)
+      inputs = self.w * self.h * self.c
+      n = inputs // self.groups
+      batch_offset = inputs
+      group_offset = n
+      flat_input = inpt.ravel()
+      flat_outpt = self.output.ravel()
+      for b in range(self.batch):
+        for g in range(groups):
+          idx = b * batch_offset + g * group_offset
+          inp = flat_input[idx : idx + n]
+          out = flat_outpt[idx : idx + n]
+          out[:]  = np.exp((inp - inp.max()) * self.temperature)
+          out[:] /= out.sum()
 
-    s = 1./s
-    self.output *= s
+      self.output = flat_outpt.reshape(inpt.shape)
+
+      # Original implementation
+#      self.output = np.exp((inpt - np.max(inpt, axis=(1,2,3), keepdims=True)) * self.temperature)
+#      s = self.output.sum(axis=(1,2,3), keepdims=True)
 
     # value of delta if truth is None
     self.delta = np.zeros(shape=self.out_shape())
@@ -110,7 +126,7 @@ if __name__ == '__main__':
   inpt = np.expand_dims(inpt, axis=0)
 
   spatial     = False
-  groups      = 1
+  groups      = 4
   temperature = 1.
 
   np.random.seed(123)
@@ -120,7 +136,7 @@ if __name__ == '__main__':
   truth = np.random.choice([0., 1.], p=[.5, .5], size=(batch, w, h, c))
 
   # Model initialization
-  layer = Softmax_layer(groups=1, temperature=1., spatial=spatial)
+  layer = Softmax_layer(groups=groups, temperature=1., spatial=spatial)
 
   # FORWARD
 
