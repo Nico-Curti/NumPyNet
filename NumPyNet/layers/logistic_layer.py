@@ -61,7 +61,6 @@ class Logistic_layer(object):
 
     Paramters:
       delta : array same shape as the input.
-
     '''
     if delta is not None:
       delta[:] += self.delta # as for darknet, probably an approx
