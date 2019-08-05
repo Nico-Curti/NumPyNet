@@ -30,9 +30,9 @@ class Activation_layer(object):
     self.output, self.delta = (None, None)
 
   def __str__(self):
-    out_width, out_height, out_channels = self.out_shape()
-    return 'activation                 {0:>4d} x{1:>4d} x{2:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d}'.format(
-           out_width, out_height, out_channels)
+    batch, out_width, out_height, out_channels = self.out_shape()
+    return 'activation                 {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(
+           batch, out_width, out_height, out_channels)
 
   def out_shape(self):
     return self.output.shape
@@ -91,6 +91,7 @@ if __name__ == '__main__':
 
   layer.forward(inpt)
   forward_out_byron = layer.output
+  print(layer)
 
   # BACKWARD
 
