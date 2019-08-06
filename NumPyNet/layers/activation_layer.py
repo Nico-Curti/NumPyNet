@@ -31,7 +31,7 @@ class Activation_layer(object):
 
   def __str__(self):
     batch, out_width, out_height, out_channels = self.out_shape()
-    return 'activation                 {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(
+    return 'activation            {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(
            batch, out_width, out_height, out_channels)
 
   def out_shape(self):
@@ -73,17 +73,19 @@ if __name__ == '__main__':
 
   from NumPyNet import activations
 
-  activation_func = activations.Loggy()
+  activation_func = activations.Relu()
 
   img_2_float = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 1.)).astype(float)
   float_2_img = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 255.)).astype(np.uint8)
 
-  filename = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'dog.jpg')
-  inpt = np.asarray(Image.open(filename), dtype=float)
-  inpt.setflags(write=1)
-  inpt = img_2_float(inpt)
-  # Relu activation constrain
-  inpt = inpt * 2 - 1
+#  filename = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'dog.jpg')
+#  inpt = np.asarray(Image.open(filename), dtype=float)
+#  inpt.setflags(write=1)
+#  inpt = img_2_float(inpt)
+#  # Relu activation constrain
+#  inpt = inpt * 2 - 1
+
+  inpt = np.random.uniform(-1,1, size=(5,10,10,3))
 
   layer = Activation_layer(activation=activation_func)
 
