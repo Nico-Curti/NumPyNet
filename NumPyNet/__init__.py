@@ -14,7 +14,7 @@ from .image_utils import normalization
 from .image_utils import image_utils
 
 import parser
-from NumPyNet import rnn_utils
+from . import rnn_utils
 
 __all__ = ['NumPyNet']
 
