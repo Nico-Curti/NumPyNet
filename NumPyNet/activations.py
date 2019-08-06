@@ -1,41 +1,44 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from __future__ import division
 from __future__ import print_function
 
 import numpy as np
 
-__author__ = ['Mattia Ceccarelli', 'Nico Curti']
-__email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Activation Functions'
+__package__ = 'activations_function_wrap'
+__author__  = ['Nico Curti']
+__email__   = ['nico.curti2@unibo.it']
 
-class Activations(object):
+class Activations (object):
 
-  def __init__(self, name, leaky_coef):
+  BYRON_INDEX = -1
+
+  def __init__ (self, name, leaky_coef):
     self._name = name
     self._leaky_coef = leaky_coef
 
   @staticmethod
-  def activate(x, copy = False):
+  def activate (x, copy=False):
     pass
 
   @staticmethod
-  def gradient(x, copy = False):
+  def gradient (x, copy=False):
     pass
 
   @property
-  def name(self):
+  def name (self):
     return self._name
 
-  def __str__(self):
+  def __str__ (self):
     return '{} activation function'.format(self._name)
 
 
 class Logistic (Activations):
 
-  def __init__(self):
+  BYRON_INDEX = 0
+
+  def __init__ (self):
     super(Logistic, self).__init__('Logistic', None)
 
   @staticmethod
@@ -46,9 +49,12 @@ class Logistic (Activations):
   def gradient (x, copy=False):
     return (1. - x) * x
 
+
 class Loggy (Activations):
 
-  def __init__(self):
+  BYRON_INDEX = 1
+
+  def __init__ (self):
     super(Loggy, self).__init__('Loggy', None)
 
   @staticmethod
@@ -59,9 +65,12 @@ class Loggy (Activations):
   def gradient (x, copy=False):
     return 2. * (1. - (x + 1.) * .5) * (x + 1.) * .5
 
+
 class Relu (Activations):
 
-  def __init__(self):
+  BYRON_INDEX = 2
+
+  def __init__ (self):
     super(Relu, self).__init__('Relu', None)
 
   @staticmethod
@@ -81,9 +90,12 @@ class Relu (Activations):
     y[x <= 0.] = 0.
     return y
 
+
 class Elu (Activations):
 
-  def __init__(self):
+  BYRON_INDEX = 3
+
+  def __init__ (self):
     super(Elu, self).__init__('Elu', None)
 
   @staticmethod
@@ -103,9 +115,12 @@ class Elu (Activations):
     # MISS
     return
 
+
 class Relie (Activations):
 
-  def __init__(self):
+  BYRON_INDEX = 4
+
+  def __init__ (self):
     super(Relie, self).__init__('Relie', None)
 
   @staticmethod
@@ -125,9 +140,12 @@ class Relie (Activations):
     y[x <= 0.] = 1e-2
     return y
 
+
 class Ramp (Activations):
 
-  def __init__(self):
+  BYRON_INDEX = 5
+
+  def __init__ (self):
     super(Ramp, self).__init__('Ramp', None)
 
   @staticmethod
@@ -147,9 +165,12 @@ class Ramp (Activations):
     y[x > 0.] += .1
     return y
 
+
 class Linear (Activations):
 
-  def __init__(self):
+  BYRON_INDEX = 6
+
+  def __init__ (self):
     super(Linear, self).__init__('Linear', None)
 
   @staticmethod
@@ -160,9 +181,12 @@ class Linear (Activations):
   def gradient(x, copy=False):
     return np.ones(shape=x.shape, dtype=float)
 
+
 class Tanh (Activations):
 
-  def __init__(self):
+  BYRON_INDEX = 7
+
+  def __init__ (self):
     super(Tanh, self).__init__('Tanh', None)
 
   @staticmethod
@@ -174,9 +198,12 @@ class Tanh (Activations):
   def gradient(x, copy=False):
     return 1. - x * x
 
+
 class Plse (Activations):
 
-  def __init__(self):
+  BYRON_INDEX = 8
+
+  def __init__ (self):
     super(Plse, self).__init__('Plse', None)
 
   @staticmethod
@@ -194,9 +221,12 @@ class Plse (Activations):
     y[x >= 0. | x <= 1.] = .125
     return y
 
+
 class Leaky (Activations):
 
-  def __init__(self):
+  BYRON_INDEX = 9
+
+  def __init__ (self):
     super(Leaky, self).__init__('Leaky', None)
 
   @staticmethod
@@ -216,14 +246,20 @@ class Leaky (Activations):
     y[x <= 0.] = self.leaky_coef
     return y
 
+
 class Stair (Activations):
 
-  def __init__(self):
+  BYRON_INDEX = 10
+
+  def __init__ (self):
     super(Stair, self).__init__('Stair', None)
+
 
 class HardTan (Activations):
 
-  def __init__(self):
+  BYRON_INDEX = 11
+
+  def __init__ (self):
     super(HardTan, self).__init__('HardTan', None)
 
   @staticmethod
@@ -244,9 +280,12 @@ class HardTan (Activations):
     y[x < -1. and x > 1.] = 0.
     return y
 
+
 class LhTan (Activations):
 
-  def __init__(self):
+  BYRON_INDEX = 12
+
+  def __init__ (self):
     super(LhTan, self).__init__('LhTan', None)
 
   @staticmethod
@@ -267,8 +306,11 @@ class LhTan (Activations):
     y[x <= 0. | x >= 1.] = 1e-3
     return y
 
+
 class Selu (Activations):
 
-  def __init__(self):
+  BYRON_INDEX = 13
+
+  def __init__ (self):
     super(Selu, self).__init__('Selu', None)
 

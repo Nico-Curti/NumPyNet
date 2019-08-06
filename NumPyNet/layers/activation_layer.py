@@ -5,7 +5,7 @@
 from __future__ import division
 from __future__ import print_function
 
-from NumPyNet.activations import Activations
+from Numpy.activations import Activations
 
 import numpy as np
 
