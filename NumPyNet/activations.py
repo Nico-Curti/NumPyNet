@@ -272,17 +272,19 @@ class HardTan (Activations):
     if copy: y = x.copy()
     else:    y = x
 
-    y[x < 1.] = -1.
-    y[x > 1.] = 1.
+    y[x < -1.] = -1.
+    y[x >  1.] =  1.
     return y
 
   @staticmethod
   def gradient(x, copy=False):
     if copy: y = x.copy()
     else:    y = x
-
-    y[x > -1. and x < 1.] = 1.
-    y[x < -1. and x > 1.] = 0.
+    y = np.zeros(shape=y.shape)
+    # this function select corrects indexes
+    # solves problems with multiple conditions
+    func = np.vectorize(lambda t: (t >- 1) and (t < 1.))
+    y[func(x)] = 1.
     return y
 
 
