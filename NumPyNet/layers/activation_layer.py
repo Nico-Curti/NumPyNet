@@ -73,19 +73,20 @@ if __name__ == '__main__':
 
   from NumPyNet import activations
 
-  activation_func = activations.Relu()
+  activation_func = activations.Tanh()
 
   img_2_float = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 1.)).astype(float)
   float_2_img = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 255.)).astype(np.uint8)
 
-#  filename = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'dog.jpg')
-#  inpt = np.asarray(Image.open(filename), dtype=float)
-#  inpt.setflags(write=1)
-#  inpt = img_2_float(inpt)
-#  # Relu activation constrain
-#  inpt = inpt * 2 - 1
+  filename = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'dog.jpg')
+  inpt = np.asarray(Image.open(filename), dtype=float)
+  inpt.setflags(write=1)
+  inpt = img_2_float(inpt)
+  # Relu activation constrain
+  inpt = inpt * 2 - 1
 
-  inpt = np.random.uniform(-1,1, size=(5,10,10,3))
+  # add batch = 1
+  inpt = np.expand_dims(inpt, axis=0)
 
   layer = Activation_layer(activation=activation_func)
 
@@ -107,15 +108,15 @@ if __name__ == '__main__':
 
   fig.suptitle('Activation Layer\nfunction : {}'.format(activation_func.name))
 
-  ax1.imshow(float_2_img(inpt))
+  ax1.imshow(float_2_img(inpt[0]))
   ax1.set_title('Original image')
   ax1.axis('off')
 
-  ax2.imshow(float_2_img(layer.output))
+  ax2.imshow(float_2_img(layer.output[0]))
   ax2.set_title("Forward")
   ax2.axis("off")
 
-  ax3.imshow(delta)
+  ax3.imshow(float_2_img(delta[0]))
   ax3.set_title('Backward')
   ax3.axis('off')
 
