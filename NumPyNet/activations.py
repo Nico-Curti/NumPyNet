@@ -323,3 +323,21 @@ class Selu (Activations):
 
   def __init__ (self):
     super(Selu, self).__init__('Selu', None)
+
+  @staticmethod
+  def activate (x, copy=False):
+    if copy: y = x.copy()
+    else:    y = x
+
+    y[x >= 0.] *= 1.0507
+    y[x  < 0.]  = 1.0507 * 1.6732 * (np.exp(y[x < 0.]) - 1.)
+    return y
+
+  @staticmethod
+  def gradient (x, copy=False):
+    if copy: y = x.copy()
+    else:    y = x
+
+    y[x >= 0.]  = 1.0507
+    y[x <  0.] += 1.0507 * 1.6732
+    return y
