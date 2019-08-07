@@ -211,14 +211,19 @@ class Plse (Activations):
     y = x.copy()
     y[x < -4.] = (y[x < -4.] + 4.) * 1e-2
     y[x >  4.] = (y[x >  4.] - 4.) * 1e-2 + 1.
-    y[x >= -4 & x <= 4.] = y[x >= -4 & x <= 4.] * .125 + .5
+    # this function  select elements bewteen -4 and 4
+    # it solves problems with double conditions in array.
+    func = np.vectorize(lambda t: (t >= -4.) and t<= 4.)
+    y[func(x)] = y[func(x)] * .125 + .5
     return y
 
   @staticmethod
   def gradient (x, copy=False):
     y = x.copy()
-    y[x <  0. | x >  1.] = 1e-2
-    y[x >= 0. | x <= 1.] = .125
+    func  = np.vectorize(lambda t: (t<0.)  or (t>1.))
+    func2 = np.vectorize(lambda t: (t>=0.) or (t<=1.))
+    y[func(x) ] = 1e-2
+    y[func2(x)] = .125
     return y
 
 
@@ -313,4 +318,3 @@ class Selu (Activations):
 
   def __init__ (self):
     super(Selu, self).__init__('Selu', None)
-
