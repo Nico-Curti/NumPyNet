@@ -103,8 +103,7 @@ class Elu (Activations):
     if copy: y = x.copy()
     else:    y = x
 
-    y[x >= 0.] *= y[x >= 0.]
-    y[x <  0.] *= np.exp(y[x < 0.] - 1.)
+    y[x <  0.] = np.exp(y[x < 0.]) - 1.
     return y
 
   @staticmethod
@@ -112,8 +111,9 @@ class Elu (Activations):
     if copy: y = x.copy()
     else:    y = x
 
-    # MISS
-    return
+    y[x >= 0.]  = 1.
+    y[x  < 0.] += 1.
+    return y
 
 
 class Relie (Activations):
@@ -280,7 +280,7 @@ class HardTan (Activations):
   def gradient(x, copy=False):
     if copy: y = x.copy()
     else:    y = x
-    y = np.zeros(shape=y.shape)
+    y[:] = np.zeros(shape=y.shape)
     # this function select corrects indexes
     # solves problems with multiple conditions
     func = np.vectorize(lambda t: (t >- 1) and (t < 1.))
@@ -301,16 +301,19 @@ class LhTan (Activations):
     else:    y = x
 
     y[x < 0.] *= 1e-3
-    y[x > 1.]  = (y[y > 1.] - 1.) * 1e-3
+    y[x > 1.]  = (y[x > 1.] - 1.) * 1e-3 + 1
     return y
 
   @staticmethod
   def gradient (x, copy=False):
     if copy: y = x.copy()
     else:    y = x.copy()
-
-    y[x >  0. & x <  1.] = 1
-    y[x <= 0. | x >= 1.] = 1e-3
+    # those functions select the correct elements
+    # problems with double conditions
+    func  = np.vectorize(lambda t: (t > 0.) and (t < 1.))
+    func2 = np.vectorize(lambda t: (t <= 0.) or (t >= 1.))
+    y[func(x)]  = 1
+    y[func2(x)] = 1e-3
     return y
 
 
