@@ -21,14 +21,12 @@ class Connected_layer(object):
     '''
     Connected layer:
 
-
-    Paramters :
-      inputs     : shape of a single input image of the batch (in_w, in_h, in_c)
+    Parameters :
+      inputs     : tuple, shape of the input in the format (batch, w, h, c)
       outputs    : int, number of output of the layers
       activation : activation function of the layer
-      weights    : array of shape (in_w, in_h, in_c, outputs), weights of the dense layer
+      weights    : array of shape (w * h * c, outputs), weights of the dense layer
       bias       : array of shape (outputs, ), bias of the dense layer
-
     '''
     self.batch, self.w, self.h, self.c = inputs
     self.inputs = inputs[1:]
@@ -66,7 +64,7 @@ class Connected_layer(object):
       chosen activation function.
 
     Parameters:
-      inpt : numpy array with shape (batch, in_w, in_h, in_c ) input batch of images of the layer
+      inpt : numpy array with shape (batch, w, h, c) input batch of images of the layer
       copy : boolean, states if the activation function have to return a copy of the
             input or not.
     '''
@@ -89,7 +87,7 @@ class Connected_layer(object):
     '''
 
     # reshape to (batch , w * h * c)
-    inpt = inpt.reshape(batch, -1)
+    inpt = inpt.reshape(self.batch, -1)
 
     self.delta *= self.gradient(self.output, copy=copy)
 
@@ -147,10 +145,7 @@ if __name__ == '__main__':
 
   # Number of outputs
   outputs = 10
-
-
   layer_activation = activations.Relu()
-
   batch, w, h, c = inpt.shape
 
   # Random initialization of weights with shape (w * h * c) and bias with shape (outputs,)
