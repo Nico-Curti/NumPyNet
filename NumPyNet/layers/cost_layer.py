@@ -100,9 +100,7 @@ class Cost_layer(object):
       self.delta *= norm
 
       self.cost = np.mean(self.output)                                       # compute the cost
-
-
-
+ 
   def backward(self, delta):
     '''
     Backward function of the cost_layer, it updates the delta
