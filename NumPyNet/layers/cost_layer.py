@@ -54,9 +54,8 @@ class Cost_layer(object):
     self.smoothing = smoothing
 
     # Need an empty initialization to work out _smooth_l1 and _wgan
-    self.output = np.empty(shape=outputs)
-    self.delta = np.empty(shape=outputs)
-
+    self.output = np.empty(shape=inputs)
+    self.delta = np.empty(shape=inputs)
 
   def __str__(self):
     return 'cost                                           {:>4d}'.format(self.outputs)
@@ -280,4 +279,3 @@ if __name__ == '__main__':
 
   delta = np.zeros(shape=inpt.shape)
   layer.backward(delta)
-
