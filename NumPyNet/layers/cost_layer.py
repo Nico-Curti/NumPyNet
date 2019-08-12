@@ -96,7 +96,7 @@ class Cost_layer(object):
         self._threshold()
 
 
-      norm = 1. / len(self.delta)                                            # normalization of delta!
+      norm = 1. / self.delta.size                                            # normalization of delta!
       self.delta *= norm
 
       self.cost = np.mean(self.output)                                       # compute the cost
