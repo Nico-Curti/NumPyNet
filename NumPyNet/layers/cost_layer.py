@@ -119,7 +119,7 @@ class Cost_layer(object):
       truth : array, truth values
     '''
 
-    scale = 1. / self.smoothing
+    scale = 1. - self.smoothing
     bias  = self.smoothing / self.outputs
 
     truth[:] = truth * scale + bias
@@ -226,7 +226,7 @@ class Cost_layer(object):
     Parameters :
       truth : array, truth values
     '''
-    abs_compare = lambda x, y: ( abs(x) > abs(y) ) - ( abs(x) < abs(y) )
+    abs_compare = lambda x, y: (abs(x) > abs(y)) ^ (abs(x) < abs(y))
     compare = functools.cmp_to_key(abs_compare)
 
     self.delta = sorted(self.delta, key=compare)
