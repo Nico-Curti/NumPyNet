@@ -90,7 +90,7 @@ class Cost_layer(object):
         self._masked(inpt, truth)
 
       if self.ratio:                                                         #
-        self._ratio()
+        self._ratio(truth)
 
       if self.threshold:                                                     #
         self._threshold()
@@ -100,7 +100,7 @@ class Cost_layer(object):
       self.delta *= norm
 
       self.cost = np.mean(self.output)                                       # compute the cost
- 
+
   def backward(self, delta):
     '''
     Backward function of the cost_layer, it updates the delta
