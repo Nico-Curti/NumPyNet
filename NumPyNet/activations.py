@@ -191,8 +191,7 @@ class Tanh (Activations):
 
   @staticmethod
   def activate(x, copy=False):
-    exp = np.exp(2. * x)
-    return (exp - 1.) / (exp + 1.)
+    return np.tanh(x)
 
   @staticmethod
   def gradient(x, copy=False):
