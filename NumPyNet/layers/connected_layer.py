@@ -7,7 +7,6 @@ from __future__ import print_function
 
 from NumPyNet.activations import Activations
 
-import sys
 import numpy as np
 
 
@@ -72,7 +71,10 @@ class Connected_layer(object):
 
     inpt = inpt.reshape(-1, self.w * self.h * self.c)    # shape (batch, w*h*c)
 
-    # z = (inpt @ self.weights) + self.bias')      # shape (batch, outputs)
+    #z = (inpt @ self.weights) + self.bias                # shape (batch, outputs)
+    print(inpt[0])
+    print(self.weights[0, :])
+    print(self.weights[-1, :])
     z = np.dot(inpt, self.weights) + self.bias
 
     self.output = self.activation(z, copy=copy)     # shape (batch, outputs), activated
@@ -157,23 +159,26 @@ if __name__ == '__main__':
 
   # Random initialization of weights with shape (w * h * c) and bias with shape (outputs,)
   np.random.seed(123) # only if one want always the same set of weights
-  weights = np.random.uniform(low=-1, high=1., size=(np.prod(inpt.shape[1:]), outputs))
-  bias    = np.random.uniform(low=-1,  high=1., size=(outputs,))
+  weights = np.random.uniform(low=-1., high=1., size=(np.prod(inpt.shape[1:]), outputs))
+  bias    = np.random.uniform(low=-1., high=1., size=(outputs,))
 
   # Model initialization
   layer = Connected_layer(inpt.shape, outputs,
                           activation=layer_activation, weights=weights, bias=bias)
+  print(layer)
 
   # FORWARD
 
   layer.forward(inpt)
-  forward_out_byron = layer.output.copy()
+  forward_out = layer.output.copy()
 
   # BACKWARD
 
-  layer.delta = np.ones(shape=(batch, outputs))
-  delta = np.zeros(shape=(batch, w, h, c))
+  layer.delta = np.ones(shape=(batch, outputs), dtype=float)
+  delta = np.zeros(shape=(batch, w, h, c), dtype=float)
   layer.backward(inpt, delta=delta, copy=True)
+
+  print('Output: {}'.format(', '.join( ['{:.3f}'.format(x) for x in forward_out[0]] ) ) )
 
   # Visualizations
 
@@ -185,7 +190,7 @@ if __name__ == '__main__':
   ax1.set_title('Original Image')
   ax1.axis('off')
 
-  ax2.matshow(forward_out_byron, cmap='bwr')
+  ax2.matshow(forward_out, cmap='bwr')
   ax2.set_title('Forward', y = 4)
   ax2.axes.get_yaxis().set_visible(False)         # no y axis tick
   ax2.axes.get_xaxis().set_ticks(range(outputs))  # set x axis tick for every output

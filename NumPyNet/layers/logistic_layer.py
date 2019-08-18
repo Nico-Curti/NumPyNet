@@ -69,15 +69,27 @@ class Logistic_layer(object):
 
 if __name__ == '__main__':
 
+  import os
+
+  import pylab as plt
+  from PIL import Image
+
+  img_2_float = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 1.)).astype(float)
+  float_2_img = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 255.)).astype(np.uint8)
+
+  filename = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'dog.jpg')
+  inpt = np.asarray(Image.open(filename), dtype=float)
+  inpt.setflags(write=1)
+  inpt = img_2_float(inpt)
+  inpt = inpt * 2. - 1.
+
+  inpt = np.expand_dims(inpt, axis=0)
 
   np.random.seed(123)
-  batch, w, h, c = (5, 10, 10, 3)
+  batch, w, h, c = inpt.shape
 
-  # Binary truth, or 0 or 1
-  truth = np.random.choice([0., 1.], p=[.5, .5], size=(w, h, c))
-
-  # Random input
-  inpt = np.random.uniform(low=0., high=1., size=(batch, w, h, c))
+  # truth definition, it's random so don't expect much
+  truth = np.random.choice([0., 1.], p=[.5, .5], size=(batch, w, h, c))
 
   # Model Initialization
   layer = Logistic_layer()
@@ -85,15 +97,36 @@ if __name__ == '__main__':
   # FORWARD
 
   layer.forward(inpt, truth)
-  byron_loss = layer.cost
+  forward_out = layer.output
+  layer_loss = layer.cost
 
   print(layer)
-  print('Loss: {:.3f}'.format(byron_loss))
+  print('Loss: {:.3f}'.format(layer_loss))
 
   # BACKWARD
 
-  delta_byron = np.zeros(shape=inpt.shape)
-  layer.backward(delta_byron)
+  delta = np.zeros(shape=inpt.shape, dtype=float)
+  layer.backward(delta)
 
+  # Visualizations
+
+  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
+  fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
+
+  fig.suptitle('Logistic Layer:\nloss({0:.3f})'.format(layer_loss))
+
+  ax1.imshow(float_2_img(inpt[0]))
+  ax1.axis('off')
+  ax1.set_title('Original Image')
+
+  ax2.imshow(float_2_img(forward_out[0]))
+  ax2.axis('off')
+  ax2.set_title('Forward Image')
+
+  ax3.imshow(float_2_img(delta[0]))
+  ax3.axis('off')
+  ax3.set_title('Delta Image')
+
+  plt.show()
 
 

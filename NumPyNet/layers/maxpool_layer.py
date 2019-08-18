@@ -73,8 +73,8 @@ class Maxpool_layer(object):
       size  : a tuple indicating the horizontal and vertical size of the kernel
       stride: a tuple indicating the horizontal and vertical steps of the kernel
     '''
-    batch_stride, s0, s1, _ = inpt.strides[0], inpt.strides[1], inpt.strides[2], inpt.strides[3:]
-    batch,        w,  h,  _ = inpt.shape[0],   inpt.shape[1],   inpt.shape[2],   inpt.shape[3:]
+    batch_stride, s0, s1 = inpt.strides[:3]
+    batch,        w,  h  = inpt.shape[:3]
     kx, ky     = size
     st1, st2   = stride
 
@@ -147,7 +147,7 @@ class Maxpool_layer(object):
       mat_pad = self._pad(inpt, self.size, self.stride)
     else:
       # If no padding, cut the last raws/columns in every image in the batch
-      mat_pad = inpt[:,: (self.w - kx) // st1*st1 + kx, : (self.h - ky) // st2*st2 + ky, ...]
+      mat_pad = inpt[:, : (self.w - kx) // st1*st1 + kx, : (self.h - ky) // st2*st2 + ky, ...]
 
     # Return a strided view of the input array, shape: (batch, 1+(w-kx)//st1,1+(h-ky)//st2 ,c, kx, ky)
     view = self._asStride(mat_pad, self.size, self.stride)
@@ -162,9 +162,6 @@ class Maxpool_layer(object):
     # In the loop I change the shape of view in order to have access to its last 2 dimension with r.
     # r take the values of every sub matrix
     self.indexes = [np.unravel_index(np.nanargmax(r), r.shape) for r in view.reshape(new_shape)]
-    for i, j in self.indexes:
-      print(i * 30 + j)
-
     self.indexes = np.asarray(self.indexes).T
 
 
@@ -225,9 +222,9 @@ if __name__ == '__main__':
   inpt = np.expand_dims(inpt, axis=0) # Add the batch shape.
   b, w, h, c = inpt.shape
 
-  size = (30, 30)
-  stride = (20, 20)
-  pad = True
+  size = (3, 3)
+  stride = (2, 2)
+  pad = False
 
   layer = Maxpool_layer(size=size, stride=stride, padding=pad)
 

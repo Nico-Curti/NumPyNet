@@ -81,6 +81,8 @@ if __name__ == '__main__':
   import pylab as plt
   from PIL import Image
 
+  np.random.seed(123)
+
   img_2_float = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 1.)).astype(float)
   float_2_img = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 255.)).astype(np.uint8)
 
@@ -104,7 +106,7 @@ if __name__ == '__main__':
 
   # BACKWARD
 
-  delta = np.ones(shape=inpt.shape)
+  delta = np.ones(shape=inpt.shape, dtype=float)
   layer.delta = np.ones(shape=layer.out_shape())
   layer.backward(delta)
 

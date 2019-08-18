@@ -177,8 +177,8 @@ if __name__ == '__main__':
   # bias   = np.random.uniform(0., 1., size=(w, h, c)) # random biases
   # scales = np.random.uniform(0., 1., size=(w, h, c)) # random scales
 
-  bias = np.zeros(shape=(w, h, c))
-  scales = np.ones(shape=(w, h, c))
+  bias = np.zeros(shape=(w, h, c), dtype=float)
+  scales = np.ones(shape=(w, h, c), dtype=float)
 
   # Model Initialization
   layer = BatchNorm_layer(scales=scales, bias=bias)
@@ -186,12 +186,13 @@ if __name__ == '__main__':
   # FORWARD
 
   layer.forward(inpt)
-  forward_out_byron = layer.output
+  forward_out = layer.output
+  print(layer)
 
   # BACKWARD
 
   layer.delta = np.random.uniform(low=0., high=100., size=layer.out_shape())
-  delta = np.ones(shape=inpt.shape) # delta same shape as the Input
+  delta = np.ones(shape=inpt.shape, dtype=float) # delta same shape as the Input
   layer.backward(delta)
 
   # Visualizations
@@ -209,7 +210,7 @@ if __name__ == '__main__':
   ax1[1].set_title("Mean Image")
   ax1[1].axis("off")
 
-  ax2[0].imshow(float_2_img(forward_out_byron[0]))
+  ax2[0].imshow(float_2_img(forward_out[0]))
   ax2[0].set_title('Forward')
   ax2[0].axis('off')
 

@@ -87,6 +87,7 @@ class Softmax_layer():
 
     if truth is not None:
       out = self.output * (1. / self.output.sum())
+      out = np.clip(out, 1e-8, 1. - 1e-8)
       self.cost = - np.sum(truth * np.log(out))
       # Update of delta given truth
       self.delta = truth - out
@@ -125,9 +126,9 @@ if __name__ == '__main__':
 
   inpt = np.expand_dims(inpt, axis=0)
 
-  spatial     = False
+  spatial     = True
   groups      = 4
-  temperature = 1.
+  temperature = 1.5
 
   np.random.seed(123)
   batch, w, h, c = inpt.shape
@@ -136,7 +137,7 @@ if __name__ == '__main__':
   truth = np.random.choice([0., 1.], p=[.5, .5], size=(batch, w, h, c))
 
   # Model initialization
-  layer = Softmax_layer(groups=groups, temperature=1., spatial=spatial)
+  layer = Softmax_layer(groups=groups, temperature=temperature, spatial=spatial)
 
   # FORWARD
 
@@ -149,7 +150,7 @@ if __name__ == '__main__':
 
   # BACKWARD
 
-  delta = np.zeros(shape=inpt.shape)
+  delta = np.zeros(shape=inpt.shape, dtype=float)
   layer.backward(delta)
 
   # Visualizations

@@ -96,8 +96,8 @@ class Convolutional_layer(object):
       size  : a tuple indicating the horizontal and vertical size of the kernel
       stride: a tuple indicating the horizontal and vertical steps of the kernel
     '''
-    B, s0, s1, _ = arr.strides[0], arr.strides[1], arr.strides[2], arr.strides[3:]
-    b, m1, n1, _ = arr.shape[0],   arr.shape[1],   arr.shape[2],   arr.shape[3:]
+    B, s0, s1 = arr.strides[:3]
+    b, m1, n1 = arr.shape[:3]
 
     m2, n2        = sub_shape
     st1, st2      = stride

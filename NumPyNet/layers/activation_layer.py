@@ -93,7 +93,7 @@ if __name__ == '__main__':
   # FORWARD
 
   layer.forward(inpt)
-  forward_out_byron = layer.output
+  forward_out = layer.output
   print(layer)
 
   # BACKWARD
@@ -112,7 +112,7 @@ if __name__ == '__main__':
   ax1.set_title('Original image')
   ax1.axis('off')
 
-  ax2.imshow(float_2_img(layer.output[0]))
+  ax2.imshow(float_2_img(forward_out[0]))
   ax2.set_title("Forward")
   ax2.axis("off")
 

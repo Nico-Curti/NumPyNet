@@ -53,11 +53,10 @@ class Avgpool_layer(object):
            out_width, out_height, out_channels)
 
   def out_shape(self):
-    batch = self.batch
     out_height   = (self.h + self.pad_left + self.pad_right - self.size[1]) // self.stride[1] + 1
     out_width    = (self.w + self.pad_top + self.pad_bottom - self.size[0]) // self.stride[0] + 1
     out_channels = self.c
-    return (batch, out_width, out_height, out_channels)
+    return (self.batch, out_width, out_height, out_channels)
 
   def _asStride(self, inpt, size, stride):
     '''
@@ -76,13 +75,13 @@ class Avgpool_layer(object):
       stride: a tuple indicating the horizontal and vertical steps of the kernel
     '''
 
-    batch_stride, s0, s1, _ = inpt.strides[0], inpt.strides[1], inpt.strides[2], inpt.strides[3:]
-    batch,        w,  h,  _ = inpt.shape[0],   inpt.shape[1],   inpt.shape[2],   inpt.shape[3:]
+    batch_stride, s0, s1 = inpt.strides[:3]
+    batch,        w,  h  = inpt.shape[:3]
     kx, ky     = size
     st1, st2   = stride
 
     # Shape of the final view
-    view_shape = (batch, 1+(w-kx)//st1, 1+(h-ky)//st2) + inpt.shape[3:] + (kx, ky)
+    view_shape = (batch, 1 + (w - kx)//st1, 1 + (h - ky)//st2) + inpt.shape[3:] + (kx, ky)
 
     # strides of the final view
     strides = (batch_stride, st1 * s0, st2 * s1) + inpt.strides[3:] + (s0, s1)
