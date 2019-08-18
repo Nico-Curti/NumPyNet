@@ -17,7 +17,7 @@ __package__ = 'Yolo Layer'
 class Yolo_layer(object):
 
   def __init__(self):
-
+    pass
 
   def __str__(self):
     return 'yolo'
@@ -47,5 +47,6 @@ class Yolo_layer(object):
   def num_detections(self, thresh):
     '''
     '''
+    return
 
 if __name__ == '__main__':

@@ -54,7 +54,7 @@ class Network(object):
       raise StopIteration
 
 
-  def load(self, cfg_filename, weights=None)
+  def load(self, cfg_filename, weights=None):
 
     model = net_config(cfg_filename)
     # MISS loading model
