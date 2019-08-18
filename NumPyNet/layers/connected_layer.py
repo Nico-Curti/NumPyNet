@@ -53,7 +53,7 @@ class Connected_layer(object):
 
   def __str__(self):
     return 'connected            {:4d} x{:4d} x{:4d}  ->  {:4d}'.format(
-            *self.inputs, self.outputs)
+            self.w, self.h, self.c, self.outputs)
 
   def out_shape(self):
     return (self.batch, self.outputs)

@@ -50,6 +50,9 @@ matrix:
       env:
         - MATRIX_EVAL=""
 
+  allow_failures:
+    - name: ubuntu 14.04 - python@2.6
+
 
 before_install:
   - travis_retry eval "${MATRIX_EVAL}"

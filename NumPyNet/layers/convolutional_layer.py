@@ -57,7 +57,7 @@ class Convolutional_layer(object):
 
     # Weights and bias
     if weights is None:
-      self.weights = np.random.uniform(low=0., high=1., size=(*size, self.c, self.channels_out))
+      self.weights = np.random.uniform(low=0., high=1., size=(size[0], size[1], self.c, self.channels_out))
     else :
       self.weights = weights
 
