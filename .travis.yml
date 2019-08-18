@@ -2,9 +2,6 @@ language: python
 
 dist: trusty
 
-virtualenv:
-  system_site_packages: true
-
 matrix:
   fast_finish: true
   include:
