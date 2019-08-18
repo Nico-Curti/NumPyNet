@@ -76,8 +76,17 @@ class Avgpool_layer(object):
       stride: a tuple indicating the horizontal and vertical steps of the kernel
     '''
 
-    batch_stride, s0, s1, *_ = inpt.strides
-    batch,        w, h, *_ = inpt.shape
+    try:
+
+      exec('batch_stride, s0, s1, *_ = inpt.strides')
+      exec('batch,        w,  h,  *_ = inpt.shape')
+
+    except SyntaxError: # old python compatibility
+
+      batch_stride, s0, s1, _ = inpt.strides[0], inpt.strides[1], inpt.strides[2], inpt.strides[3:]
+      batch,        w,  h,  _ = inpt.shape[0],   inpt.shape[1],   inpt.shape[2],   inpt.shape[3:]
+
+
     kx, ky     = size
     st1, st2   = stride
 

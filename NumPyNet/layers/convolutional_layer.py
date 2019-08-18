@@ -96,8 +96,16 @@ class Convolutional_layer(object):
       size  : a tuple indicating the horizontal and vertical size of the kernel
       stride: a tuple indicating the horizontal and vertical steps of the kernel
     '''
-    B, s0, s1, *_ = arr.strides
-    b, m1, n1, *_ = arr.shape
+    try:
+
+      exec('B, s0, s1, *_ = arr.strides')
+      exec('b, m1, n1, *_ = arr.shape')
+
+    except SyntaxError: # old python compatibility
+
+      B, s0, s1, _ = arr.strides[0], arr.strides[1], arr.strides[2], arr.strides[3:]
+      b, m1, n1, _ = arr.shape[0],   arr.shape[1],   arr.shape[2],   arr.shape[3:]
+
     m2, n2        = sub_shape
     st1, st2      = stride
 
@@ -108,7 +116,7 @@ class Convolutional_layer(object):
     view_shape = (b,) + (self.out_w, self.out_h) + (m2, n2) + arr.shape[3:]
 
     # strides of the final view
-    strides =   (B,) + (st1 * s0,st2 * s1) + (s0, s1) + arr.strides[3:]
+    strides = (B,) + (st1 * s0,st2 * s1) + (s0, s1) + arr.strides[3:]
 
     subs = np.lib.stride_tricks.as_strided(arr, view_shape, strides=strides)
     # without any reshape, it's indeed a view of the input

@@ -159,13 +159,14 @@ if __name__ == '__main__':
   filename = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'dog.jpg')
   inpt = np.asarray(Image.open(filename), dtype=float)
   inpt.setflags(write=1)
+  w, h, c = inpt.shape
 
   batch_size = 5
 
   np.random.seed(123) # set seed to have fixed bias and scales
 
   # create a pseudo-input with batch_size images with a random offset from the original image
-  rng = np.random.uniform(low=0., high=100., size=(batch_size, *inpt.shape))
+  rng = np.random.uniform(low=0., high=100., size=(batch_size, w, h, c))
   inpt = np.concatenate([np.expand_dims(inpt, axis=0) + r for r in rng], axis=0) # create a set of image
 
   # img_to_float of input, to work with numbers btween 0. and 1.

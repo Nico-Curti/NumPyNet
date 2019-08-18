@@ -28,7 +28,7 @@ class Network(object):
     except:
       raise ValueError('Network model : incorrect input_shape. Expected a 3D array (width, height, channel). Given {}'.format(input_shape))
 
-    self.net = [ Input_layer((batch, *input_shape)) ]
+    self.net = [ Input_layer((batch, self.w, self.h, self.c)) ]
     self.batch = batch
     self.train = train
 

@@ -7,6 +7,7 @@ from __future__ import print_function
 
 from NumPyNet.activations import Activations
 
+import sys
 import numpy as np
 
 
@@ -71,7 +72,14 @@ class Connected_layer(object):
 
     inpt = inpt.reshape(-1, self.w * self.h * self.c)    # shape (batch, w*h*c)
 
-    z = (inpt @ self.weights) + self.bias           # shape (batch, outputs)
+    try:
+
+      exec('z = (inpt @ self.weights) + self.bias')      # shape (batch, outputs)
+
+    except SyntaxError:
+
+      z = np.dot(inpt, self.weights) + self.bias
+
     self.output = self.activation(z, copy=copy)     # shape (batch, outputs), activated
 
   def backward(self, inpt, delta=None, copy=False):
@@ -92,13 +100,27 @@ class Connected_layer(object):
     self.delta *= self.gradient(self.output, copy=copy)
 
     self.bias_update += self.delta.sum(axis=0)   # shape : (outputs,)
-    self.weights_update += inpt.T @ self.delta   # shape : (w * h * c, outputs)
+
+    try:
+
+      exec('self.weights_update += inpt.transpose() @ self.delta') # shape : (w * h * c, outputs)
+
+    except SyntaxError:
+
+      self.weights_update += np.dot(inpt.transpose(), self.delta)
 
     if delta is not None:
       delta_shaped = delta.reshape(self.batch, -1)  # it's a reshaped VIEW
 
       # shapes : (batch , w * h * c) = (batch , w * h * c) + (batch, outputs) @ (outputs, w * h * c)
-      delta_shaped[:] += self.delta @ self.weights.transpose()  # I can modify delta using its view
+
+      try:
+
+        exec('delta_shaped[:] += self.delta @ self.weights.transpose()')  # I can modify delta using its view
+
+      except SyntaxError:
+
+        delta_shaped[:] += np.dot(self.delta, self.weights.transpose())
 
   def update(self, momentum=0., decay=0., lr=1e-2, lr_scale=1.):
     '''
