@@ -73,16 +73,8 @@ class Maxpool_layer(object):
       size  : a tuple indicating the horizontal and vertical size of the kernel
       stride: a tuple indicating the horizontal and vertical steps of the kernel
     '''
-    try:
-
-      exec('batch_stride, s0, s1, *_ = inpt.strides')
-      exec('batch,        w,  h,  *_ = inpt.shape')
-
-    except SyntaxError: # old python compatibility
-
-      batch_stride, s0, s1, _ = inpt.strides[0], inpt.strides[1], inpt.strides[2], inpt.strides[3:]
-      batch,        w,  h,  _ = inpt.shape[0],   inpt.shape[1],   inpt.shape[2],   inpt.shape[3:]
-
+    batch_stride, s0, s1, _ = inpt.strides[0], inpt.strides[1], inpt.strides[2], inpt.strides[3:]
+    batch,        w,  h,  _ = inpt.shape[0],   inpt.shape[1],   inpt.shape[2],   inpt.shape[3:]
     kx, ky     = size
     st1, st2   = stride
 
@@ -170,7 +162,11 @@ class Maxpool_layer(object):
     # In the loop I change the shape of view in order to have access to its last 2 dimension with r.
     # r take the values of every sub matrix
     self.indexes = [np.unravel_index(np.nanargmax(r), r.shape) for r in view.reshape(new_shape)]
+    for i, j in self.indexes:
+      print(i * 30 + j)
+
     self.indexes = np.asarray(self.indexes).T
+
 
   def backward(self, delta):
     '''
@@ -231,7 +227,7 @@ if __name__ == '__main__':
 
   size = (30, 30)
   stride = (20, 20)
-  pad = False
+  pad = True
 
   layer = Maxpool_layer(size=size, stride=stride, padding=pad)
 
