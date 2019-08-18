@@ -12,6 +12,7 @@ from .detection import Detection
 from .image import Image
 from .image_utils import normalization
 from .image_utils import image_utils
+from .network import Network
 
 import parser
 from . import rnn_utils
@@ -21,3 +22,7 @@ __all__ = ['NumPyNet']
 __package__ = 'NumPyNet'
 __author__  = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
+
+# aliases
+
+Model = Network

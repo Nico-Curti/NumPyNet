@@ -1,6 +1,7 @@
 opencv-python
 numpy
-pillow>=5.3.0
-pytest>=3.10.0
-matplotlib>=2.0
+pillow
+pytest
+matplotlib
 enum34
+configparser

@@ -10,12 +10,14 @@ from .connected_layer import Connected_layer
 from .convolutional_layer import Convolutional_layer
 from .cost_layer import Cost_layer, cost_type
 from .dropout_layer import Dropout_layer
-from .logistic_layer import Logistic_layer
 from .input_layer import Input_layer
+from .logistic_layer import Logistic_layer
 from .maxpool_layer import Maxpool_layer
 from .route_layer import Route_layer
 from .shortcut_layer import Shortcut_layer
+from .shuffler_layer import Shuffler_layer
 from .softmax_layer import Softmax_layer
+from .yolo_layer import Yolo_layer
 
 # Alias (keras)
 
