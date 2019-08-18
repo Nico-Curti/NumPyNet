@@ -33,7 +33,7 @@ class Yolo_layer(object):
 
     self.output = inpt.copy()
 
-    if self.trainable:
+    #if self.trainable:
 
 
 
