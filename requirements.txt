@@ -1,6 +1,6 @@
 opencv-python
 
-numpy>=1.11.3
+numpy
 
 pillow>=5.3.0
 

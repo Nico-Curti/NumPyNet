@@ -292,14 +292,16 @@ if __name__ == '__main__':
   np.random.seed(123)
 
   b, w, h, c = inpt.shape
-  filters    = np.random.uniform(-1., 1., size =  (*size,c, channels_out))
+  filters    = np.random.uniform(-1., 1., size = (size[0], size[1], c, channels_out))
   bias       = np.random.uniform(-1., 1., size = (channels_out,))
 
-  layer = Convolutional_layer(inputs=inpt.shape, channels_out=channels_out ,
+  layer = Convolutional_layer(inputs=inpt.shape,
+                              channels_out=channels_out,
                               weights=filters,
                               bias=bias,
                               activation=layer_activation,
-                              size=size, stride=stride,
+                              size=size,
+                              stride=stride,
                               padding=pad)
 
   # FORWARD
