@@ -56,7 +56,12 @@ matrix:
 
 before_install:
   - travis_retry eval "${MATRIX_EVAL}"
-  - pip install -r requirements.txt
+  #- pip install -r requirements.txt
+  - pip install Pillow
+  - pip install opencv-python
+  - pip install matplotlib
+  - pip install pytest
+  - pip install enum34
 
 install:
   - python setup.py install
