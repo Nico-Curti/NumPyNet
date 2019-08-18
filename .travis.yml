@@ -53,7 +53,8 @@ matrix:
 
 before_install:
   - travis_retry eval "${MATRIX_EVAL}"
-  - sudo pip install -r requirements.txt
+  - pip install --upgrade pip
+  - pip install -r requirements.txt
 
 install:
   - python setup.py install
