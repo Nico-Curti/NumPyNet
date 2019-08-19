@@ -216,8 +216,8 @@ if __name__ == '__main__':
   inpt = np.expand_dims(inpt, axis=0)
   pad = True
 
-  size = (1, 1)
-  stride = (1, 1)
+  size = (3, 3)
+  stride = (2, 2)
 
   # Model initialization
   layer = Avgpool_layer(size, stride, padding=pad)
