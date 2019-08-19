@@ -55,7 +55,7 @@ class Input_layer(object):
     if self.out_shape() != delta.shape:
       raise ValueError('Forward Input layer. Incorrect delta shape. Expected {} and given {}'.format(self.out_shape(), delta.shape))
 
-    self.delta[:] = delta
+    delta[:] = self.delta
 
 
 if __name__ == '__main__':
@@ -72,6 +72,7 @@ if __name__ == '__main__':
   inpt = np.asarray(Image.open(filename), dtype=float)
   inpt.setflags(write=1)
   inpt = img_2_float(inpt)
+  inpt = np.expand_dims(inpt, axis=0)
 
   layer = Input_layer(input_shape=inpt.shape)
 
@@ -83,7 +84,7 @@ if __name__ == '__main__':
   # BACKWARD
 
   delta = np.empty(shape=inpt.shape)
-  layer.backward(delta, copy=True)
+  layer.backward(delta)
 
   # Visualizations
 
@@ -92,15 +93,15 @@ if __name__ == '__main__':
 
   fig.suptitle('Input Layer')
 
-  ax1.imshow(float_2_img(inpt))
+  ax1.imshow(float_2_img(inpt[0]))
   ax1.set_title('Original image')
   ax1.axis('off')
 
-  ax2.imshow(float_2_img(layer.output))
+  ax2.imshow(float_2_img(layer.output[0]))
   ax2.set_title("Forward")
   ax2.axis("off")
 
-  ax3.imshow(delta)
+  ax3.imshow(float_2_img(delta[0]))
   ax3.set_title('Backward')
   ax3.axis('off')
 
