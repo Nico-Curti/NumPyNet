@@ -72,9 +72,6 @@ class Connected_layer(object):
     inpt = inpt.reshape(-1, self.w * self.h * self.c)    # shape (batch, w*h*c)
 
     #z = (inpt @ self.weights) + self.bias                # shape (batch, outputs)
-    print(inpt[0])
-    print(self.weights[0, :])
-    print(self.weights[-1, :])
     z = np.dot(inpt, self.weights) + self.bias
 
     self.output = self.activation(z, copy=copy)     # shape (batch, outputs), activated
