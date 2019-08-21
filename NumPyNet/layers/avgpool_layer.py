@@ -183,9 +183,14 @@ class Avgpool_layer(object):
 
     # The indexes are necessary to access every pixel value one at a time, since
     # modifing the same memory address more times at once doesn't produce the correct result
+
+#    norm = 1. / (kx*ky)
+
     for b, i, j, k in combo:
       norm = 1./ np.count_nonzero(~np.isnan(net_delta_view[b, i, j, k, :])) # this only counts non nan values for norm
       net_delta_view[b, i, j, k, :] += self.delta[b, i, j, k] * norm
+
+#    net_delta_view *= norm
 
     # Here delta is updated correctly
     if self.pad:
