@@ -138,10 +138,10 @@ if __name__ == '__main__':
   # In this case, many inputs channels are needed, so no dog.jpg :(
 
   batch       = 5
-  channels_in = 64
-  width       = 50
-  height      = 50
-  scale       = 4
+  channels_in = 12
+  width       = 100
+  height      = 200
+  scale       = 2
 
   inpt = np.arange(0, batch * width * height * channels_in).reshape(batch, channels_in, width, height)
   inpt = inpt.transpose(0, 2, 3, 1) # Nice visualizations with the transpose arange
