@@ -50,7 +50,7 @@ class Shuffler_layer(object):
       scale : int, scale factor of the layer
     '''
     b, w, h, c = inpt.shape
-    X = inpt.transpose(1, 2, 3, 0).reshape(w, h, scale, scale, batch)
+    X = inpt.transpose(1, 2, 3, 0).reshape(w, h, scale, scale, self.batch)
     X = np.concatenate(X, axis=1)
     X = np.concatenate(X, axis=1)
     X = X.transpose(2, 0, 1)
