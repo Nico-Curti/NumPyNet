@@ -69,7 +69,7 @@ class Softmax_layer():
       flat_input = inpt.ravel()
       flat_outpt = self.output.ravel()
       for b in range(self.batch):
-        for g in range(groups):
+        for g in range(self.groups):
           idx = b * batch_offset + g * group_offset
           inp = flat_input[idx : idx + n]
           out = flat_outpt[idx : idx + n]
