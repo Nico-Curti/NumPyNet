@@ -57,7 +57,7 @@ class Dropout_layer(object):
     self.rnd = ~self.rnd
     self.output[self.rnd] *= self.scale
 
-  def backward(self, delta = None):
+  def backward(self, delta=None):
     '''
     Backward function of the Dropout layer: given the same mask as the layer
       it backprogates delta only to those pixel which values has not been set to zero

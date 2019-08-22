@@ -50,7 +50,7 @@ class Shuffler_layer(object):
       scale : int, scale factor of the layer
     '''
     b, w, h, c = inpt.shape
-    X = inpt.transpose(1, 2, 3, 0).reshape(w, h, scale, scale, self.batch)
+    X = inpt.transpose(1, 2, 3, 0).reshape(w, h, scale, scale, b)
     X = np.concatenate(X, axis=1)
     X = np.concatenate(X, axis=1)
     X = X.transpose(2, 0, 1)
@@ -127,10 +127,7 @@ class Shuffler_layer(object):
 
 if __name__ == '__main__':
 
-  import os
-
   import pylab as plt
-  from PIL import Image
 
   img_2_float = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 1.)).astype(float)
   float_2_img = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 255.)).astype(np.uint8)
