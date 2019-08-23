@@ -215,8 +215,6 @@ if __name__ == '__main__':
   inpt = np.asarray(Image.open(filename), dtype=float)
   inpt.setflags(write=1)
   inpt = img_2_float(inpt)
-  #Relu activation constrain
-  inpt = inpt * 2 - 1
 
   inpt = np.expand_dims(inpt, axis=0)
   pad = True
@@ -239,6 +237,8 @@ if __name__ == '__main__':
   delta = np.zeros(shape=inpt.shape)
   layer.delta = np.ones(layer.out_shape())
   layer.backward(delta)
+
+  print(delta.max(), delta.min())
 
   # Visualizations
 
