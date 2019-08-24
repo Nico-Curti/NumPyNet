@@ -22,7 +22,11 @@ class Dropout_layer(object):
     '''
 
     self.probability = prob
-    self.scale = 1. / (1. - prob)
+    if prob != 1.:
+      self.scale = 1. / (1. - prob)
+    else:
+      self.scale = 1. # it doesn't matter anyway, since everything is zero
+
 
     self.batch, self.w, self.h, self.c = (0, 0, 0, 0)
 
