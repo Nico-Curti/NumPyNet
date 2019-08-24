@@ -101,12 +101,12 @@ class Softmax_layer():
         it's the global delta to be backpropagated
     '''
 
-    # s = (self.output * delta).sum()
-    # delta[:] += self.temperature * self.output * (self.delta - s) #maybe output normalized
+    s = (self.output * delta).sum()
+    delta[:] += self.temperature * self.output * (self.delta - s) #maybe output normalized
 
     # This is an approximation
-    if delta is not None:
-      delta[:] += self.delta
+    #if delta is not None:
+    #  delta[:] += self.delta
 
 
 if __name__ == '__main__':
@@ -152,6 +152,8 @@ if __name__ == '__main__':
 
   delta = np.zeros(shape=inpt.shape, dtype=float)
   layer.backward(delta)
+
+  print(delta.min(), delta.max())
 
   # Visualizations
 

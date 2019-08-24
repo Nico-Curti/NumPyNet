@@ -18,7 +18,7 @@ __package__ = 'Convolutional layer'
 
 class Convolutional_layer(object):
 
-  def __init__(self, inputs, channels_out, size, stride,
+  def __init__(self, inputs, channels_out, size, stride=None,
                weights=None, bias=None,
                padding=False,
                activation=Activations):
@@ -42,10 +42,7 @@ class Convolutional_layer(object):
     self.channels_out = channels_out
     self.size = size
 
-    if stride is not None:
-      self.stride = stride
-    else :
-      self.stride = size
+    self.stride = stride if stride is not None else size
 
     self.pad = padding
 
@@ -72,10 +69,11 @@ class Convolutional_layer(object):
 
   def __str__(self):
     batch, out_w, out_h, out_c = self.out_shape()
-    return 'Convolutional     {} x {} / {}  {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}'.format(
+    return 'Convolutional     {} x {} / {}  {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}  {:>5.3f} BFLOPs'.format(
            self.size[0], self.size[1], self.stride[0],
            self.batch, self.w, self.h, self.c,
-           batch, out_w, out_h, out_c)
+           batch, out_w, out_h, out_c,
+           (2 * self.weights.size * out_h * out_w) * 1e-9)
 
   def out_shape(self):
     return (self.batch, self.out_w, self.out_h, self.channels_out)
@@ -149,7 +147,7 @@ class Convolutional_layer(object):
 
     # return the zeros-padded image, in the same format as inpt (batch, in_w + pad_w, in_h + pad_h, in_c)
     return np.pad(inpt, ((0, 0), (self.pad_top, self.pad_bottom), (self.pad_left, self.pad_right), (0, 0)),
-                  mode='onstant', constant_values=(0., 0.))
+                  mode='constant', constant_values=(0., 0.))
 
   def forward(self, inpt, copy=False):
     '''
@@ -211,7 +209,7 @@ class Convolutional_layer(object):
     self.weights_updates = np.einsum('ijklmn, ijko -> lmno', self.view, self.delta)
 
     # out_c number of bias_updates.
-    self.bias_updates    = self.delta.sum(axis=(0, 1, 2)) # shape = (channels_out,)
+    self.bias_updates = self.delta.sum(axis=(0, 1, 2)) # shape = (channels_out,)
 
     # to access every pixel one at a time I need to create evry combinations of indexes
     b, w, h, kx, ky, c = delta_view.shape
@@ -273,12 +271,12 @@ if __name__ == '__main__':
   # Relu activation constrain
   inpt = inpt * 2 - 1
 
-  inpt = np.expand_dims(inpt, axis = 0) # shape from (w, h, c) to (1, w, h, c)
+  inpt = np.expand_dims(inpt, axis=0) # shape from (w, h, c) to (1, w, h, c)
 
   channels_out = 5
-  size         = (3,3)
-  stride       = (2,2)
-  pad          = True
+  size         = (3, 3)
+  stride       = (1, 1)
+  pad          = False
 
   layer_activation = activations.Relu()
 
