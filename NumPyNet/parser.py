@@ -9,8 +9,8 @@ import re
 import configparser
 from collections import OrderedDict
 
-from .exception import CfgVariableError
-from .exception import DataVariableError
+from NumPyNet.exception import CfgVariableError
+from NumPyNet.exception import DataVariableError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
