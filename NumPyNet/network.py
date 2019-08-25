@@ -5,11 +5,27 @@
 from __future__ import division
 from __future__ import print_function
 
-import numpy as np
+import re
 import pickle
 
-from .layers.input_layer import Input_layer
-from .parser import net_config
+from .layer.activation_layer import Activation_layer
+from .layer.avgpool_layer import Avgpool_layer
+from .layer.batchnorm_layer import BatchNorm_layer
+from .layer.connected_layer import Connected_layer
+from .layer.convolutional_layer import Convolutional_layer
+from .layer.cost_layer import Cost_layer
+from .layer.dropout_layer import Dropout_layer
+from .layer.input_layer import Input_layer
+from .layer.logistic_layer import Logistic_layer
+from .layer.maxpool_layer import Maxpool_layer
+from .layer.route_layer import Route_layer
+from .layer.shortcut_layer import Shortcut_layer
+from .layer.shuffler_layer import Shuffler_layer
+from .layer.softmax_layer import Softmax_layer
+from .layer.yolo_layer import Yolo_layer
+
+from .layer.parser import net_config
+from .layer.exception import DataVariableError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -18,17 +34,37 @@ __package__ = 'Network model'
 
 class Network(object):
 
-  def __init__(self, input_shape, batch):
+  LAYERS = {'activation'    :  Activation_layer,
+            'avgpool'       :  Avgpool_layer,
+            'batchnorm'     :  BatchNorm_layer,
+            'connected'     :  Connected_layer,
+            'convolutional' :  Convolutional_layer,
+            'cost'          :  Cost_layer,
+            'dropout'       :  Dropout_layer,
+            'input'         :  Input_layer,
+            'logistic'      :  Logistic_layer,
+            'maxpool'       :  Maxpool_layer,
+            'route'         :  Route_layer,
+            'shortcut'      :  Shortcut_layer,
+            'shuffler'      :  Shuffler_layer,
+            'softmax'       :  Softmax_layer,
+            'yolo'          :  Yolo_layer,
+            }
+
+  def __init__(self, input_shape=None, batch=None, train=None):
     '''
     '''
-    try:
 
-      self.w, self.h, self.c = input_shape
+    if input_shape is not None:
+      try:
 
-    except:
-      raise ValueError('Network model : incorrect input_shape. Expected a 3D array (width, height, channel). Given {}'.format(input_shape))
+        self.w, self.h, self.c = input_shape
 
-    self.net = [ Input_layer((batch, self.w, self.h, self.c)) ]
+      except:
+        raise ValueError('Network model : incorrect input_shape. Expected a 3D array (width, height, channel). Given {}'.format(input_shape))
+
+      self.net = [ Input_layer((batch, self.w, self.h, self.c)) ]
+
     self.batch = batch
     self.train = train
 
@@ -42,8 +78,8 @@ class Network(object):
     self.net.append(layer)
 
   def __iter__(self):
-    self.layer_index = 1 # the first layer is the input one
-    return self.net[self.layer_index]
+    self.layer_index = 0
+    return self
 
   def __next__(self):
     if self.layer_index < self.num_layers:
@@ -57,7 +93,31 @@ class Network(object):
   def load(self, cfg_filename, weights=None):
 
     model = net_config(cfg_filename)
-    # MISS loading model
+
+    self.w = model.get('net1', 'width', 416)
+    self.h = model.get('net1', 'height', 416)
+    self.c = model.get('net1', 'channels', 3)
+    # TODO: add other network parameters
+
+    self.net = dict()
+
+    for layer in model:
+      layer_t = re.split('\d+', layer)[0]
+      params = dict(model.get_params(layer))
+
+      layer_params = {}
+      for k, v in params.items():
+        try:
+          val = eval(v)
+        except NameError:
+          val = v
+        except:
+          raise DataVariableError('Type variable not recognized! Possible variables are only [int, float, string, vector<float>].')
+
+        layer_params[k] = val
+
+      self.net[layer_t] = self.LAYERS[layer_t](**layer_params)
+
 
     if weights is not None:
       self.load_weights(weights)
@@ -70,7 +130,7 @@ class Network(object):
           layer.load_weights(fp)
 
   def save_weights(self, filename):
-    with open(weights_filename, 'wb') as fp:
+    with open(filename, 'wb') as fp:
 
       for layer in self:
         if hasattr(layer, 'save_weights'):
@@ -97,6 +157,18 @@ class Network(object):
   def num_layers(self):
     return len(self.net)
 
+
+if __name__ == '__main__':
+
+  import os
+
+  config_filename = os.path.join(os.path.dirname(__file__), '..', '..', 'cfg', 'yolov3.cfg')
+  weight_filename = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'yolov3.weights.byron')
+  mask_w_filename = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'yolov3.weights.mask')
+
+  net = Network(config_filename)
+
+  print(net.input_shape)
 
 
 

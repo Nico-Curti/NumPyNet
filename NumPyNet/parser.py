@@ -21,7 +21,7 @@ class data_config (object):
 
   _data = dict()
 
-  def __init__ (filename):
+  def __init__ (self, filename):
 
     if not os.path.isfile(filename):
       raise FileNotFoundError('Could not open or find the data file. Given: {}'.format(filename))
@@ -65,12 +65,12 @@ class net_config (object):
       OrderedDict.__setitem__(self, key, val)
 
 
-  def __init__ (filename):
+  def __init__ (self, filename):
 
     if not os.path.isfile(filename):
       raise FileNotFoundError('Could not open or find the config file. Given: {}'.format(filename))
 
-    self._data = configparser.ConfigParser(defaults=None, dict_type=multidict, strict=False)
+    self._data = configparser.ConfigParser(defaults=None, dict_type=self.multidict, strict=False)
     self._data.read(filename)
 
     first_section = self._data.sections()[0]
@@ -78,6 +78,29 @@ class net_config (object):
     if not first_section.startswith('net') and not first_section.startswith('network'):
       raise CfgVariableError('Config error! First section must be a network one (ex. [net] / [network]). Given: [{}]'.format(first_section))
 
+
+  def __len__ (self):
+    return len(self._data.sections()) - 1 # net is the first
+
+  def __iter__ (self):
+    self.layer_index = 0
+    return self
+
+  def __next__ (self):
+    if self.layer_index < len(self._data.sections()) - 1:
+      self.layer_index += 1
+      return self._data.sections()[self.layer_index]
+
+    else:
+      raise StopIteration
+
+  def get_params (self, section):
+    try:
+
+      return self._data.items(section)
+
+    except:
+      raise CfgVariableError('Config error! Section "{}" does not exist'.format(section))
 
   def get (self, section, key, default=None):
 
