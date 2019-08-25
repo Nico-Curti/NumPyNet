@@ -14,12 +14,19 @@ environment:
     # isn't covered by this document) at the time of writing.
 
     - PYTHON: "C:\\Python27"
+      VERSION: 27
     #- PYTHON: "C:\\Python33" # does not support opencv
+    #  VERSION: 27
     - PYTHON: "C:\\Python34"
+      VERSION: 34
     - PYTHON: "C:\\Python35"
+      VERSION: 35
     - PYTHON: "C:\\Python27-x64"
+      VERSION: 27
     - PYTHON: "C:\\Python35-x64" # pip install --ignore-installed --upgrade https://storage.googleapis.com/tensorflow/windows/cpu/tensorflow-1.1.0-cp35-cp35m-window.whl
+      VERSION: 35
     - PYTHON: "C:\\Python36-x64"
+      VERSION: 36
 
 build: off
 
@@ -34,16 +41,14 @@ install:
   - "%PYTHON%\\python.exe -m pip install tensorflow"
 
   - ps: |
-      $ver = &{$env:PYTHON\\python.exe} 2>&1;
-      If ($ver -Match "3.5" -OR $ver -Match "3.6") {
+      If ($env:VERSION -ge 35) {
         $env:PYTHON\\python.exe -m pip install keras
         $env:PYTHON\\python.exe -m pip install tensorflow
       }
 
 test_script:
   - ps: |
-      $ver = &{$env:PYTHON\\python.exe} 2>&1;
-      If ($ver -Match "3.5" -OR $ver -Match "3.6") {
+      If ($env:VERSION -ge 35) {
         $env:PYTHON\\pytest.exe
       } Else {
         exit 0
