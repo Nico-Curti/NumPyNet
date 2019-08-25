@@ -6,22 +6,34 @@ environment:
 
   matrix:
 
-  - TOXENV: py27
-  - TOXENV: py35
-  - TOXENV: py36
-  - TOXENV: py37
+    # For Python versions available on Appveyor, see
+    # https://www.appveyor.com/docs/windows-images-software/#python
+    # The list here is complete (excluding Python 2.6, which
+    # isn't covered by this document) at the time of writing.
+
+    - PYTHON: "C:\\Python27"
+    - PYTHON: "C:\\Python33"
+    - PYTHON: "C:\\Python34"
+    - PYTHON: "C:\\Python35"
+    - PYTHON: "C:\\Python27-x64"
+    - PYTHON: "C:\\Python33-x64"
+      DISTUTILS_USE_SDK: "1"
+    - PYTHON: "C:\\Python34-x64"
+      DISTUTILS_USE_SDK: "1"
+    - PYTHON: "C:\\Python35-x64"
+    - PYTHON: "C:\\Python36-x64"
 
 build: off
 
 install:
-  - python --version
+  - "%PYTHON%\\python.exe --version"
   - cd %WORKSPACE%\NumPyNet
-  - python -m pip install -U pip
-  - pip install -r requirements.txt
-  - python setup.py install
+  - "%PYTHON%\\python.exe -m pip install -U pip"
+  - "%PYTHON%\\pip.exe install -r requirements.txt"
+  - "%PYTHON%\\python.exe setup.py install"
   # testing libraries
-  - pip install keras
-  - pip install tensorflow
+  - "%PYTHON%\\pip.exe install keras"
+  - "%PYTHON%\\pip.exe install tensorflow"
 
 test_script:
   - pytest
