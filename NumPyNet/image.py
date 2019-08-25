@@ -8,8 +8,8 @@ import os
 import cv2
 import numpy as np
 
-from .image_utils import image_utils
-from .image_utils import normalization
+from NumPyNet.image_utils import image_utils
+from NumPyNet.image_utils import normalization
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -288,14 +288,11 @@ class Image (object):
     return (self.width, self.height, self.channels)
 
 
-
-
-
 if __name__ == '__main__':
 
   import os
 
-  filename = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'dog.jpg')
+  filename = os.path.join(os.path.dirname(__file__), '..', 'data', 'dog.jpg')
 
   img = Image(filename)
   resized = img.letterbox(net_dim=(416, 416))
