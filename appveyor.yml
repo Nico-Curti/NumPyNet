@@ -34,15 +34,17 @@ install:
   - "%PYTHON%\\python.exe -m pip install tensorflow"
 
   - ps: |
-      If ($env:PYTHON -Match "35" -OR $env:PYTHON -Match "36") {
+      $ver = &{$env:PYTHON\\python.exe} 2>&1;
+      If ($ver -Match "3.5" -OR $ver -Match "3.6") {
         $env:PYTHON\\python.exe -m pip install keras
         $env:PYTHON\\python.exe -m pip install tensorflow
       }
 
 test_script:
   - ps: |
-      If ($env:PYTHON -Match "35" -OR $env:PYTHON -Match "36") {
+      $ver = &{$env:PYTHON\\python.exe} 2>&1;
+      If ($ver -Match "3.5" -OR $ver -Match "3.6") {
         $env:PYTHON\\pytest.exe
-        } Else {
-          exit 0
-        }
+      } Else {
+        exit 0
+      }
