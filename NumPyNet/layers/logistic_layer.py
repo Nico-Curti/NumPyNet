@@ -48,12 +48,15 @@ class Logistic_layer(object):
     # self.output = inpt
 
     if truth is not None:
-      self.loss = -truth * np.log(self.output) - (1. - truth) * np.log(1. - self.output)
-      self.delta = truth - self.output
+      out = np.clip(self.output, 1e-8, 1. - 1e-8)
+      self.loss = -truth * np.log(out) - (1. - truth) * np.log(1. - out)
+      out_upd = out * (1. - out)
+      out_upd[out_upd <= 1e-8] = 1e-8
+      self.delta = (truth - out) * out_upd
       # self.cost = np.mean(self.loss)
       self.cost = np.sum(self.loss) # as for darknet
     else :
-      self.delta = np.zeros(shape = self.out_shape())
+      self.delta = np.zeros(shape=self.out_shape())
 
   def backward(self, delta=None):
     '''
