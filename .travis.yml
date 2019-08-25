@@ -83,6 +83,9 @@ before_install:
   - pip install pytest
   - pip install enum34
   - pip install configparser
+  # testing libraries
+  - pip install keras
+  - pip install tensorflow
 
 install:
   - python setup.py install

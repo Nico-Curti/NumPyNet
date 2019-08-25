@@ -18,6 +18,9 @@ install:
   - cd %WORKSPACE%\NumPyNet
   - pip install -r requirements.txt
   - python setup.py install
+  # testing libraries
+  - pip install keras
+  - pip install tensorflow
 
 test_script:
   - pytest
