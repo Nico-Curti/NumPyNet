@@ -40,16 +40,12 @@ install:
   - "%PYTHON%\\python.exe -m pip install keras"
   - "%PYTHON%\\python.exe -m pip install tensorflow"
 
-  - ps: |
-      If ($env:VERSION -ge 35) {
-        $env:PYTHON\\python.exe -m pip install keras
-        $env:PYTHON\\python.exe -m pip install tensorflow
-      }
+  - ps: Write-Host $env:VERSION
+  - ps: if ($env:VERSION -ge 35) { write-host greater} else {write-host lower}
+
+#  - ps: if ($env:VERSION -ge 35) {$env:PYTHON\\python.exe -m pip install keras}
+#  - ps: if ($env:VERSION -ge 35) {$env:PYTHON\\python.exe -m pip install tensorflow}
 
 test_script:
-  - ps: |
-      If ($env:VERSION -ge 35) {
-        $env:PYTHON\\pytest.exe
-      } Else {
-        exit 0
-      }
+#  - ps: if ($env:VERSION -ge 35) {$env:PYTHON\\pytest.exe} else {exit 0}
+  - exit 0
