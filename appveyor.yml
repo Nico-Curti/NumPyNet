@@ -1,3 +1,5 @@
+# Tensorflow is supported only for windows x64
+
 clone_folder: c:\projects\NumPyNet
 
 environment:
@@ -12,16 +14,16 @@ environment:
     # isn't covered by this document) at the time of writing.
 
     - PYTHON: "C:\\Python27"
-    - PYTHON: "C:\\Python33"
+    - PYTHON: "C:\\Python33" # does not support opencv
     - PYTHON: "C:\\Python34"
     - PYTHON: "C:\\Python35"
     - PYTHON: "C:\\Python27-x64"
-    - PYTHON: "C:\\Python33-x64"
-      DISTUTILS_USE_SDK: "1"
-    - PYTHON: "C:\\Python34-x64"
-      DISTUTILS_USE_SDK: "1"
-    - PYTHON: "C:\\Python35-x64"
+    - PYTHON: "C:\\Python35-x64" # pip install --ignore-installed --upgrade https://storage.googleapis.com/tensorflow/windows/cpu/tensorflow-1.1.0-cp35-cp35m-window.whl
     - PYTHON: "C:\\Python36-x64"
+
+    fast_finish: true
+    allow_failures:
+    - PYTHON: "C:\\Python33"
 
 build: off
 
@@ -35,5 +37,16 @@ install:
   - "%PYTHON%\\python.exe -m pip install keras"
   - "%PYTHON%\\python.exe -m pip install tensorflow"
 
+  - ps: |
+      If ($env:PYTHON -Match "35" -OR $env:PYTHON -Match "36") {
+        $env:PYTHON\\python.exe -m pip install keras
+        $env:PYTHON\\python.exe -m pip install tensorflow
+      }
+
 test_script:
-  - pytest
+  - ps: |
+      If ($env:PYTHON -Match "35" -OR $env:PYTHON -Match "36") {
+        $env:PYTHON\\pytest.exe
+        } Else {
+          exit 0
+        }
