@@ -21,11 +21,13 @@ environment:
     - PYTHON: "C:\\Python35-x64" # pip install --ignore-installed --upgrade https://storage.googleapis.com/tensorflow/windows/cpu/tensorflow-1.1.0-cp35-cp35m-window.whl
     - PYTHON: "C:\\Python36-x64"
 
-    fast_finish: true
     allow_failures:
       - PYTHON: "C:\\Python33"
 
 build: off
+
+matrix:
+  fast_finish: true
 
 install:
   - "%PYTHON%\\python.exe --version"
