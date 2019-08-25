@@ -23,7 +23,7 @@ environment:
 
     fast_finish: true
     allow_failures:
-    - PYTHON: "C:\\Python33"
+      - PYTHON: "C:\\Python33"
 
 build: off
 
