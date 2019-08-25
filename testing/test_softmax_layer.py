@@ -1,25 +1,26 @@
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from __future__ import division
+from __future__ import print_function
+
+from keras.models import Model
+from keras.layers import Input
+from keras.layers import Softmax
+from keras.losses import categorical_crossentropy
+import keras.backend as K
+
+from NumPyNet.layers.softmax_layer import Softmax_layer
+
+import numpy as np
+
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 __package__ = 'SoftMax Layer testing'
 
-
-from keras.models import Model
-from keras.layers import Input, Activation
-import keras.backend as K
-import tensorflow as tf
-
-from NumPyNet.layers.softmax_layer import Softmax_layer
-
-from keras.losses import categorical_crossentropy
-from keras.layers import Softmax
-from keras import backend as K
-
-import numpy as np
-
 def test_softmax_layer():
+
+  np.random.seed(123)
 
   spatials = [False, True]
 

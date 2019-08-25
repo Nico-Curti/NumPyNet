@@ -1,20 +1,25 @@
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__author__ = ['Mattia Ceccarelli', 'Nico Curti']
-__email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Convolutional Layer testing'
+from __future__ import division
+from __future__ import print_function
 
 from keras.models import Model
-from keras.layers import Input, Activation
+from keras.layers import Input
 import keras.backend as K
-import tensorflow as tf
 
-from NumPyNet.activations import Relu, Logistic, Linear, Tanh
+from NumPyNet.activations import Relu
+from NumPyNet.activations import Logistic
+from NumPyNet.activations import Linear
+from NumPyNet.activations import Tanh
 from NumPyNet.layers.convolutional_layer import Convolutional_layer
 from keras.layers import Conv2D
 
 import numpy as np
+
+__author__ = ['Mattia Ceccarelli', 'Nico Curti']
+__email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
+__package__ = 'Convolutional Layer testing'
 
 def test_convolutional_layer():
   '''
@@ -25,6 +30,7 @@ def test_convolutional_layer():
   to be:
     update function
   '''
+  np.random.seed(123)
 
   keras_activations = ['relu', 'sigmoid', 'tanh','linear']
   numpynet_activations = [Relu, Logistic, Tanh, Linear]
@@ -40,7 +46,7 @@ def test_convolutional_layer():
       for pad in padding:
 
         batch = np.random.randint(low=1, high=10)
-        c_out = np.random.randint(low=1, high=50)
+        c_out = np.random.randint(low=2, high=50)
         c_in  = np.random.randint(low=1, high=c_out)
 
         if pad:

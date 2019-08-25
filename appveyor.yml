@@ -18,6 +18,8 @@ install:
   - cd %WORKSPACE%\NumPyNet
   - pip install -r requirements.txt
   - python setup.py install
+  # testing libraries
+  - pip install keras
 
-#test_script:
-#  - pytest
+test_script:
+  - pytest

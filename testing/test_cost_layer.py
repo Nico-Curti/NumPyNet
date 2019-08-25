@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__author__ = ['Mattia Ceccarelli', 'Nico Curti']
-__email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Cost Layer testing'
+from __future__ import division
+from __future__ import print_function
 
 from keras.models import Model
-from keras.layers import Input, Activation
+from keras.layers import Input
+from keras.layers import Activation
 import keras.backend as K
-import tensorflow as tf
 
 from NumPyNet.layers import cost_layer as cl
 from NumPyNet.layers.cost_layer import Cost_layer
@@ -16,9 +15,11 @@ from NumPyNet.layers.cost_layer import Cost_layer
 from keras.losses import mean_squared_error
 from keras.losses import mean_absolute_error
 
-from math import isclose
-
 import numpy as np
+
+__author__ = ['Mattia Ceccarelli', 'Nico Curti']
+__email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
+__package__ = 'Cost Layer testing'
 
 
 def test_cost_layer():
@@ -36,6 +37,7 @@ def test_cost_layer():
         _seg
         _wgan
   '''
+  np.random.seed(123)
 
   losses = [mean_absolute_error, mean_squared_error]
 
@@ -65,7 +67,7 @@ def test_cost_layer():
     numpynet_layer.forward(inpt, truth)
     numpynet_loss = numpynet_layer.cost
 
-    assert isclose(keras_loss, numpynet_loss, abs_tol=1e-7)
+    assert np.isclose(keras_loss, numpynet_loss, atol=1e-7)
 
     #BACKWARD
 

@@ -1,20 +1,25 @@
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__author__ = ['Mattia Ceccarelli', 'Nico Curti']
-__email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Activation Layer testing'
+from __future__ import division
+from __future__ import print_function
 
 from keras.models import Model
-from keras.layers import Input, Activation
+from keras.layers import Input
 import keras.backend as K
-import tensorflow as tf
 
-from NumPyNet.activations import Relu, Logistic, Linear, Tanh
+from NumPyNet.activations import Relu
+from NumPyNet.activations import Logistic
+from NumPyNet.activations import Linear
+from NumPyNet.activations import Tanh
 from NumPyNet.layers.activation_layer import Activation_layer
 from keras.layers import Activation
 
 import numpy as np
+
+__author__ = ['Mattia Ceccarelli', 'Nico Curti']
+__email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
+__package__ = 'Activation Layer testing'
 
 def test_activation_layer():
   '''
@@ -23,7 +28,7 @@ def test_activation_layer():
     if all the possible activation functions works with different batch_size
   to be:
   '''
-
+  np.random.seed(123)
 
   keras_activ = ['relu', 'sigmoid', 'tanh','linear']
   numpynet_activ = [Relu, Logistic, Tanh, Linear]
