@@ -14,20 +14,14 @@ environment:
     # isn't covered by this document) at the time of writing.
 
     - PYTHON: "C:\\Python27"
-    - PYTHON: "C:\\Python33" # does not support opencv
+    #- PYTHON: "C:\\Python33" # does not support opencv
     - PYTHON: "C:\\Python34"
     - PYTHON: "C:\\Python35"
     - PYTHON: "C:\\Python27-x64"
     - PYTHON: "C:\\Python35-x64" # pip install --ignore-installed --upgrade https://storage.googleapis.com/tensorflow/windows/cpu/tensorflow-1.1.0-cp35-cp35m-window.whl
     - PYTHON: "C:\\Python36-x64"
 
-    allow_failures:
-      - PYTHON: "C:\\Python33"
-
 build: off
-
-matrix:
-  fast_finish: true
 
 install:
   - "%PYTHON%\\python.exe --version"
