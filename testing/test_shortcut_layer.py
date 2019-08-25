@@ -1,20 +1,26 @@
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__author__ = ['Mattia Ceccarelli', 'Nico Curti']
-__email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Shortcut Layer testing'
+from __future__ import division
+from __future__ import print_function
 
 from keras.models import Model
-from keras.layers import Input, Activation
+from keras.layers import Input
+from keras.layers import Activation
 import keras.backend as K
-import tensorflow as tf
 
 from NumPyNet.layers.shortcut_layer import Shortcut_layer
-from NumPyNet.activations import Relu, Logistic, Linear, Tanh
+from NumPyNet.activations import Relu
+from NumPyNet.activations import Logistic
+from NumPyNet.activations import Linear
+from NumPyNet.activations import Tanh
 from keras.layers import Add
 
 import numpy as np
+
+__author__ = ['Mattia Ceccarelli', 'Nico Curti']
+__email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
+__package__ = 'Shortcut Layer testing'
 
 
 def test_shortcut_layer():

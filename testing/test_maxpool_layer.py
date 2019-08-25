@@ -1,20 +1,21 @@
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__author__ = ['Mattia Ceccarelli', 'Nico Curti']
-__email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'MaxPool Layer testing'
-
+from __future__ import division
+from __future__ import print_function
 
 from keras.models import Model
-from keras.layers import Input, Activation
+from keras.layers import Input
 import keras.backend as K
-import tensorflow as tf
 
 from NumPyNet.layers.maxpool_layer import Maxpool_layer
 from keras.layers import MaxPool2D
 
 import numpy as np
+
+__author__ = ['Mattia Ceccarelli', 'Nico Curti']
+__email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
+__package__ = 'MaxPool Layer testing'
 
 def test_maxpool_layer():
   '''
