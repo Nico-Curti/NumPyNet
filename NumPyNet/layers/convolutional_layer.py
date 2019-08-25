@@ -173,13 +173,14 @@ class Convolutional_layer(object):
       # If no pad, every image in the batch is cut
       mat_pad = inpt[:, : (self.w - kx) // sx*sx + kx, : (self.h - ky) // sy*sy + ky, ...]
 
+
     # Create the view of the array with shape (batch, out_w ,out_h, kx, ky, in_c)
     self.view = self._asStride(mat_pad, self.size, self.stride) #self, is used also in backward. Better way?
 
     # the choice of numpy.einsum is due to reshape of self.view is a copy and not a view
     # it seems to be slower though
 
-    z = np.einsum('lmnijk,ijko -> lmno', self.view, self.weights) # + self.bias
+    z = np.einsum('lmnijk,ijko -> lmno', self.view, self.weights) + self.bias
 
     self.output = self.activation(z, copy=copy) # (batch * out_w * out_h, out_c)
     # final output shape : (batch, out_w, out_h, out_c)
@@ -247,8 +248,8 @@ class Convolutional_layer(object):
     self.bias += self.bias_updates * lr
 
     # Weights_updates
-    self.weights_updates += (-decay) * self.batch * self.filters
-    self.filters         += lr * self.weights_updates
+    self.weights_updates += (-decay) * self.batch * self.weights
+    self.weights         += lr * self.weights_updates
     self.weights_updates *= momentum
 
 
@@ -308,6 +309,8 @@ if __name__ == '__main__':
   layer.delta = np.ones(layer.out_shape())
   delta = np.zeros(shape=inpt.shape)
   layer.backward(delta)
+
+#  layer.update()
 
   # Visualization
 
