@@ -37,12 +37,14 @@ class Image (object):
     Add batch dimension for testing layer
     '''
     self._data = np.expand_dims(self._data, axis=0)
+    return self
 
   def remove_single_batch (self):
     '''
     Remove batch dimension for testing layer
     '''
     self._data = np.squeeze(self._data, axis=0)
+    return self
 
 
   def _image2cv (self, img):
@@ -106,6 +108,7 @@ class Image (object):
     img = cv2.imread(filename,  cv2.IMREAD_COLOR)
 
     self._data = self._cv2image(img)
+    return self
 
 
   def standardize (self, means, process=normalization.normalize):
@@ -118,6 +121,8 @@ class Image (object):
     elif process is normalization.denormalize:
       self._data -= means
 
+    return self
+
   def rescale (self, var, process=normalization.normalize):
     '''
     Divide or multiply by train variance-image
@@ -128,6 +133,8 @@ class Image (object):
 
     elif process is normalization.denormalize:
       self._data *= var
+
+    return self
 
   def scale (self, scaling, process=normalization.normalize):
     '''
@@ -140,24 +147,40 @@ class Image (object):
       inv_scaling = 1. / scaling
       self._data *= inv_scaling
 
+    return self
+
   def scale_between (self, min, max):
     '''
     Rescale image value between min and max
     '''
     diff = max - min
     self._data = self._data * diff + min
+    return self
+
+  def mean_std_norm (self):
+    '''
+    Normalize the current image as
+
+                image = (image - mean) / variance
+    '''
+    mean = np.mean(self._data)
+    var  = 1. / np.var(self._data)
+    self._data = (self._data - mean) * var
+    return self
 
   def flip (self, axis=-1):
     '''
     Flip the image along given axis (0 - horizontal, 1 - vertical, -1 - z-flip)
     '''
     cv2.flip(self._data, axis)
+    return self
 
   def rgb2rgba (self):
     '''
     Add alpha channel to the original image
     '''
     cv2.cvtColor(self._data, cv2.COLOR_RGB2RGBA)
+    return self
 
 
   def show (self, window_name, ms=0, fullscreen=None):
@@ -192,6 +215,7 @@ class Image (object):
     Use numpy array as the image
     '''
     self._data = array
+    return self
 
 
   def letterbox (self, net_dim):

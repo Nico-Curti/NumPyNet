@@ -8,24 +8,24 @@ from __future__ import print_function
 import re
 import pickle
 
-from .layers.activation_layer import Activation_layer
-from .layers.avgpool_layer import Avgpool_layer
-from .layers.batchnorm_layer import BatchNorm_layer
-from .layers.connected_layer import Connected_layer
-from .layers.convolutional_layer import Convolutional_layer
-from .layers.cost_layer import Cost_layer
-from .layers.dropout_layer import Dropout_layer
-from .layers.input_layer import Input_layer
-from .layers.logistic_layer import Logistic_layer
-from .layers.maxpool_layer import Maxpool_layer
-from .layers.route_layer import Route_layer
-from .layers.shortcut_layer import Shortcut_layer
-from .layers.shuffler_layer import Shuffler_layer
-from .layers.softmax_layer import Softmax_layer
-from .layers.yolo_layer import Yolo_layer
+from NumPyNet.layers.activation_layer import Activation_layer
+from NumPyNet.layers.avgpool_layer import Avgpool_layer
+from NumPyNet.layers.batchnorm_layer import BatchNorm_layer
+from NumPyNet.layers.connected_layer import Connected_layer
+from NumPyNet.layers.convolutional_layer import Convolutional_layer
+from NumPyNet.layers.cost_layer import Cost_layer
+from NumPyNet.layers.dropout_layer import Dropout_layer
+from NumPyNet.layers.input_layer import Input_layer
+from NumPyNet.layers.logistic_layer import Logistic_layer
+from NumPyNet.layers.maxpool_layer import Maxpool_layer
+from NumPyNet.layers.route_layer import Route_layer
+from NumPyNet.layers.shortcut_layer import Shortcut_layer
+from NumPyNet.layers.shuffler_layer import Shuffler_layer
+from NumPyNet.layers.softmax_layer import Softmax_layer
+from NumPyNet.layers.yolo_layer import Yolo_layer
 
-from .parser import net_config
-from .exception import DataVariableError
+from NumPyNet.parser import net_config
+from NumPyNet.exception import DataVariableError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -56,6 +56,7 @@ class Network(object):
     '''
 
     if input_shape is not None:
+
       try:
 
         self.w, self.h, self.c = input_shape
@@ -76,6 +77,8 @@ class Network(object):
       raise ValueError('Incorrect shape found')
 
     self.net.append(layer)
+
+    return self
 
   def __iter__(self):
     self.layer_index = 0
@@ -118,6 +121,8 @@ class Network(object):
 
       self.net[layer_t] = self.LAYERS[layer_t](**layer_params)
 
+    return self
+
 
     if weights is not None:
       self.load_weights(weights)
@@ -129,12 +134,16 @@ class Network(object):
         if hasattr(layer, 'load_weights'):
           layer.load_weights(fp)
 
+    return self
+
   def save_weights(self, filename):
     with open(filename, 'wb') as fp:
 
       for layer in self:
         if hasattr(layer, 'save_weights'):
           layer.save_weights(fp)
+
+    return self
 
   def load_model(self, model_filename):
     with open(model_filename, 'rb') as fp:
@@ -143,10 +152,14 @@ class Network(object):
     self.__dict__.clear()
     self.__dict__.update(tmp_dict)
 
+    return self
+
 
   def save_model(self, model_filename):
     with open(model_filename, 'wb') as fp:
       pickle.dump(self.__dict__, fp, 2)
+
+    return self
 
 
   @property
@@ -166,7 +179,8 @@ if __name__ == '__main__':
   weight_filename = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'yolov3.weights.byron')
   mask_w_filename = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'yolov3.weights.mask')
 
-  net = Network(config_filename)
+  net = Network()
+  net.load(config_filename)
 
   print(net.input_shape)
 

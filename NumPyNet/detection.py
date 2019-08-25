@@ -7,7 +7,7 @@ from __future__ import print_function
 
 import numpy as np
 
-from .box import Box
+from NumPyNet.box import Box
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
