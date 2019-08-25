@@ -23,7 +23,7 @@ def test_convolutional_layer():
     if the convolutional layer backward is consistent with keras
 
   to be:
-    update
+    update function
   '''
 
   keras_activations = ['relu', 'sigmoid', 'tanh','linear']
