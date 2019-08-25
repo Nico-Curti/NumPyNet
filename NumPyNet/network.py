@@ -8,24 +8,24 @@ from __future__ import print_function
 import re
 import pickle
 
-from .layer.activation_layer import Activation_layer
-from .layer.avgpool_layer import Avgpool_layer
-from .layer.batchnorm_layer import BatchNorm_layer
-from .layer.connected_layer import Connected_layer
-from .layer.convolutional_layer import Convolutional_layer
-from .layer.cost_layer import Cost_layer
-from .layer.dropout_layer import Dropout_layer
-from .layer.input_layer import Input_layer
-from .layer.logistic_layer import Logistic_layer
-from .layer.maxpool_layer import Maxpool_layer
-from .layer.route_layer import Route_layer
-from .layer.shortcut_layer import Shortcut_layer
-from .layer.shuffler_layer import Shuffler_layer
-from .layer.softmax_layer import Softmax_layer
-from .layer.yolo_layer import Yolo_layer
+from .layers.activation_layer import Activation_layer
+from .layers.avgpool_layer import Avgpool_layer
+from .layers.batchnorm_layer import BatchNorm_layer
+from .layers.connected_layer import Connected_layer
+from .layers.convolutional_layer import Convolutional_layer
+from .layers.cost_layer import Cost_layer
+from .layers.dropout_layer import Dropout_layer
+from .layers.input_layer import Input_layer
+from .layers.logistic_layer import Logistic_layer
+from .layers.maxpool_layer import Maxpool_layer
+from .layers.route_layer import Route_layer
+from .layers.shortcut_layer import Shortcut_layer
+from .layers.shuffler_layer import Shuffler_layer
+from .layers.softmax_layer import Softmax_layer
+from .layers.yolo_layer import Yolo_layer
 
-from .layer.parser import net_config
-from .layer.exception import DataVariableError
+from .parser import net_config
+from .exception import DataVariableError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
