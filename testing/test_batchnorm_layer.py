@@ -31,6 +31,7 @@ def test_batchnorm_layer():
     different batch size
     update functions
   '''
+  np.random.seed(123)
 
   batch = 5
 

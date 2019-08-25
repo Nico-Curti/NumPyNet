@@ -22,6 +22,7 @@ def test_shuffle_layer():
     if the backward out of the shuffle layer give the same output
   to be:
   '''
+  np.random.seed(123)
 
   couples = [(2,12),(4,32),(4,48),(6,108)]
 

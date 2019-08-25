@@ -15,8 +15,6 @@ from NumPyNet.layers.cost_layer import Cost_layer
 from keras.losses import mean_squared_error
 from keras.losses import mean_absolute_error
 
-from math import isclose
-
 import numpy as np
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
@@ -39,6 +37,7 @@ def test_cost_layer():
         _seg
         _wgan
   '''
+  np.random.seed(123)
 
   losses = [mean_absolute_error, mean_squared_error]
 
@@ -68,7 +67,7 @@ def test_cost_layer():
     numpynet_layer.forward(inpt, truth)
     numpynet_loss = numpynet_layer.cost
 
-    assert isclose(keras_loss, numpynet_loss, abs_tol=1e-7)
+    assert np.isclose(keras_loss, numpynet_loss, atol=1e-7)
 
     #BACKWARD
 

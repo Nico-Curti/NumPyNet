@@ -24,6 +24,7 @@ def test_avgpool_layer():
 
   to be:
   '''
+  np.random.seed(123)
 
   sizes   = [(1,1), (3,3), (30,30)]
   strides = [(1,1), (2,2), (20,20)]

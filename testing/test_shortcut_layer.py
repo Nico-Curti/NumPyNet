@@ -30,6 +30,7 @@ def test_shortcut_layer():
     shortcut layer backward
   to be:
   '''
+  np.random.seed(123)
 
   alphas  = np.round(np.linspace(0,1,3), 2)
   betas   = np.round(np.linspace(0,1,3), 2)

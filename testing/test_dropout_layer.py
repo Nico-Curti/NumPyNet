@@ -24,6 +24,7 @@ def test_dropout_layer():
 
     I'm not sure what I should test here.
   '''
+  np.random.seed(123)
 
   # Set of probabilities
   probabilities = np.round(np.linspace(0.,1.,20),2)

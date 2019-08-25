@@ -30,6 +30,7 @@ def test_convolutional_layer():
   to be:
     update
   '''
+  np.random.seed(123)
 
   keras_activations = ['relu', 'sigmoid', 'tanh','linear']
   numpynet_activations = [Relu, Logistic, Tanh, Linear]
@@ -45,7 +46,7 @@ def test_convolutional_layer():
       for pad in padding:
 
         batch = np.random.randint(low=1, high=10)
-        c_out = np.random.randint(low=1, high=50)
+        c_out = np.random.randint(low=2, high=50)
         c_in  = np.random.randint(low=1, high=c_out)
 
         if pad:

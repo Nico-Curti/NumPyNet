@@ -20,6 +20,8 @@ __package__ = 'SoftMax Layer testing'
 
 def test_softmax_layer():
 
+  np.random.seed(123)
+
   spatials = [False, True]
 
   for spatial in spatials:

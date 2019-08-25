@@ -30,6 +30,7 @@ def test_connected_layer():
   to be tested:
     update function, keras update not clear.
   '''
+  np.random.seed(123)
 
   keras_activ = ['relu', 'sigmoid', 'tanh','linear']
   numpynet_activ = [Relu, Logistic, Tanh, Linear]

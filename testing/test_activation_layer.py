@@ -28,7 +28,7 @@ def test_activation_layer():
     if all the possible activation functions works with different batch_size
   to be:
   '''
-
+  np.random.seed(123)
 
   keras_activ = ['relu', 'sigmoid', 'tanh','linear']
   numpynet_activ = [Relu, Logistic, Tanh, Linear]
