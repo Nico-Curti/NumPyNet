@@ -37,8 +37,9 @@ install:
   - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
   - "%PYTHON%\\python.exe setup.py install"
   # testing libraries
-  - IF [%VERSION%] GEQ [35] ("%PYTHON%\\python.exe -m pip install keras")
-  - IF [%VERSION%] GEQ [35] ("%PYTHON%\\python.exe -m pip install tensorflow")
+  - IF [%VERSION%] GEQ [35] %PYTHON%\\python.exe -m pip install keras
+  - IF [%VERSION%] GEQ [35] %PYTHON%\\python.exe -m pip install tensorflow
 
 test_script:
-  - IF [%VERSION%] GEQ [35] ("%PYTHON%\\pytest.exe") ELSE (exit 0)
+  - IF [%VERSION%] GEQ [35] %PYTHON%\\pytest.exe
+  - exit 0
