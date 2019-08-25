@@ -15,18 +15,25 @@ environment:
 
     - PYTHON: "C:\\Python27"
       VERSION: 27
+      ARCH: x86
     #- PYTHON: "C:\\Python33" # does not support opencv
     #  VERSION: 27
+    #  ARCH: x86
     - PYTHON: "C:\\Python34"
       VERSION: 34
+      ARCH: x86
     - PYTHON: "C:\\Python35"
       VERSION: 35
+      ARCH: x86
     - PYTHON: "C:\\Python27-x64"
       VERSION: 27
+      ARCH: x64
     - PYTHON: "C:\\Python35-x64" # pip install --ignore-installed --upgrade https://storage.googleapis.com/tensorflow/windows/cpu/tensorflow-1.1.0-cp35-cp35m-window.whl
       VERSION: 35
+      ARCH: x64
     - PYTHON: "C:\\Python36-x64"
       VERSION: 36
+      ARCH: x64
 
 build: off
 
@@ -37,9 +44,9 @@ install:
   - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
   - "%PYTHON%\\python.exe setup.py install"
   # testing libraries
-  - IF [%VERSION%] GEQ [35] %PYTHON%\\python.exe -m pip install keras
-  - IF [%VERSION%] GEQ [35] %PYTHON%\\python.exe -m pip install tensorflow
+  - IF [%VERSION%] GEQ [35] IF [%ARCH%] == [x64] %PYTHON%\\python.exe -m pip install keras
+  - IF [%VERSION%] GEQ [35] IF [%ARCH%] == [x64] %PYTHON%\\python.exe -m pip install tensorflow
 
 test_script:
-  - IF [%VERSION%] GEQ [35] %PYTHON%\\pytest.exe
+  - IF [%VERSION%] GEQ [35] IF [%ARCH%] == [x64] %PYTHON%\\Scripts\\pytest.exe
   - exit 0
