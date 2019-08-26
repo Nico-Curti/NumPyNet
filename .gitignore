@@ -3,6 +3,18 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# tex
+*.aux
+*.bbl
+*.fdb_latexmk
+*.blg
+*.log
+*.out
+*.fls
+*.toc
+*.synctex.gz
+*.tex.backup
+
 # C extensions
 *.so
 
@@ -108,4 +120,3 @@ venv.bak/
 [Bb]uild/
 [Dd]ata/
 .hypothesis/
-
