@@ -30,7 +30,7 @@ class data_config (object):
       rows = fp.read().splitlines()
 
     rows = [x.strip(' ') for x in rows]           # remove redundant blank spaces
-    rows = [re.split('\s+=\s+', x) for x in rows] # split the string like 'key = value'
+    rows = [re.split(r'\s+=\s+', x) for x in rows] # split the string like 'key = value'
 
     for k, v in rows:
       try:
@@ -118,7 +118,7 @@ class net_config (object):
 
     cfg = ''
     for k in self._data.keys():
-      section = re.split('\d+', k)[0]
+      section = re.split(r'\d+', k)[0]
       cfg += '[' + section + ']'
       cfg += '\n'
 

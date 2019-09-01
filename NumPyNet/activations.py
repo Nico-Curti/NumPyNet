@@ -221,8 +221,8 @@ class Plse (Activations):
     y = x.copy()
     func  = np.vectorize(lambda t: (t<0.)  or (t>1.))
     func2 = np.vectorize(lambda t: (t>=0.) or (t<=1.))
-    y[func(x) ] = 1e-2
     y[func2(x)] = .125
+    y[func(x) ] = 1e-2
     return y
 
 
@@ -311,8 +311,8 @@ class LhTan (Activations):
     # problems with double conditions
     func  = np.vectorize(lambda t: (t > 0.) and (t < 1.))
     func2 = np.vectorize(lambda t: (t <= 0.) or (t >= 1.))
-    y[func(x)]  = 1
     y[func2(x)] = 1e-3
+    y[func(x)]  = 1
     return y
 
 

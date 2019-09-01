@@ -47,8 +47,8 @@ class Connected_layer(object):
       self.bias = np.ones(shape=(outputs,))
 
     self.output, self.delta = (None, None)
-    self.weights_update = np.zeros(shape=self.weights.shape)
-    self.bias_update = np.zeros(shape=(outputs,))
+    self.weights_update = np.zeros(shape=self.weights.shape, dtype=float)
+    self.bias_update = np.zeros(shape=(outputs,), dtype=float)
 
   def __str__(self):
     return 'connected            {:4d} x{:4d} x{:4d}  ->  {:4d}'.format(
