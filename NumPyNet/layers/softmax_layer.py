@@ -63,18 +63,16 @@ class Softmax_layer():
     else : # first implementation with groups, inspired from darknet, mhe
       self.output = np.empty(inpt.shape)
       inputs = self.w * self.h * self.c
-      n = inputs // self.groups
-      batch_offset = inputs
-      group_offset = n
+      group_offset = inputs // self.groups
       flat_input = inpt.ravel()
       flat_outpt = self.output.ravel()
       for b in range(self.batch):
         for g in range(self.groups):
-          idx = b * batch_offset + g * group_offset
-          inp = flat_input[idx : idx + n]
-          out = flat_outpt[idx : idx + n]
+          idx = b * inputs + g * group_offset
+          inp = flat_input[idx : idx + group_offset]
+          out = flat_outpt[idx : idx + group_offset]
           out[:]  = np.exp((inp - inp.max()) * self.temperature)
-          out[:] /= out.sum()
+          out[:] *= 1. / out.sum()
 
       self.output = flat_outpt.reshape(inpt.shape)
 

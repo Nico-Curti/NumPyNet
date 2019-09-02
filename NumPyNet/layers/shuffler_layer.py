@@ -71,7 +71,7 @@ class Shuffler_layer(object):
 
     delta = np.asarray(np.split(delta, self.h, axis=1))
     delta = np.asarray(np.split(delta, self.w, axis=1))
-    delta = delta.reshape(self.w, self.h, scale*scale, self.batch)
+    delta = delta.reshape(self.w, self.h, scale * scale, self.batch)
 
     # It returns an output of the correct shape (batch, in_w, in_h, scale**2)
     # for the concatenate in the backward function
@@ -90,7 +90,7 @@ class Shuffler_layer(object):
 
     self.batch, self.w, self.h, self.c = inpt.shape
 
-    channel_output = self.c // self.scale_step # out_C
+    channel_output = self.c // self.scale_step # out_c
 
 
     # The function phase shift receives only in_c // out_c channels at a time
@@ -112,8 +112,8 @@ class Shuffler_layer(object):
 
     channel_out = self.c // self.scale_step  #out_c
 
-    # I apply the reverse function  only for a single channel
-    X = np.concatenate([self._reverse(self.delta[:, :, :, i],self.scale)
+    # I apply the reverse function only for a single channel
+    X = np.concatenate([self._reverse(self.delta[:, :, :, i], self.scale)
                                       for i in range(channel_out)], axis=3)
 
 
@@ -156,9 +156,11 @@ if __name__ == '__main__':
 
   # BACKWARD
 
-  layer.delta = layer.output.copy() # if the Back is correct i'll obtain the input image
+  layer.delta = layer.output.copy()
   delta = np.ones(inpt.shape)
   layer.backward(delta)
+
+  assert np.allclose(inpt, delta) # if the Back is correct i'll obtain the input image
 
   # Visualizations
 
@@ -166,15 +168,15 @@ if __name__ == '__main__':
   fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
   fig.suptitle('Shuffler Layer\nscale : {}'.format(scale))
 
-  ax1.imshow(inpt[0,:,:,0])
+  ax1.imshow(inpt[0, :, :, 0])
   ax1.set_title('Original Image')
   ax1.axis('off')
 
-  ax2.imshow(forward_out[0,:,:,0])
+  ax2.imshow(forward_out[0, :, :, 0])
   ax2.set_title('Forward')
   ax2.axis('off')
 
-  ax3.imshow(delta[0,:,:,0])
+  ax3.imshow(delta[0, :, :, 0])
   ax3.set_title('Backward')
   ax3.axis('off')
 

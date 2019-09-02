@@ -29,7 +29,7 @@ class Connected_layer(object):
       bias       : array of shape (outputs, ), bias of the dense layer
     '''
     self.batch, self.w, self.h, self.c = inputs
-    self.inputs = inputs[1:]
+    self.inputs = np.prod(inputs[1:])
     self.outputs = outputs
 
     self.activation = activation.activate
@@ -39,7 +39,7 @@ class Connected_layer(object):
       self.weights = weights
     else:
       # initialize weights with shape (w*h*c, outputs)
-      self.weights = np.random.uniform(low=0., high=1., size=(np.prod(self.inputs), outputs))
+      self.weights = np.random.uniform(low=0., high=1., size=(self.inputs, outputs))
 
     if bias is not None:
       self.bias = bias

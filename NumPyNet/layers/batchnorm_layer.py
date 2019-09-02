@@ -68,7 +68,7 @@ class BatchNorm_layer(object):
     # Copy input, compute mean and inverse variance with respect the batch axis
     self.x    = inpt
     self.mean = self.x.mean(axis=0)  # Shape = (w, h, c)
-    self.var  = 1. / np.sqrt(self.x.var(axis=0) + epsil) # shape = (w, h, c)
+    self.var  = 1. / np.sqrt((self.x.var(axis=0)) + epsil) # shape = (w, h, c)
     # epsil is used to avoid divisions by zero
 
     # Compute the normalized input
