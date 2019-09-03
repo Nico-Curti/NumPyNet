@@ -73,6 +73,7 @@ def test_avgpool_layer():
       delta_keras = func([inpt])[0]
 
       # Definition of starting delta for numpynet
+      numpynet.delta = np.ones(shape=numpynet.out_shape)
       delta = np.zeros(inpt.shape)
 
       # numpynet Backward

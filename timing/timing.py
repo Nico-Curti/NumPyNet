@@ -73,7 +73,7 @@ input = np.random.uniform(low=-1., high=1., size={input_shape})
 layer = {layer}(**parameters)
 layer.forward(input)
 
-delta = np.zeros(input.shape)
+delta = np.zeros(shape=input.shape, dtype=float)
   '''.format(**{'input_shape' : input_shape,
                 'layer' : layer,
                 'params': params,
