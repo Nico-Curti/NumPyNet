@@ -60,6 +60,7 @@ class Cost_layer(object):
   def __str__(self):
     return 'cost                                           {:>4d}'.format(self.outputs)
 
+  @property
   def out_shape(self):
     return (self.outputs)
 
@@ -270,7 +271,7 @@ if __name__ == '__main__':
   byron_loss = layer.cost
 
   print(layer)
-  print(layer.out_shape())
+  print(layer.out_shape)
   print('Loss: {:.3f}'.format(byron_loss))
 
   # BACKWARD

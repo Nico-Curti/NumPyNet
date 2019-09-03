@@ -111,8 +111,8 @@ def test_convolutional_layer():
         weights_updates_keras = updates[0]
         bias_updates_keras    = updates[1]
 
-        delta_numpynet = np.zeros(shape = inpt.shape)
-        numpynet.delta = np.ones(shape=numpynet.out_shape())
+        delta_numpynet = np.zeros(shape=inpt.shape)
+        numpynet.delta = np.ones(shape=numpynet.out_shape, dtype=float)
         numpynet.backward(delta_numpynet, copy=False)
 
         assert np.allclose(delta_numpynet,           delta_keras,           atol=1e-4, rtol=1e-3)

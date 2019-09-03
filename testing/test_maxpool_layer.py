@@ -74,7 +74,7 @@ def test_maxpool_layer():
 
         # Definition of starting delta for numpynet
         delta = np.zeros(inpt.shape)
-        numpynet.delta = np.ones(numpynet.out_shape())
+        numpynet.delta = np.ones(numpynet.out_shape, dtype=float)
 
         # numpynet Backward
         numpynet.backward(delta=delta)

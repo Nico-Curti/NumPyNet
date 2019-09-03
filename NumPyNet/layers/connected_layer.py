@@ -36,13 +36,13 @@ class Connected_layer(object):
     self.gradient = activation.gradient
 
     if weights is not None:
-      self.weights = weights
+      self.weights = np.asarray(weights)
     else:
       # initialize weights with shape (w*h*c, outputs)
       self.weights = np.random.uniform(low=0., high=1., size=(self.inputs, outputs))
 
     if bias is not None:
-      self.bias = bias
+      self.bias = np.asarray(bias)
     else:
       self.bias = np.ones(shape=(outputs,))
 
@@ -54,6 +54,7 @@ class Connected_layer(object):
     return 'connected            {:4d} x{:4d} x{:4d}  ->  {:4d}'.format(
             self.w, self.h, self.c, self.outputs)
 
+  @property
   def out_shape(self):
     return (self.batch, self.outputs)
 
@@ -72,9 +73,11 @@ class Connected_layer(object):
     inpt = inpt.reshape(-1, self.w * self.h * self.c)    # shape (batch, w*h*c)
 
     #z = (inpt @ self.weights) + self.bias                # shape (batch, outputs)
-    z = np.dot(inpt, self.weights) + self.bias
+    z = np.einsum('ij, jk -> ik', inpt, self.weights, optimize=True) + self.bias
+    #z = np.dot(inpt, self.weights) + self.bias
 
     self.output = self.activation(z, copy=copy)     # shape (batch, outputs), activated
+    self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
   def backward(self, inpt, delta=None, copy=False):
     '''

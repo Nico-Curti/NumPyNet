@@ -22,6 +22,7 @@ class Yolo_layer(object):
   def __str__(self):
     return 'yolo'
 
+  @property
   def out_shape(self):
     '''
     '''

@@ -105,7 +105,7 @@ class Network(object):
     self.net = dict()
 
     for layer in model:
-      layer_t = re.split('\d+', layer)[0]
+      layer_t = re.split(r'\d+', layer)[0]
       params = dict(model.get_params(layer))
 
       layer_params = {}

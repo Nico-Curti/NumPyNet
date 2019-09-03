@@ -25,10 +25,11 @@ class Logistic_layer(object):
     self.output, self.delta, self.loss  = (None, None, None)
 
   def __str__(self):
-    batch, out_width, out_height, out_channels = self.out_shape()
+    batch, out_width, out_height, out_channels = self.out_shape
     return 'logistic x entropy                       {:>4d} x{:>4d} x{:>4d} x{:>4d}' .format(
            batch, out_width, out_height, out_channels)
 
+  @property
   def out_shape(self):
     return (self.batch, self.w, self.h, self.c)
 
@@ -56,7 +57,7 @@ class Logistic_layer(object):
       # self.cost = np.mean(self.loss)
       self.cost = np.sum(self.loss) # as for darknet
     else :
-      self.delta = np.zeros(shape=self.out_shape())
+      self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
   def backward(self, delta=None):
     '''

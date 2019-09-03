@@ -31,12 +31,13 @@ class Shuffler_layer(object):
     self.output, self.delta = (None, None)
 
   def __str__(self):
-    batch, out_width, out_height, out_channels = self.out_shape()
+    batch, out_width, out_height, out_channels = self.out_shape
     return 'Shuffler x {:3d}            {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}'.format(
            self.scale,
            batch, self.w, self.h, self.c,
            batch, out_width, out_height, out_channels)
 
+  @property
   def out_shape(self):
     return (self.batch, self.w * self.scale, self.h * self.scale, self.c // (self.scale_step))
 
@@ -100,6 +101,7 @@ class Shuffler_layer(object):
                                   for i in range(channel_output)], axis=3)
 
     # output shape = (batch, in_w * scale, in_h * scale, in_c // scale**2)
+    self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
   def backward(self, delta):
     '''

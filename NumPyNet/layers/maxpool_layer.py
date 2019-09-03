@@ -45,12 +45,13 @@ class Maxpool_layer(object):
 
 
   def __str__(self):
-    batch, out_width, out_height, out_channels = self.out_shape()
+    batch, out_width, out_height, out_channels = self.out_shape
     return 'MaxPool      {} x {} / {}  {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}'.format(
            self.size[0], self.size[1], self.stride[0],
            self.batch, self.w, self.h, self.c,
            batch, out_width, out_height, out_channels)
 
+  @property
   def out_shape(self):
     out_height   = (self.h + self.pad_left + self.pad_right - self.size[1]) // self.stride[1] + 1
     out_width    = (self.w + self.pad_top + self.pad_bottom - self.size[0]) // self.stride[0] + 1
@@ -163,6 +164,7 @@ class Maxpool_layer(object):
     # r take the values of every sub matrix
     self.indexes = [np.unravel_index(np.nanargmax(r), r.shape) for r in view.reshape(new_shape)]
     self.indexes = np.asarray(self.indexes).T
+    self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
 
   def backward(self, delta):
@@ -238,7 +240,7 @@ if __name__ == '__main__':
   # BACKWARD
 
   delta = np.zeros(inpt.shape)
-  layer.delta = np.ones(layer.out_shape())
+  layer.delta = np.ones(layer.out_shape)
   layer.backward(delta)
 
   # Visualizations

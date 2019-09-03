@@ -27,8 +27,9 @@ class Route_layer():
     self.input_layers = input_layers
     self.outputs = np.array([], dtype=float)
 
+  @property
   def out_shape(self):
-    self.input_layers[-1].out_shape()
+    self.input_layers[-1].out_shape
 
   def __str__():
     pass
@@ -38,6 +39,7 @@ class Route_layer():
     # I will need a net object, that store all the layers in a list or something like that
     for layer_idx in self.input_layers:
       self.output = np.concatenate(self.output, net.layers[layer_idx].output, axis=1)
+    self.delta = np.zeros(shape=self.output.shape, dtype=float)
 
   def backward(self, delta, net):
 

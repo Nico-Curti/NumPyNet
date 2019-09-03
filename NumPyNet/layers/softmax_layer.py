@@ -34,11 +34,11 @@ class Softmax_layer():
     self.temperature = 1./temperature
 
   def __str__(self):
-    batch, out_width, out_height, out_channels = self.out_shape()
+    batch, out_width, out_height, out_channels = self.out_shape
     return 'softmax x entropy                            {:4d} x{:4d} x{:4d} x{:4d}'.format(
            batch, out_width, out_height, out_channels)
 
-
+  @property
   def out_shape(self):
     return (self.batch, self.w, self.h, self.c)
 
@@ -81,14 +81,14 @@ class Softmax_layer():
       # s = self.output.sum(axis=(1,2,3), keepdims=True)
 
     # value of delta if truth is None
-    self.delta = np.zeros(shape=self.out_shape())
+    self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
     if truth is not None:
       out = self.output * (1. / self.output.sum())
       out = np.clip(out, 1e-8, 1. - 1e-8)
       self.cost = - np.sum(truth * np.log(out))
       # Update of delta given truth
-      self.delta = truth - out
+      self.delta = np.clip(self.output, 1e-8, 1. - 1e-8) - truth
 
   def backward(self, delta=None):
     '''
@@ -98,9 +98,13 @@ class Softmax_layer():
       delta : array of shape (batch, w, h, c), default is None. If an array is passed,
         it's the global delta to be backpropagated
     '''
+    # softmax gradient formula
+    #s = self.output.reshape(-1, 1)
+    #delta[:] += np.diagflat(s) - np.dot(s, s.T)
 
-    s = (self.output * delta).sum()
-    delta[:] += self.temperature * self.output * (self.delta - s) #maybe output normalized
+    # darknet issue version
+    dot = (self.output * self.delta).sum(axis=(1, 2, 3), keepdims=True)
+    delta[:] += self.temperature * self.output * (self.delta - dot) # maybe output normalized
 
     # This is an approximation
     #if delta is not None:

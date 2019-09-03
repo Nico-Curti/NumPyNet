@@ -30,6 +30,7 @@ class Input_layer(object):
   def __str__(self):
     return 'input:                  {0:>4d} x{1:>4d} x{2:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d}'.format(self.w, self.h, self.c)
 
+  @property
   def out_shape(self):
     return (self.batch, self.w, self.h, self.c)
 
@@ -40,10 +41,11 @@ class Input_layer(object):
     Parameters:
       inpt: the input array
     '''
-    if self.out_shape() != inpt.shape:
-      raise ValueError('Forward Input layer. Incorrect input shape. Expected {} and given {}'.format(self.out_shape(), inpt.shape))
+    if self.out_shape != inpt.shape:
+      raise ValueError('Forward Input layer. Incorrect input shape. Expected {} and given {}'.format(self.out_shape, inpt.shape))
 
     self.output[:] = inpt
+    self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
   def backward(self, delta):
     '''
@@ -52,8 +54,8 @@ class Input_layer(object):
     Parameter:
       delta : global error to be backpropagated
     '''
-    if self.out_shape() != delta.shape:
-      raise ValueError('Forward Input layer. Incorrect delta shape. Expected {} and given {}'.format(self.out_shape(), delta.shape))
+    if self.out_shape != delta.shape:
+      raise ValueError('Forward Input layer. Incorrect delta shape. Expected {} and given {}'.format(self.out_shape, delta.shape))
 
     delta[:] = self.delta
 

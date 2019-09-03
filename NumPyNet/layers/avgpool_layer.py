@@ -46,12 +46,13 @@ class Avgpool_layer(object):
 
 
   def __str__(self):
-    batch, out_width, out_height, out_channels = self.out_shape()
+    batch, out_width, out_height, out_channels = self.out_shape
     return 'avg          {} x {} / {}  {:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d}'.format(
            self.size[0], self.size[1], self.stride[0],
            self.w, self.h, self.c,
            out_width, out_height, out_channels)
 
+  @property
   def out_shape(self):
     out_height   = (self.h + self.pad_left + self.pad_right - self.size[1]) // self.stride[1] + 1
     out_width    = (self.w + self.pad_top + self.pad_bottom - self.size[0]) // self.stride[0] + 1
@@ -153,8 +154,7 @@ class Avgpool_layer(object):
 
     # Mean of every sub matrix, computed without considering the padd(np.nan)
     self.output = np.nanmean(view, axis=(4, 5))
-
-    self.delta = np.ones(shape=self.out_shape())
+    self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
   def backward(self, delta):
     '''
@@ -235,7 +235,7 @@ if __name__ == '__main__':
   # BACKWARD
 
   delta = np.zeros(shape=inpt.shape)
-  layer.delta = np.ones(layer.out_shape())
+  layer.delta = np.ones(layer.out_shape)
   layer.backward(delta)
 
   print(delta.max(), delta.min())
