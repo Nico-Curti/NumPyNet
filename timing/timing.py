@@ -15,8 +15,8 @@ __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 __package__ = 'Timing layer functions'
 
-NUM_REPEATS = 3
-NUMBER = 10
+NUM_REPEATS = 10
+NUMBER = 100
 AVAILABLE_LAYERS = ['activation', 'avgpool', 'batchnorm', 'connected', 'convolutional', 'cost', 'dropout', 'input', 'logistic', 'maxpool', 'route', 'shortcut', 'shuffler', 'softmax', 'yolo']
 
 
@@ -231,8 +231,38 @@ def timing_connected_layer (input_shape):
   return timing
 
 
+def timing_convolutional_layer (input_shape):
+  raise NotImplementedError
 
+def timing_cost_layer (input_shape):
+  raise NotImplementedError
 
+def timing_dropout_layer (input_shape):
+  raise NotImplementedError
+
+def timing_input_layer (input_shape):
+  raise NotImplementedError
+
+def timing_logistic_layer (input_shape):
+  raise NotImplementedError
+
+def timing_maxpool_layer (input_shape):
+  raise NotImplementedError
+
+def timing_route_layer (input_shape):
+  raise NotImplementedError
+
+def timing_shortcut_layer (input_shape):
+  raise NotImplementedError
+
+def timing_shuffler_layer (input_shape):
+  raise NotImplementedError
+
+def timing_softmax_layer (input_shape):
+  raise NotImplementedError
+
+def timing_yolo_layer (input_shape):
+  raise NotImplementedError
 
 def parse_args ():
 
@@ -286,12 +316,21 @@ if __name__ == '__main__':
 
   args = parse_args()
 
-  input_shapes = [(3, 100, 201, 3)]
+  input_shapes = [(8, 1920, 1080, 3)]
 
   timing_layers = {'activation' : timing_activation_layer,
                    'avgpool'    : timing_avgpool_layer,
                    'batchnorm'  : timing_batchnorm_layer,
                    'connected'  : timing_connected_layer,
+                   'dropout'    : timing_dropout_layer,
+                   'input'      : timing_input_layer,
+                   'logistic'   : timing_logistic_layer,
+                   'maxpool'    : timing_maxpool_layer,
+                   'route'      : timing_route_layer,
+                   'shortcut'   : timing_shortcut_layer,
+                   'shuffler'   : timing_shuffler_layer,
+                   'softmax'    : timing_softmax_layer,
+                   'yolo'       : timing_yolo_layer
                    }
 
   timing = []
