@@ -76,7 +76,7 @@ class Softmax_layer():
 
       self.output = flat_outpt.reshape(inpt.shape)
 
-      # Original implementation
+      # Original implementation of spatial false
       # self.output = np.exp((inpt - np.max(inpt, axis=(1,2,3), keepdims=True)) * self.temperature)
       # s = self.output.sum(axis=(1,2,3), keepdims=True)
 

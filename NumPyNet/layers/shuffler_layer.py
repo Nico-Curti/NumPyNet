@@ -138,8 +138,8 @@ if __name__ == '__main__':
 
   batch       = 5
   channels_in = 12
-  width       = 100
-  height      = 200
+  width       = 10
+  height      = 10
   scale       = 2
 
   inpt = np.arange(0, batch * width * height * channels_in).reshape(batch, channels_in, width, height)
@@ -162,7 +162,7 @@ if __name__ == '__main__':
   delta = np.ones(inpt.shape)
   layer.backward(delta)
 
-  assert np.allclose(inpt, delta) # if the Back is correct i'll obtain the input image
+  assert np.allclose(delta, inpt)
 
   # Visualizations
 
