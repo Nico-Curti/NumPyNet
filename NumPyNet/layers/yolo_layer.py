@@ -160,7 +160,7 @@ class Yolo_layer(object):
     pred_areas = pred_wh[..., 0] * pred_wh[..., 1]
 
     union_areas = pred_areas + true_areas - intersect_areas
-    iou_scores =
+    iou_scores = np.divide(intersect_areas, union_areas)
     iou_scores = object_mask * np.expand_dims(iou_scores, axis=4)
 
     count = np.sum(object_mask)
