@@ -41,6 +41,7 @@ class BatchNorm_layer(object):
     return 'Batch Normalization Layer: {:4d} x {:4d} x {:4d} image'.format(
            self.w, self.h, self.c)
 
+  @property
   def out_shape(self):
     return (self.batch, self.w, self.h, self.c)
 
@@ -68,7 +69,7 @@ class BatchNorm_layer(object):
     # Copy input, compute mean and inverse variance with respect the batch axis
     self.x    = inpt
     self.mean = self.x.mean(axis=0)  # Shape = (w, h, c)
-    self.var  = 1. / np.sqrt(self.x.var(axis=0) + epsil) # shape = (w, h, c)
+    self.var  = 1. / np.sqrt((self.x.var(axis=0)) + epsil) # shape = (w, h, c)
     # epsil is used to avoid divisions by zero
 
     # Compute the normalized input
@@ -83,6 +84,7 @@ class BatchNorm_layer(object):
       self.output += self.bias # Add bias
 
     # output_shape = (batch, w, h, c)
+    self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
 
   def backward(self, delta=None):
@@ -191,7 +193,7 @@ if __name__ == '__main__':
 
   # BACKWARD
 
-  layer.delta = np.random.uniform(low=0., high=100., size=layer.out_shape())
+  layer.delta = np.random.uniform(low=0., high=100., size=layer.out_shape)
   delta = np.ones(shape=inpt.shape, dtype=float) # delta same shape as the Input
   layer.backward(delta)
 

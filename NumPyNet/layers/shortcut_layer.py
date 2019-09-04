@@ -48,6 +48,7 @@ class Shortcut_layer(object):
     b2, w2, h2, c2 = self.layer2_shape
     return 'Shortcut                 {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}'.format(b1, w2, h2, c2, w1, h1, c1)
 
+  @property
   def out_shape(self):
     return self.layer2_shape
 
@@ -65,6 +66,7 @@ class Shortcut_layer(object):
     self.output[:] = self.alpha * self.output[:] + self.beta * prev_output[:]
     # MISS combination
     self.output = self.activation(self.output)
+    self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
   def backward(self, delta, prev_delta):
     '''
@@ -125,7 +127,7 @@ if __name__ == '__main__':
   delta      = np.zeros(shape=inpt1.shape)
   delta_prev = np.zeros(shape=inpt2.shape)
 
-  layer.delta = np.ones(shape=layer.out_shape())
+  layer.delta = np.ones(shape=layer.out_shape)
   layer.backward(delta, delta_prev)
 
   # Visualizations

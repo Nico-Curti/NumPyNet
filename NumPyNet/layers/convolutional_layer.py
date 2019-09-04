@@ -68,13 +68,14 @@ class Convolutional_layer(object):
 
 
   def __str__(self):
-    batch, out_w, out_h, out_c = self.out_shape()
+    batch, out_w, out_h, out_c = self.out_shape
     return 'Convolutional     {} x {} / {}  {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}  {:>5.3f} BFLOPs'.format(
            self.size[0], self.size[1], self.stride[0],
            self.batch, self.w, self.h, self.c,
            batch, out_w, out_h, out_c,
            (2 * self.weights.size * out_h * out_w) * 1e-9)
 
+  @property
   def out_shape(self):
     return (self.batch, self.out_w, self.out_h, self.channels_out)
 
@@ -97,8 +98,8 @@ class Convolutional_layer(object):
     B, s0, s1 = arr.strides[:3]
     b, m1, n1 = arr.shape[:3]
 
-    m2, n2        = sub_shape
-    st1, st2      = stride
+    m2, n2   = sub_shape
+    st1, st2 = stride
 
     self.out_w = 1 + (m1 - m2) // st1 # output final shapes out_w, out_h
     self.out_h = 1 + (n1 - n2) // st2
@@ -180,10 +181,11 @@ class Convolutional_layer(object):
     # the choice of numpy.einsum is due to reshape of self.view is a copy and not a view
     # it seems to be slower though
 
-    z = np.einsum('lmnijk,ijko -> lmno', self.view, self.weights) + self.bias
+    z = np.einsum('lmnijk,ijko -> lmno', self.view, self.weights, optimize=True) + self.bias
 
     self.output = self.activation(z, copy=copy) # (batch * out_w * out_h, out_c)
     # final output shape : (batch, out_w, out_h, out_c)
+    self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
 
   def backward(self, delta, copy=False):
@@ -306,7 +308,7 @@ if __name__ == '__main__':
 
   # BACKWARD
 
-  layer.delta = np.ones(layer.out_shape())
+  layer.delta = np.ones(layer.out_shape)
   delta = np.zeros(shape=inpt.shape)
   layer.backward(delta)
 

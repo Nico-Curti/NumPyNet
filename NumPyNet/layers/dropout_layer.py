@@ -33,12 +33,13 @@ class Dropout_layer(object):
     self.output, self.delta = (None, None)
 
   def __str__(self):
-    batch, out_width, out_height, out_channels = self.out_shape()
+    batch, out_width, out_height, out_channels = self.out_shape
     return 'Dropout       p = {:.2f}        {:4d}, {:4d}, {:4d}, {:4d}  ->  {:4d}, {:4d}, {:4d}, {:4d}'.format(
            self.probability,
            batch, out_width , out_height , out_channels,
            batch, out_width , out_height , out_channels)
 
+  @property
   def out_shape(self):
     return (self.batch, self.w, self.h, self.c)
 
@@ -111,7 +112,7 @@ if __name__ == '__main__':
   # BACKWARD
 
   delta = np.ones(shape=inpt.shape, dtype=float)
-  layer.delta = np.ones(shape=layer.out_shape())
+  layer.delta = np.ones(shape=layer.out_shape)
   layer.backward(delta)
 
   # Visualitations
