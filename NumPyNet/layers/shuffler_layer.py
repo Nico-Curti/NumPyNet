@@ -14,7 +14,7 @@ __package__ = 'PixelShuffle Layer'
 
 class Shuffler_layer(object):
 
-  def __init__(self, scale):
+  def __init__(self, scale, **kwargs):
     '''
     Shuffler Layer, performs a Pixel Shuffle.
 

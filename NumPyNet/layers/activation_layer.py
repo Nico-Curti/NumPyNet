@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 
 from NumPyNet.activations import Activations
+from NumPyNet.utils import _check_activation
 
 import numpy as np
 
@@ -16,13 +17,15 @@ __package__ = 'Activation Layer'
 
 class Activation_layer(object):
 
-  def __init__(self, activation=Activations):
+  def __init__(self, activation=Activations, **kwargs):
     '''
     Activation layer
 
     Parameters :
       activation : activation function of the layer
     '''
+
+    activation = _check_activation(self, activation)
 
     self.activation = activation.activate
     self.gradient = activation.gradient

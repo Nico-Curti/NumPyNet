@@ -12,7 +12,7 @@ __package__ = 'Route layer'
 
 class Route_layer():
 
-  def __init__(self, *input_layers):
+  def __init__(self, input_layers, **kwargs):
     '''
     Route layer. Incomplete, I need to know how the network object wiil behave.
       For Now the idea is : it takes the seleted layers output, concatenate them, and

@@ -15,7 +15,7 @@ __package__ = 'Maxpool Layer'
 
 class Maxpool_layer(object):
 
-  def __init__(self, size, stride=None, padding=None):
+  def __init__(self, size, stride=None, padding=None, **kwargs):
 
     '''
     MaxPool Layer: perfmors a downsample of the image through the slide of a kernel
@@ -29,11 +29,18 @@ class Maxpool_layer(object):
     '''
 
     self.size = size
+    if not hasattr(self.size, '__iter__'):
+      self.size = (int(self.size), int(self.size))
 
-    if stride is not None:
-      self.stride = stride
-    else:
+    if not stride:
       self.stride = size
+    else:
+      self.stride = stride
+
+    if not hasattr(self.stride, '__iter__'):
+      self.stride = (int(self.stride), int(self.stride))
+
+    assert len(self.size) == 2 and len(self.stride) == 2
 
     self.batch, self.w, self.h, self.c = (0, 0, 0, 0)
 

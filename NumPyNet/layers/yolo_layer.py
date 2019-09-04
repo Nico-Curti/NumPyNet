@@ -18,26 +18,34 @@ __package__ = 'Yolo Layer'
 
 class Yolo_layer(object):
 
-  def __init__(self, anchors, max_grid, batch_size, warmup_batches, ignore_thresh, grid_scale, obj_scale, noobj_scale, xywh_scale, class_scale):
+  def __init__(self, input_shape, anchors, max_grid,
+                     #warmup_batches,
+                     ignore_thresh,
+                     #grid_scale,
+                     #obj_scale, noobj_scale,
+                     #xywh_scale, class_scale,
+                     **kwargs):
     '''
     '''
     # (grid_w, grid_h) is the equivalent of (w, h)
     # nb_box is the equivalent of N
 
+    self.batch, self.grid_w, self.grid_h, self.c = input_shape
+
     self.ignore_thresh  = ignore_thresh
-    self.warmup_batches = warmup_batches
+    #self.warmup_batches = warmup_batches
     self.anchors        = np.asarray(anchors, dtype=float).reshape(1, 1, 1, 3, 2)
-    self.grid_scale     = grid_scale
-    self.obj_scale      = obj_scale
-    self.noobj_scale    = noobj_scale
-    self.xywh_scale     = xywh_scale
-    self.class_scale    = class_scale
+    #self.grid_scale     = grid_scale
+    #self.obj_scale      = obj_scale
+    #self.noobj_scale    = noobj_scale
+    #self.xywh_scale     = xywh_scale
+    #self.class_scale    = class_scale
 
     max_grid_h, max_grid_w = max_grid
 
     cell_x = np.broadcast_to(range(max_grid_w), shape=(max_grid_w, max_grid_h)).reshape(1, max_grid_h, max_grid_w, 1, 1)
     cell_y = cell_x.transpose(0, 2, 1, 3, 4)
-    self.cell_grid = np.tile(np.concatenate([cell_x, cell_y], axis=-1), (batch_size, 1, 1, 3, 1))
+    self.cell_grid = np.tile(np.concatenate([cell_x, cell_y], axis=-1), (batch, 1, 1, 3, 1))
 
 
   def __str__(self):

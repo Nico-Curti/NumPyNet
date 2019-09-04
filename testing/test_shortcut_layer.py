@@ -32,11 +32,11 @@ def test_shortcut_layer():
   '''
   np.random.seed(123)
 
-  alphas  = np.round(np.linspace(0,1,3), 2)
-  betas   = np.round(np.linspace(0,1,3), 2)
-  batches = [1,5,10]
+  alphas  = np.round(np.linspace(0, 1, 3), 2)
+  betas   = np.round(np.linspace(0, 1, 3), 2)
+  batches = [1, 5, 10]
 
-  keras_activations = [ 'tanh','linear','relu', 'sigmoid']
+  keras_activations = ['tanh','linear','relu', 'sigmoid']
   numpynet_activations = [Tanh, Linear, Relu, Logistic]
 
   for keras_activ, numpynet_activ in zip(keras_activations, numpynet_activations):
@@ -44,21 +44,20 @@ def test_shortcut_layer():
       for beta in betas:
         for batch in batches:
 
-          inpt1      = np.random.uniform(-1., 1.,(batch, 100,100,3))
-          inpt2      = np.random.uniform(-1., 1.,(batch, 100,100,3))
+          inpt1      = np.random.uniform(low=-1., high=1., size=(batch, 100, 100, 3))
+          inpt2      = np.random.uniform(low=-1., high=1., size=(batch, 100, 100, 3))
           b, w, h, c = inpt1.shape
 
           # numpynet model
-          numpynet = Shortcut_layer(inpt1.shape, inpt2.shape,
-                                 activation=numpynet_activ,
-                                 alpha=alpha, beta=beta)
+          numpynet = Shortcut_layer(activation=numpynet_activ,
+                                    alpha=alpha, beta=beta)
 
           # Keras Model, double input
-          inp1  = Input(shape = (w, h, c), batch_shape = inpt1.shape)
-          inp2  = Input(shape = (w, h, c), batch_shape = inpt2.shape)
+          inp1  = Input(shape=(w, h, c), batch_shape=inpt1.shape)
+          inp2  = Input(shape=(w, h, c), batch_shape=inpt2.shape)
           x     = Add()([inp1,inp2])
-          out   = Activation(activation = keras_activ)(x)
-          model = Model(inputs = [inp1,inp2], outputs = out)
+          out   = Activation(activation=keras_activ)(x)
+          model = Model(inputs=[inp1,inp2], outputs=out)
 
           # FORWARD
 

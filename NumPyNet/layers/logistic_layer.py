@@ -14,7 +14,7 @@ __package__ = 'Logistic Layer'
 
 class Logistic_layer(object):
 
-  def __init__(self):
+  def __init__(self, **kwargs):
     '''
     Logistic Layer: performs a logistic transformation of the input and computes
       the binary cross entropy cost.

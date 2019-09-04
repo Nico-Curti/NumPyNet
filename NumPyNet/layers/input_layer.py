@@ -13,7 +13,7 @@ __package__ = 'Input Layer'
 
 class Input_layer(object):
 
-  def __init__(self, input_shape):
+  def __init__(self, input_shape, **kwargs):
     '''
     Input layer
     '''

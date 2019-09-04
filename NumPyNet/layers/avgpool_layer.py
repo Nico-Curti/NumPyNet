@@ -16,7 +16,7 @@ __package__ = 'Avgpool Layer'
 
 class Avgpool_layer(object):
 
-  def __init__(self, size, stride=None, padding=False):
+  def __init__(self, size, stride=None, padding=False, **kwargs):
 
     '''
     Avgpool layer
@@ -30,11 +30,18 @@ class Avgpool_layer(object):
     '''
 
     self.size = size
+    if not hasattr(self.size, '__iter__'):
+      self.size = (int(self.size), int(self.size))
 
     if not stride:
       self.stride = size
     else:
       self.stride = stride
+
+    if not hasattr(self.stride, '__iter__'):
+      self.stride = (int(self.stride), int(self.stride))
+
+    assert len(self.size) == 2 and len(self.stride) == 2
 
     self.batch, self.w, self.h, self.c = (0, 0, 0, 0)
 
@@ -219,8 +226,8 @@ if __name__ == '__main__':
   inpt = np.expand_dims(inpt, axis=0)
   pad = True
 
-  size = (3, 3)
-  stride = (2, 2)
+  size = 3
+  stride = 2
 
   # Model initialization
   layer = Avgpool_layer(size, stride, padding=pad)
@@ -234,11 +241,9 @@ if __name__ == '__main__':
 
   # BACKWARD
 
-  delta = np.zeros(shape=inpt.shape)
-  layer.delta = np.ones(layer.out_shape)
+  delta = np.zeros(shape=inpt.shape, dtype=float)
+  layer.delta = np.ones(layer.out_shape, dtype=float)
   layer.backward(delta)
-
-  print(delta.max(), delta.min())
 
   # Visualizations
 

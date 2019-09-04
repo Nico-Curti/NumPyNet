@@ -7,6 +7,7 @@ from __future__ import print_function
 import itertools
 
 from NumPyNet.activations import Activations
+from NumPyNet.utils import _check_activation
 
 import numpy as np
 
@@ -18,33 +19,47 @@ __package__ = 'Convolutional layer'
 
 class Convolutional_layer(object):
 
-  def __init__(self, inputs, channels_out, size, stride=None,
+  def __init__(self, input_shape, filters, size, stride=None,
                weights=None, bias=None,
-               padding=False,
-               activation=Activations):
+               pad=False,
+               activation=Activations,
+               **kwargs):
     '''
     Convolution Layer: the output is the convolution of of the input batch
     with a group of kernel of shape size = (kx,ky) with step stride.
 
     Parameters:
-      inputs       : tuple, shape of the input batch of image (batch, w, h, channels_in)
-      channels_out : int, Number of filters to be slided over the input, and also
+      input_shape  : tuple, shape of the input batch of image (batch, w, h, channels_in)
+      filters      : int, Number of filters to be slided over the input, and also
               the number of channels of the output
       size        : tuple of int, size of the kernel of shape (kx, ky)
       stride      : tuple of int, step of the kernel of shape (st1, st2)
       weights     : filters array, with shape (kx, ky, channels_in, channels_out)
-      padding     : boolean, if False the image is cutted along the last raws and columns, if True
+      pad         : boolean, if False the image is cutted along the last raws and columns, if True
                     the input is padded following keras SAME padding
       activation  : activation function of the layer
     '''
 
-    self.batch, self.w, self.h, self.c = inputs
-    self.channels_out = channels_out
+    self.batch, self.w, self.h, self.c = input_shape
+    self.channels_out = filters
+
     self.size = size
+    if not hasattr(self.size, '__iter__'):
+      self.size = (int(self.size), int(self.size))
 
-    self.stride = stride if stride is not None else size
+    if not stride:
+      self.stride = size
+    else:
+      self.stride = stride
 
-    self.pad = padding
+    if not hasattr(self.stride, '__iter__'):
+      self.stride = (int(self.stride), int(self.stride))
+
+    assert len(self.size) == 2 and len(self.stride) == 2
+
+    self.pad = pad
+
+    activation = _check_activation(self, activation)
 
     # Activation function
     self.activation = activation.activate
@@ -54,7 +69,7 @@ class Convolutional_layer(object):
 
     # Weights and bias
     if weights is None:
-      self.weights = np.random.uniform(low=0., high=1., size=(size[0], size[1], self.c, self.channels_out))
+      self.weights = np.random.uniform(low=0., high=1., size=(self.size[0], self.size[1], self.c, self.channels_out))
     else :
       self.weights = weights
 
@@ -289,14 +304,14 @@ if __name__ == '__main__':
   filters    = np.random.uniform(-1., 1., size = (size[0], size[1], c, channels_out))
   bias       = np.random.uniform(-1., 1., size = (channels_out,))
 
-  layer = Convolutional_layer(inputs=inpt.shape,
-                              channels_out=channels_out,
+  layer = Convolutional_layer(input_shape=inpt.shape,
+                              filters=channels_out,
                               weights=filters,
                               bias=bias,
                               activation=layer_activation,
                               size=size,
                               stride=stride,
-                              padding=pad)
+                              pad=pad)
 
   # FORWARD
 

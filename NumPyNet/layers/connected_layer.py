@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 
 from NumPyNet.activations import Activations
+from NumPyNet.utils import _check_activation
 
 import numpy as np
 
@@ -17,20 +18,22 @@ __package__ = 'Connected Layer'
 
 class Connected_layer(object):
 
-  def __init__(self, inputs, outputs, activation=Activations, weights=None, bias=None):
+  def __init__(self, input_shape, outputs, activation=Activations, weights=None, bias=None,  **kwargs):
     '''
     Connected layer:
 
     Parameters :
-      inputs     : tuple, shape of the input in the format (batch, w, h, c)
-      outputs    : int, number of output of the layers
-      activation : activation function of the layer
-      weights    : array of shape (w * h * c, outputs), weights of the dense layer
-      bias       : array of shape (outputs, ), bias of the dense layer
+      input_shape : tuple, shape of the input in the format (batch, w, h, c)
+      outputs     : int, number of output of the layers
+      activation  : activation function of the layer
+      weights     : array of shape (w * h * c, outputs), weights of the dense layer
+      bias        : array of shape (outputs, ), bias of the dense layer
     '''
-    self.batch, self.w, self.h, self.c = inputs
-    self.inputs = np.prod(inputs[1:])
+    self.batch, self.w, self.h, self.c = input_shape
+    self.inputs = np.prod(input_shape[1:])
     self.outputs = outputs
+
+    activation = _check_activation(self, activation)
 
     self.activation = activation.activate
     self.gradient = activation.gradient

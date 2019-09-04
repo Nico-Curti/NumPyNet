@@ -14,7 +14,7 @@ __package__ = 'BatchNorm Layer'
 
 class BatchNorm_layer(object):
 
-  def __init__(self, scales=None, bias=None):
+  def __init__(self, scales=None, bias=None, **kwargs):
 
     '''
     BatchNormalization Layer: It performs a Normalization over the Batch axis

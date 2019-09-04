@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 from NumPyNet.activations import Activations
+from NumPyNet.utils import _check_activation
 
 import numpy as np
 
@@ -15,7 +16,7 @@ __package__ = 'Shortcut Layer'
 
 class Shortcut_layer(object):
 
-  def __init__(self, layer1_shape, layer2_shape, activation=Activations, alpha=1., beta=1.):
+  def __init__(self, activation=Activations, alpha=1., beta=1., **kwargs):
 
     '''
     Shortcut layer: activation of the linear combination of the output of two layers
@@ -25,13 +26,13 @@ class Shortcut_layer(object):
     Now working only with same shapes input
 
     Parameters :
-      layer1_shape : tuple, shape of the first layer in the format (batch, w, h, c)
-      layer2_shape : tuple, shape of the second layer in the format (batch, w, h, c)
       activation   : activation function of the layer
       alpha        : float, default = 1., first weight of the combination
       beta         : float, default = 1., second weight of the combination
 
     '''
+
+    activation = _check_activation(self, activation)
 
     self.activation = activation.activate
     self.gradient = activation.gradient
@@ -39,9 +40,6 @@ class Shortcut_layer(object):
     self.alpha, self.beta = alpha, beta
 
     self.output, self.delta, self.out = (None, None, None)
-
-    self.layer1_shape = layer1_shape
-    self.layer2_shape = layer2_shape
 
   def __str__(self):
     b1, w1, h1, c1 = self.layer1_shape
@@ -60,6 +58,9 @@ class Shortcut_layer(object):
       inpt        : array of shape (batch, w, h, c), first input of the layer
       prev_output : array of shape (batch, w, h, c), second input of the layer
     '''
+
+    self.layer1_shape = inpt.shape
+    self.layer2_shape = prev_output.shape
 
     self.output = inpt.copy()
 
@@ -113,8 +114,7 @@ if __name__ == '__main__':
 
 
   # model initialization
-  layer = Shortcut_layer(inpt1.shape, inpt2.shape,
-                         activation=layer_activ,
+  layer = Shortcut_layer(activation=layer_activ,
                          alpha=alpha, beta=beta)
 
   # FORWARD

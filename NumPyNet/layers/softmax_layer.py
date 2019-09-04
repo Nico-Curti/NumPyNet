@@ -12,7 +12,7 @@ __package__ = 'Softmax layer'
 
 class Softmax_layer():
 
-  def __init__(self, groups=1, spatial=False, temperature=1.):
+  def __init__(self, groups=1, spatial=False, temperature=1., **kwargs):
     '''
     Softmax layer: perfoms a Softmax transformation of its input
 

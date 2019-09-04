@@ -94,6 +94,9 @@ class Network(object):
 
 
   def load(self, cfg_filename, weights=None):
+    '''
+    Load network model from config file in INI fmt
+    '''
 
     model = net_config(cfg_filename)
 
@@ -103,6 +106,7 @@ class Network(object):
     # TODO: add other network parameters
 
     self.net = dict()
+    input_shape = (self.batch, *self.input_shape)
 
     for layer in model:
       layer_t = re.split(r'\d+', layer)[0]
@@ -119,7 +123,8 @@ class Network(object):
 
         layer_params[k] = val
 
-      self.net[layer_t] = self.LAYERS[layer_t](**layer_params)
+      self.net[layer_t] = self.LAYERS[layer_t](input_shape=input_shape, **layer_params)
+      #input_shape = self.net[layer_t].out_shape # TODO
 
     return self
 
@@ -128,6 +133,9 @@ class Network(object):
       self.load_weights(weights)
 
   def load_weights(self, weights_filename):
+    '''
+    Load weight from filename in binary fmt
+    '''
     with open(weights_filename, 'rb') as fp:
 
       for layer in self:
@@ -137,6 +145,9 @@ class Network(object):
     return self
 
   def save_weights(self, filename):
+    '''
+    Dump current network weights
+    '''
     with open(filename, 'wb') as fp:
 
       for layer in self:
@@ -146,6 +157,9 @@ class Network(object):
     return self
 
   def load_model(self, model_filename):
+    '''
+    Load network model object as pickle
+    '''
     with open(model_filename, 'rb') as fp:
       tmp_dict = pickle.load(fp)
 
@@ -156,6 +170,9 @@ class Network(object):
 
 
   def save_model(self, model_filename):
+    '''
+    Dump the current network model as pickle
+    '''
     with open(model_filename, 'wb') as fp:
       pickle.dump(self.__dict__, fp, 2)
 
@@ -163,8 +180,18 @@ class Network(object):
 
 
   @property
-  def shape(self):
+  def out_shape(self):
+    '''
+    Output shape
+    '''
     return self.net[0].out_shape()[1:]
+
+  @property
+  def input_shape(self):
+    '''
+    Output shape
+    '''
+    return (self.w, self.h, self.c)
 
   @property
   def num_layers(self):
@@ -175,9 +202,9 @@ if __name__ == '__main__':
 
   import os
 
-  config_filename = os.path.join(os.path.dirname(__file__), '..', '..', 'cfg', 'yolov3.cfg')
-  weight_filename = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'yolov3.weights.byron')
-  mask_w_filename = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'yolov3.weights.mask')
+  config_filename = os.path.join(os.path.dirname(__file__), '..', 'cfg', 'yolov3.cfg')
+  weight_filename = os.path.join(os.path.dirname(__file__), '..', 'data', 'yolov3.weights.byron')
+  mask_w_filename = os.path.join(os.path.dirname(__file__), '..', 'data', 'yolov3.weights.mask')
 
   net = Network()
   net.load(config_filename)

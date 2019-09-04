@@ -63,11 +63,11 @@ def test_convolutional_layer():
 
         # Numpy_net model
         global numpynet
-        numpynet = Convolutional_layer(channels_out=c_out , inputs=inpt.shape,
+        numpynet = Convolutional_layer(filters=c_out, input_shape=inpt.shape,
                                     weights=filters, bias=bias,
-                                    activation = numpynet_activ,
-                                    size = size, stride = stride,
-                                    padding = pad)
+                                    activation=numpynet_activ,
+                                    size=size, stride=stride,
+                                    pad=pad)
 
         # Keras model
         inp  = Input(shape = inpt.shape[1:], batch_shape = inpt.shape)

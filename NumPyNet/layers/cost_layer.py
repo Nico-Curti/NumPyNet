@@ -23,6 +23,7 @@ class cost_type(Enum):
   seg = 3
   smooth = 4
   wgan = 5
+  hellinger = 6
 
 class Cost_layer(object):
 
@@ -79,10 +80,11 @@ class Cost_layer(object):
 
       if self.smoothing: self._smoothing(truth)                              # smooth is applied on truth
 
-      if   self.cost_type == cost_type.smooth: self._smooth_l1(inpt, truth)  # smooth_l1 if smooth not zero
-      elif self.cost_type == cost_type.mae:    self._l1(inpt, truth)         # call for l1 if mae is cost
-      elif self.cost_type == cost_type.wgan:   self._wgan(inpt, truth)       # call for wgan
-      else:                                    self._l2(inpt, truth)         # call for l2 if mse or nothing
+      if   self.cost_type == cost_type.smooth:    self._smooth_l1(inpt, truth)  # smooth_l1 if smooth not zero
+      elif self.cost_type == cost_type.mae:       self._l1(inpt, truth)         # call for l1 if mae is cost
+      elif self.cost_type == cost_type.wgan:      self._wgan(inpt, truth)       # call for wgan
+      elif self.cost_type == cost_type.hellinger: self._hellinger(inpt, truth)  # call for hellinger distance
+      else:                                       self._l2(inpt, truth)         # call for l2 if mse or nothing
 
       if self.cost_type == cost_type.seg and self.noobject_scale != 1.:      # seg if noobject_scale is not 1.
         self._seg(truth)
@@ -194,6 +196,20 @@ class Cost_layer(object):
 
     self.output = diff * diff
     self.delta = -2. * diff
+
+  def _hellinger(self, inpt, truth):
+    '''
+    cost function fot the Hellinger distance.
+    It computes the square difference (sqrt(truth) -  sqrt(inpt))**2
+    and modifies output and delta. Called for hellinger cost_type.
+
+    Parameters:
+      inpt: output of the previous layer of the network
+      truth: truth values.
+    '''
+    diff = np.sqrt(truth) - np.sqrt(inpt)
+    self.output = diff * diff
+    self.delta  = -diff / np.sqrt(2 * inpt)
 
   def _seg(self, truth):
     '''
