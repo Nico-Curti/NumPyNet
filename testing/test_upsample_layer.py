@@ -65,7 +65,7 @@ def test_upsample_layer():
 
             # BACKWARD
 
-            numpynet_layer.delta = layer.output
+            numpynet_layer.delta = numpynet_layer.output
             delta = np.empty(shape=inpt.shape, dtype=float)
             numpynet_layer.backward(delta)
 

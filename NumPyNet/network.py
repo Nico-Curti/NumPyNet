@@ -106,7 +106,7 @@ class Network(object):
     # TODO: add other network parameters
 
     self.net = dict()
-    input_shape = (self.batch, *self.input_shape)
+    input_shape = (self.batch, self.w, self.h, self.c)
 
     for layer in model:
       layer_t = re.split(r'\d+', layer)[0]
