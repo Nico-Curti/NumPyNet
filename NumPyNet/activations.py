@@ -259,12 +259,12 @@ class Stair (Activations):
     super(Stair, self).__init__('Stair')
 
 
-class HardTan (Activations):
+class Hardtan (Activations):
 
   BYRON_INDEX = 11
 
   def __init__ (self):
-    super(HardTan, self).__init__('HardTan')
+    super(Hardtan, self).__init__('HardTan')
 
   @staticmethod
   def activate(x, copy=False):
