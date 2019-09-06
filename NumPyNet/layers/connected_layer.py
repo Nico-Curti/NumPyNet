@@ -18,7 +18,7 @@ __package__ = 'Connected Layer'
 
 class Connected_layer(object):
 
-  def __init__(self, input_shape, outputs, activation=Activations, weights=None, bias=None,  **kwargs):
+  def __init__(self, input_shape, outputs, activation=Activations, weights=None, bias=None, **kwargs):
     '''
     Connected layer:
 

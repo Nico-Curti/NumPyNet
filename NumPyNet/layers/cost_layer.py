@@ -29,12 +29,11 @@ class cost_type(Enum):
 
 class Cost_layer(object):
 
-  def __init__(self, inputs, cost_type, scale=1., ratio=0., noobject_scale=1., threshold=0., smoothing=0.):
+  def __init__(self, cost_type, scale=1., ratio=0., noobject_scale=1., threshold=0., smoothing=0., **kwargs):
     '''
     Cost layer, compute the cost of the output based on the selected cost function
 
     Parameters:
-      inputs : tuple of int, shape of the input of the layer
       cost_type : cost function to be applied to the layer, from the enum cost_type
       scale     : float, default = 1.,
       ratio     : float, default = 0.,
@@ -42,12 +41,6 @@ class Cost_layer(object):
       threshold : float, default = 0.,
       smooothing: float, default = 0.,
     '''
-
-    try:
-      if len(inputs):
-        self.outputs = np.prod(inputs)
-    except:
-      self.outputs = inputs
 
     self.cost_type = cost_type
     self.scale = scale
@@ -57,11 +50,11 @@ class Cost_layer(object):
     self.smoothing = smoothing
 
     # Need an empty initialization to work out _smooth_l1 and _wgan
-    self.output = np.empty(shape=inputs)
+    self.output, self.delta = np.empty(shape=inputs)
     self.delta = np.empty(shape=inputs)
 
   def __str__(self):
-    return 'cost                                           {:>4d}'.format(self.outputs)
+    return 'cost                                          ({:>4d} x{:>4d} x{:>4d} x{:>4d})'.format(*self.output.shape)
 
   @property
   def out_shape(self):

@@ -13,7 +13,7 @@ __package__ = 'Dropout Layer'
 
 class Dropout_layer(object):
 
-  def __init__(self, prob):
+  def __init__(self, prob, **kwargs):
     '''
     DropOut Layer: drop a random selection of Inputs. This helps avoid overfitting
 

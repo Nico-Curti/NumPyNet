@@ -17,7 +17,7 @@ __package__ = 'Timing layer functions'
 
 NUM_REPEATS = 10
 NUMBER = 100
-AVAILABLE_LAYERS = ['activation', 'avgpool', 'batchnorm', 'connected', 'convolutional', 'cost', 'dropout', 'input', 'logistic', 'maxpool', 'route', 'shortcut', 'shuffler', 'softmax', 'yolo']
+AVAILABLE_LAYERS = ['activation', 'avgpool', 'batchnorm', 'connected', 'convolutional', 'cost', 'dropout', 'input', 'logistic', 'maxpool', 'route', 'shortcut', 'shuffler', 'softmax', 'upsample', 'yolo']
 
 
 def forward (layer, input_shape, params):
@@ -235,19 +235,154 @@ def timing_convolutional_layer (input_shape):
   raise NotImplementedError
 
 def timing_cost_layer (input_shape):
-  raise NotImplementedError
+
+  from NumPyNet.layers import cost_layer
+
+  costs = [cost_layer.mse, cost_layer.masked, cost_layer.mae, cost_layer.seg, cost_layer.smooth, cost_layer.wgan, cost_layer.hellinger, cost_layer.hinge, cost_layer.logcosh]
+
+  timing = []
+
+  for cost in costs:
+
+    params = {'input_shape' : input_shape, 'cost_type' : cost,
+              'scale' : 1.5,
+              'ratio' : 0.5,
+              'noobject_scale' : 1.2,
+              'threshold' : 0.2,
+              'smoothing' : 0.5
+              }
+
+    forward_times  = forward('Cost_layer', input_shape, params)
+    backward_times = backward('Cost_layer', input_shape, params)
+
+    timing.append( { 'layer' : 'Cost',
+                     **params,
+                     'num_repeatition' : NUM_REPEATS,
+                     'number'        : NUMBER,
+                     'forward_mean'  : np.mean(forward_times),
+                     'forward_max'   : np.max(forward_times),
+                     'forward_min'   : np.min(forward_times),
+                     'forward_std'   : np.std(forward_times),
+                     'backward_mean' : np.mean(backward_times),
+                     'backward_max'  : np.max(backward_times),
+                     'backward_min'  : np.min(backward_times),
+                     'backward_std'  : np.std(backward_times),
+                     })
+
+  return timing
 
 def timing_dropout_layer (input_shape):
-  raise NotImplementedError
+
+  probabilities = [0., .25, .5, .75, .1]
+
+  timing = []
+
+  for prob in probabilities:
+
+    params = {'prob' : prob}
+
+    forward_times  = forward('Dropout_layer', input_shape, params)
+    backward_times = backward('Dropout_layer', input_shape, params)
+
+    timing.append( { 'layer' : 'Dropout',
+                     **params,
+                     'num_repeatition' : NUM_REPEATS,
+                     'number'        : NUMBER,
+                     'forward_mean'  : np.mean(forward_times),
+                     'forward_max'   : np.max(forward_times),
+                     'forward_min'   : np.min(forward_times),
+                     'forward_std'   : np.std(forward_times),
+                     'backward_mean' : np.mean(backward_times),
+                     'backward_max'  : np.max(backward_times),
+                     'backward_min'  : np.min(backward_times),
+                     'backward_std'  : np.std(backward_times),
+                     })
+
+  return timing
 
 def timing_input_layer (input_shape):
-  raise NotImplementedError
+
+  timing = []
+
+  params = {'input_shape' : input_shape}
+
+  forward_times  = forward('Input_layer', input_shape, params)
+  backward_times = backward('Input_layer', input_shape, params)
+
+  timing.append( { 'layer' : 'Input',
+                   **params,
+                   'num_repeatition' : NUM_REPEATS,
+                   'number'        : NUMBER,
+                   'forward_mean'  : np.mean(forward_times),
+                   'forward_max'   : np.max(forward_times),
+                   'forward_min'   : np.min(forward_times),
+                   'forward_std'   : np.std(forward_times),
+                   'backward_mean' : np.mean(backward_times),
+                   'backward_max'  : np.max(backward_times),
+                   'backward_min'  : np.min(backward_times),
+                   'backward_std'  : np.std(backward_times),
+                   })
+
+  return timing
 
 def timing_logistic_layer (input_shape):
-  raise NotImplementedError
+
+  timing = []
+
+  params = {}
+
+  forward_times  = forward('Logistic_layer', input_shape, params)
+  backward_times = backward('Logistic_layer', input_shape, params)
+
+  timing.append( { 'layer' : 'Logistic',
+                   **params,
+                   'num_repeatition' : NUM_REPEATS,
+                   'number'        : NUMBER,
+                   'forward_mean'  : np.mean(forward_times),
+                   'forward_max'   : np.max(forward_times),
+                   'forward_min'   : np.min(forward_times),
+                   'forward_std'   : np.std(forward_times),
+                   'backward_mean' : np.mean(backward_times),
+                   'backward_max'  : np.max(backward_times),
+                   'backward_min'  : np.min(backward_times),
+                   'backward_std'  : np.std(backward_times),
+                   })
+
+  return timing
 
 def timing_maxpool_layer (input_shape):
-  raise NotImplementedError
+
+  sizes = [(1, 1), (3, 3), (30, 30)]
+  strides = [(1, 1), (2, 2), (20, 20)]
+  pads = [False, True]
+
+  timing = []
+
+  for size in sizes:
+    for stride in strides:
+      for pad in pads:
+
+        params = {'size' : size, 'stride' : stride, 'padding' : pad}
+
+        forward_times  = forward('Maxpool_layer', input_shape, params)
+        backward_times = backward('Maxpool_layer', input_shape, params)
+
+        timing.append( { 'layer' : 'Maxpool',
+                         'input_shape' : input_shape,
+                         **params,
+                         'num_repeatition' : NUM_REPEATS,
+                         'number'        : NUMBER,
+                         'forward_mean'  : np.mean(forward_times),
+                         'forward_max'   : np.max(forward_times),
+                         'forward_min'   : np.min(forward_times),
+                         'forward_std'   : np.std(forward_times),
+                         'backward_mean' : np.mean(backward_times),
+                         'backward_max'  : np.max(backward_times),
+                         'backward_min'  : np.min(backward_times),
+                         'backward_std'  : np.std(backward_times),
+                         })
+
+  return timing
 
 def timing_route_layer (input_shape):
   raise NotImplementedError
@@ -256,6 +391,7 @@ def timing_shortcut_layer (input_shape):
   raise NotImplementedError
 
 def timing_shuffler_layer (input_shape):
+
   scales = (2, 3, 4)
   batch, w, h, c = input_shape
 
@@ -289,7 +425,64 @@ def timing_shuffler_layer (input_shape):
 
 
 def timing_softmax_layer (input_shape):
-  raise NotImplementedError
+
+  spatials = [False, True]
+  temperature = 1.5
+  noloss = False
+  groups = 1
+
+  for spatial in spatials:
+
+    params = {'spatial' : spatial, 'temperature' : temperature}
+
+    forward_times  = forward('Softmax_layer', input_shape, params)
+    backward_times = backward('Softmax_layer', input_shape, params)
+
+    timing.append( { 'layer' : 'Softmax',
+                     **params,
+                     'num_repeatition' : NUM_REPEATS,
+                     'number'        : NUMBER,
+                     'forward_mean'  : np.mean(forward_times),
+                     'forward_max'   : np.max(forward_times),
+                     'forward_min'   : np.min(forward_times),
+                     'forward_std'   : np.std(forward_times),
+                     'backward_mean' : np.mean(backward_times),
+                     'backward_max'  : np.max(backward_times),
+                     'backward_min'  : np.min(backward_times),
+                     'backward_std'  : np.std(backward_times),
+                     })
+
+  return timing
+
+def timing_upsample_layer (input_shape):
+
+  strides = [1, 3, -2, -4]
+  scale = 1.5
+
+  timing = []
+
+  for stride in strides:
+
+    params = {'stride' : stride, 'scale' : scale}
+
+    forward_times  = forward('Upsample_layer', input_shape, params)
+    backward_times = backward('Upsample_layer', input_shape, params)
+
+    timing.append( { 'layer' : 'Upsample',
+                     **params,
+                     'num_repeatition' : NUM_REPEATS,
+                     'number'        : NUMBER,
+                     'forward_mean'  : np.mean(forward_times),
+                     'forward_max'   : np.max(forward_times),
+                     'forward_min'   : np.min(forward_times),
+                     'forward_std'   : np.std(forward_times),
+                     'backward_mean' : np.mean(backward_times),
+                     'backward_max'  : np.max(backward_times),
+                     'backward_min'  : np.min(backward_times),
+                     'backward_std'  : np.std(backward_times),
+                     })
+
+  return timing
 
 def timing_yolo_layer (input_shape):
   raise NotImplementedError
@@ -360,6 +553,7 @@ if __name__ == '__main__':
                    'shortcut'   : timing_shortcut_layer,
                    'shuffler'   : timing_shuffler_layer,
                    'softmax'    : timing_softmax_layer,
+                   'upsample'   : timing_upsample_layer,
                    'yolo'       : timing_yolo_layer
                    }
 
