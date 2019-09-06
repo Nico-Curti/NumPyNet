@@ -25,7 +25,7 @@ def forward (layer, input_shape, params):
   SETUP_CODE = '''
 import numpy as np
 from NumPyNet.layers.{lower_layer} import {layer}
-from NumPyNet.activations import Elu, HardTan, Leaky, LhTan, Linear, Loggy, Logistic, Plse, Ramp, Relie, Relu, Selu, Stair, Tanh
+from NumPyNet.activations import Elu, Hardtan, Leaky, Lhtan, Linear, Loggy, Logistic, Plse, Ramp, Relie, Relu, Selu, Stair, Tanh
 
 parameters = dict()
 for k, v in {params}.items():
