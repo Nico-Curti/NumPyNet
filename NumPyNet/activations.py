@@ -287,12 +287,12 @@ class Hardtan (Activations):
     return y
 
 
-class LhTan (Activations):
+class Lhtan (Activations):
 
   BYRON_INDEX = 12
 
   def __init__ (self):
-    super(LhTan, self).__init__('LhTan')
+    super(Lhtan, self).__init__('LhTan')
 
   @staticmethod
   def activate (x, copy=False):

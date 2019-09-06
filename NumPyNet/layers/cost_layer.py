@@ -24,6 +24,8 @@ class cost_type(Enum):
   smooth = 4
   wgan = 5
   hellinger = 6
+  hinge = 7
+  logcosh = 8
 
 class Cost_layer(object):
 
@@ -84,6 +86,8 @@ class Cost_layer(object):
       elif self.cost_type == cost_type.mae:       self._l1(inpt, truth)         # call for l1 if mae is cost
       elif self.cost_type == cost_type.wgan:      self._wgan(inpt, truth)       # call for wgan
       elif self.cost_type == cost_type.hellinger: self._hellinger(inpt, truth)  # call for hellinger distance
+      elif self.cost_type == cost_type.hinge:     self._hinge(inpt, truth)  # call for hellinger distance
+      elif self.cost_type == cost_type.logcosh:   self._logcosh(inpt, truth)  # call for hellinger distance
       else:                                       self._l2(inpt, truth)         # call for l2 if mse or nothing
 
       if self.cost_type == cost_type.seg and self.noobject_scale != 1.:      # seg if noobject_scale is not 1.
@@ -197,9 +201,28 @@ class Cost_layer(object):
     self.output = diff * diff
     self.delta = -2. * diff
 
+  def _hinge(self, inpt, truth):
+    '''
+    cost function for the Hinge loss.
+    The gradient is computed as the smoothed version of Rennie and Srebro
+
+    Parameters:
+      inpt: output of the previous layer of the network
+      truth: truth values.
+    '''
+    diff = truth * inpt
+    self.output = np.maximum(0, 1. - diff)
+    self.delta  = diff
+    check1 = np.vectorize(lambda t:   t <= 0.)
+    check2 = np.vectorize(lambda t: ( t >  0.) and ( t <= 1.))
+    check3 = np.vectorize(lambda t:   t >= 1.)
+    self.delta[check1(diff)] = .5 - diff[check1(diff)]
+    self.delta[check2(diff)] = .5 * (1. - diff[check2(diff)]**2)
+    self.delta[check3(diff)] = 0.
+
   def _hellinger(self, inpt, truth):
     '''
-    cost function fot the Hellinger distance.
+    cost function for the Hellinger distance.
     It computes the square difference (sqrt(truth) -  sqrt(inpt))**2
     and modifies output and delta. Called for hellinger cost_type.
 
@@ -210,6 +233,18 @@ class Cost_layer(object):
     diff = np.sqrt(truth) - np.sqrt(inpt)
     self.output = diff * diff
     self.delta  = -diff / np.sqrt(2 * inpt)
+
+  def _logcosh(self, inpt, truth):
+    '''
+    cost function for the Log-Cosh.
+
+    Parameters:
+      inpt: output of the previous layer of the network
+      truth: truth values.
+    '''
+    diff = truth - inpt
+    self.output = np.log(np.cosh(diff))
+    self.delta  = np.tanh(-diff)
 
   def _seg(self, truth):
     '''

@@ -95,7 +95,7 @@ class Shuffler_layer(object):
 
 
     # The function phase shift receives only in_c // out_c channels at a time
-    # the concatenate stitches toghether every output of the function.
+    # the concatenate stitches together every output of the function.
 
     self.output = np.concatenate([self._phase_shift(inpt[:, :, :, range(i, self.c, channel_output)], self.scale)
                                   for i in range(channel_output)], axis=3)
@@ -112,15 +112,15 @@ class Shuffler_layer(object):
       delta : global delta to be backpropagated with shape (batch, out_w, out_h, out_c)
     '''
 
-    channel_out = self.c // self.scale_step  #out_c
+    channel_out = self.c // self.scale_step # out_c
 
     # I apply the reverse function only for a single channel
     X = np.concatenate([self._reverse(self.delta[:, :, :, i], self.scale)
                                       for i in range(channel_out)], axis=3)
 
 
-    # The 'reverse' concatenate actually put the correct channels toghether but in a
-    #  weird order, so this part sorts the 'layers' correctly
+    # The 'reverse' concatenate actually put the correct channels together but in a
+    # weird order, so this part sorts the 'layers' correctly
     idx = sum([list(range(i, self.c, channel_out)) for i in range(channel_out)], [])
     idx = np.argsort(idx)
 

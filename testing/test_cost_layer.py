@@ -8,12 +8,15 @@ from keras.models import Model
 from keras.layers import Input
 from keras.layers import Activation
 import keras.backend as K
+import tensorflow as tf
 
 from NumPyNet.layers import cost_layer as cl
 from NumPyNet.layers.cost_layer import Cost_layer
 
 from keras.losses import mean_squared_error
 from keras.losses import mean_absolute_error
+from keras.losses import logcosh
+from keras.losses import hinge
 
 import numpy as np
 
@@ -37,13 +40,13 @@ def test_cost_layer():
         _seg
         _wgan
   '''
-  np.random.seed(123)
 
-  losses = [mean_absolute_error, mean_squared_error]
+  losses = [mean_absolute_error, mean_squared_error, logcosh]
+            #, hinge] # derivative is ambigous
 
   for loss_function in losses :
 
-    keras_loss_type = mean_absolute_error
+    keras_loss_type = loss_function
 
     outputs = 100
     truth = np.random.uniform(low=0., high=1., size=(outputs,))
@@ -58,6 +61,10 @@ def test_cost_layer():
 
     if   keras_loss_type is mean_squared_error:  cost = cl.cost_type.mse
     elif keras_loss_type is mean_absolute_error: cost = cl.cost_type.mae
+    elif keras_loss_type is logcosh:             cost = cl.cost_type.logcosh
+    elif keras_loss_type is hinge:               cost = cl.cost_type.hinge
+    else:
+      raise ValuError()
 
     numpynet_layer = Cost_layer(inpt.size, cost,
                              scale=1., ratio=0., noobject_scale=1.,
@@ -76,6 +83,12 @@ def test_cost_layer():
       loss = K.mean( K.square(truth_tf - model.output) )
     elif keras_loss_type is mean_absolute_error:
       loss = K.mean( K.abs(truth_tf - model.output) )
+    elif keras_loss_type is logcosh:
+      loss = K.mean( K.log(tf.math.cosh(truth_tf - model.output)))
+    elif keras_loss_type is hinge:
+      loss = K.maximum(1. - truth_tf * model.output, 0)
+    else:
+      raise ValuError()
 
     # compute gradient of loss with respect to inputs
     grad_loss = K.gradients(loss, [model.input])

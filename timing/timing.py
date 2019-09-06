@@ -256,7 +256,37 @@ def timing_shortcut_layer (input_shape):
   raise NotImplementedError
 
 def timing_shuffler_layer (input_shape):
-  raise NotImplementedError
+  scales = (2, 3, 4)
+  batch, w, h, c = input_shape
+
+  for scale in scales:
+    input_shape = (batch, w, h, c * scale*scale)
+
+    params = {'scale' : scale}
+
+    forward_times  = forward('Shuffler_layer', input_shape, params)
+    backward_times = backward('Shuffler_layer', input_shape, params)
+
+    timing.append( { 'layer' : 'Shuffler',
+                     'input_shape' : input_shape,
+                     #**params, # useless params
+                     'outputs' : output,
+                     'activation' : params['activation'],
+
+                     'num_repeatition' : NUM_REPEATS,
+                     'number'        : NUMBER,
+                     'forward_mean'  : np.mean(forward_times),
+                     'forward_max'   : np.max(forward_times),
+                     'forward_min'   : np.min(forward_times),
+                     'forward_std'   : np.std(forward_times),
+                     'backward_mean' : np.mean(backward_times),
+                     'backward_max'  : np.max(backward_times),
+                     'backward_min'  : np.min(backward_times),
+                     'backward_std'  : np.std(backward_times),
+                     })
+
+  return timing
+
 
 def timing_softmax_layer (input_shape):
   raise NotImplementedError
