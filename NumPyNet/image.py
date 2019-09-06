@@ -190,15 +190,15 @@ class Image (object):
     img = self._image2cv(self._data)
 
     # show image
-    print('Press ESC to close the window', flush=True)
-    cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+    if ms == 0:
+      print('Press ESC to close the window', flush=True)
+
     cv2.imshow(window_name, img)
 
     if fullscreen:
       cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    cv2.waitKey(ms)
 
 
   def save (self, filename):
@@ -215,6 +215,13 @@ class Image (object):
     Use numpy array as the image
     '''
     self._data = array
+    return self
+
+  def from_frame (self, array):
+    '''
+    Use opencv frame array as the image
+    '''
+    self._data = self._cv2image(array)
     return self
 
 
@@ -321,4 +328,7 @@ if __name__ == '__main__':
   img = Image(filename)
   resized = img.letterbox(net_dim=(416, 416))
 
-  resized.show('prova')
+  cv2.namedWindow('Test', cv2.WINDOW_NORMAL)
+  resized.show('Test')
+
+  cv2.destroyAllWindows()

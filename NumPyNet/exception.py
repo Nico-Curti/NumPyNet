@@ -11,7 +11,7 @@ __package__ = 'Exceptions'
 
 class CfgfmtError (Exception):
 
-  def __init__ (self, message, error):
+  def __init__ (self, message, errors=1):
 
     super().__init__(message)
 
@@ -19,7 +19,7 @@ class CfgfmtError (Exception):
 
 class CfgVariableError (Exception):
 
-  def __init__ (self, message, error):
+  def __init__ (self, message, errors=1):
 
     super().__init__(message)
 
@@ -28,9 +28,16 @@ class CfgVariableError (Exception):
 
 class DataVariableError (Exception):
 
-  def __init__ (self, message, error):
+  def __init__ (self, message, errors=1):
 
     super().__init__(message)
 
     self.errors = errors
 
+class VideoError (Exception):
+
+  def __init__ (self, message, errors=1):
+
+    super().__init__(message)
+
+    self.errors = errors
