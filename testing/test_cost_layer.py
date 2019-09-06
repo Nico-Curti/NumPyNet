@@ -40,6 +40,7 @@ def test_cost_layer():
         _seg
         _wgan
   '''
+  np.random.seed(123)
 
   losses = [mean_absolute_error, mean_squared_error, logcosh]
             #, hinge] # derivative is ambigous
@@ -66,7 +67,7 @@ def test_cost_layer():
     else:
       raise ValuError()
 
-    numpynet_layer = Cost_layer(inpt.size, cost,
+    numpynet_layer = Cost_layer(input_shape=inpt.shape, cost_type=cost,
                              scale=1., ratio=0., noobject_scale=1.,
                              threshold=0., smoothing=0.)
 

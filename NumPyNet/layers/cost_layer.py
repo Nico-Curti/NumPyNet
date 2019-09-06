@@ -29,15 +29,16 @@ class cost_type(Enum):
 
 class Cost_layer(object):
 
-  def __init__(self, cost_type, scale=1., ratio=0., noobject_scale=1., threshold=0., smoothing=0., **kwargs):
+  def __init__(self, input_shape, cost_type, scale=1., ratio=0., noobject_scale=1., threshold=0., smoothing=0., **kwargs):
     '''
     Cost layer, compute the cost of the output based on the selected cost function
 
     Parameters:
+      input_shape : tuple of int, shape of the input of the layer
       cost_type : cost function to be applied to the layer, from the enum cost_type
       scale     : float, default = 1.,
       ratio     : float, default = 0.,
-      noobject_scale : flaot, default = 1.,
+      noobject_scale : float, default = 1.,
       threshold : float, default = 0.,
       smooothing: float, default = 0.,
     '''
@@ -50,15 +51,15 @@ class Cost_layer(object):
     self.smoothing = smoothing
 
     # Need an empty initialization to work out _smooth_l1 and _wgan
-    self.output, self.delta = np.empty(shape=inputs)
-    self.delta = np.empty(shape=inputs)
+    self.output = np.empty(shape=input_shape)
+    self.delta = np.empty(shape=input_shape)
 
   def __str__(self):
     return 'cost                                          ({:>4d} x{:>4d} x{:>4d} x{:>4d})'.format(*self.output.shape)
 
   @property
   def out_shape(self):
-    return (self.outputs)
+    return self.output.shape
 
   def forward(self, inpt, truth=None):
     '''
@@ -120,7 +121,7 @@ class Cost_layer(object):
     '''
 
     scale = 1. - self.smoothing
-    bias  = self.smoothing / self.outputs
+    bias  = self.smoothing / self.output.size
 
     truth[:] = truth * scale + bias
 
@@ -287,7 +288,7 @@ class Cost_layer(object):
 
     Parameters :
     '''
-    scale = self.threshold / self.outputs
+    scale = self.threshold / self.output.size
     scale *= scale
 
     self.delta[ self.delta * self.delta < scale ] = 0.

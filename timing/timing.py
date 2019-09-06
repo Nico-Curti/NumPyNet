@@ -244,7 +244,8 @@ def timing_cost_layer (input_shape):
 
   for cost in costs:
 
-    params = {'input_shape' : input_shape, 'cost_type' : cost,
+    params = {'input_shape' : input_shape,
+              'cost_type' : cost,
               'scale' : 1.5,
               'ratio' : 0.5,
               'noobject_scale' : 1.2,
@@ -539,7 +540,7 @@ if __name__ == '__main__':
 
   args = parse_args()
 
-  input_shapes = [(8, 1920, 1080, 3)]
+  input_shapes = [(4, 512, 512, 3)]
 
   timing_layers = {'activation' : timing_activation_layer,
                    'avgpool'    : timing_avgpool_layer,

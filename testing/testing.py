@@ -64,7 +64,7 @@ def test_cost_layer():
     if   keras_loss_type is mean_squared_error:  cost = cl.cost_type.mse
     elif keras_loss_type is mean_absolute_error: cost = cl.cost_type.mae
 
-    numpynet_layer = Cost_layer(inpt.size, cost,
+    numpynet_layer = Cost_layer(input_shape=inpt.shape, cost_type=cost,
                              scale=1., ratio=0., noobject_scale=1.,
                              threshold=0., smoothing=0.)
 
