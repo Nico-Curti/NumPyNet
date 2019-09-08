@@ -69,3 +69,31 @@ def _check_activation (layer, activation_func):
     raise ValueError('{0}: incorrect value of Activation Function given'.format(class_name))
 
   return activation
+
+
+  def print_statistics (arr):
+    '''
+    Compute the common statistics of the input array
+
+    Parameters
+    ----------
+      arr : array-like
+
+    Returns
+    -------
+      mse : Mean Squared Error, i.e sqrt(mean(x*x))
+      mean: Mean of the array
+      variance: Variance of the array
+
+    Notes
+    -----
+    The value are printed and returned
+    '''
+
+    mean = np.mean(arr)
+    variance = np.var(arr)
+    mse = np.sqrt(np.mean(arr * arr))
+
+    print('MSE: {:>3.3f}, Mean: {:>3.3f}, Variance: {:>3.3f}'.format(mse, mean, variance))
+
+    return (mse, mean, variance)
