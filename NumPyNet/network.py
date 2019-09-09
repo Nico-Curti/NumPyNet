@@ -27,6 +27,7 @@ from NumPyNet.layers.yolo_layer import Yolo_layer
 
 from NumPyNet.parser import net_config
 from NumPyNet.exception import DataVariableError
+from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -73,15 +74,16 @@ class Network(object):
   def add_layer(self, layer):
     '''
     '''
-    # TODO add input_shape as first input argument of each layer object!
-    #if self.net[-1].out_shape() != layer.input_shape:
-    #  raise ValueError('Incorrect shape found')
-    type_layer = str(type(layer))
+    try:
+      type_layer = layer.__class__.__name__.lower().split('_layer')[0]
+
+    except:
+      raise LayerError('Incorrect Layer type found. Given {}'.format(type_layer.__class__.__name__))
 
     if type_layer not in self.LAYERS.keys():
-      raise ValueError('Incorrect Layer type found.')
+      raise LayerError('Incorrect Layer type found.')
 
-    self.net.append(layer)
+    self.net.append(layer(self.net[-1]))
 
     return self
 
