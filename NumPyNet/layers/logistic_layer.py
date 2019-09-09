@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -21,7 +22,7 @@ class Logistic_layer(object):
 
     Parameters:
     '''
-    self.w, self.h, self.c  = (0, 0, 0)
+    self._out_shape = None
     self.output, self.delta, self.loss  = (None, None, None)
 
   def __str__(self):
@@ -29,9 +30,19 @@ class Logistic_layer(object):
     return 'logistic x entropy                       {:>4d} x{:>4d} x{:>4d} x{:>4d}' .format(
            batch, out_width, out_height, out_channels)
 
+  def __call__(self, previous_layer):
+
+    if previous_layer.out_shape is None:
+      class_name = self.__class__.__name__
+      prev_name  = layer.__class__.__name__
+      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
+
+    self._out_shape = previous_layer.out_shape
+    return self
+
   @property
   def out_shape(self):
-    return (self.batch, self.w, self.h, self.c)
+    return self._out_shape
 
   def forward(self, inpt, truth=None) :
     '''
@@ -43,7 +54,7 @@ class Logistic_layer(object):
         if given, the function computes the binary cross entropy
     '''
 
-    self.batch, self.w, self.h, self.c = inpt.shape
+    self._out_shape = inpt.shape
     # inpt = np.log(inpt/(1-inpt))
     self.output = 1. / (1. + np.exp(-inpt)) # as for darknet
     # self.output = inpt
@@ -57,7 +68,7 @@ class Logistic_layer(object):
       # self.cost = np.mean(self.loss)
       self.cost = np.sum(self.loss) # as for darknet
     else :
-      self.delta = np.zeros(shape=self.out_shape, dtype=float)
+      self.delta = np.zeros(shape=self._out_shape, dtype=float)
 
   def backward(self, delta=None):
     '''

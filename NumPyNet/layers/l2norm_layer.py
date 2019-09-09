@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -22,15 +23,26 @@ class L2Norm_layer(object):
 
     self.scales = None
     self.output, self.delta = (None, None)
+    self._out_shape = None
 
   def __str__(self):
     batch, out_width, out_height, out_channels = self.out_shape
     return 'l2norm            {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(
            batch, out_width, out_height, out_channels)
 
+  def __call__(self, previous_layer):
+
+    if previous_layer.out_shape is None:
+      class_name = self.__class__.__name__
+      prev_name  = layer.__class__.__name__
+      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
+
+    self._out_shape = previous_layer.out_shape
+    return self
+
   @property
   def out_shape(self):
-    return self.output.shape
+    return self._out_shape
 
   def forward(self, inpt):
     '''
@@ -40,8 +52,10 @@ class L2Norm_layer(object):
     Parameters:
       inpt: the input to be normaliza
     '''
+    self._out_shape = inpt.shape
+
     norm = (inpt * inpt).sum(axis=self.axis, keepdims=True)
-    norm = 1. / np.sqrt(norm)
+    norm = 1. / np.sqrt(norm + 1e-8)
     self.output = inpt * norm
     self.scales = (1. - self.output) * norm
     self.delta  = np.zeros(shape=self.out_shape, dtype=float)
@@ -86,7 +100,7 @@ if __name__ == '__main__':
 
   # BACKWARD
 
-  delta = np.empty(shape=inpt.shape)
+  delta = np.zeros(shape=inpt.shape, dtype=float)
   layer.backward(delta, copy=True)
 
   # Visualizations

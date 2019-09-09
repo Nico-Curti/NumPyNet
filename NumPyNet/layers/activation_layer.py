@@ -9,6 +9,7 @@ from NumPyNet.activations import Activations
 from NumPyNet.utils import _check_activation
 
 import numpy as np
+from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -31,15 +32,26 @@ class Activation_layer(object):
     self.gradient = activation.gradient
 
     self.output, self.delta = (None, None)
+    self._out_shape = None
 
   def __str__(self):
     batch, out_width, out_height, out_channels = self.out_shape
     return 'activation            {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(
            batch, out_width, out_height, out_channels)
 
+  def __call__(self, previous_layer):
+
+    if previous_layer.out_shape is None:
+      class_name = self.__class__.__name__
+      prev_name  = layer.__class__.__name__
+      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
+
+    self._out_shape = previous_layer.out_shape
+    return self
+
   @property
   def out_shape(self):
-    return self.output.shape
+    return self._out_shape
 
   def forward(self, inpt, copy=True):
     '''
@@ -51,6 +63,7 @@ class Activation_layer(object):
       copy: default value is True. If True make a copy of the input before
             applying the activation
     '''
+    self._out_shape = inpt.shape
     self.output = self.activation(inpt, copy=copy)
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
@@ -75,7 +88,7 @@ if __name__ == '__main__':
 
   from NumPyNet import activations
 
-  activation_func = activations.Tanh()
+  activation_func = activations.Relu()
 
   img_2_float = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 1.)).astype(float)
   float_2_img = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 255.)).astype(np.uint8)
@@ -100,7 +113,8 @@ if __name__ == '__main__':
 
   # BACKWARD
 
-  delta = np.empty(shape=inpt.shape)
+  layer.delta = np.ones(shape=inpt.shape, dtype=float)
+  delta = np.zeros(shape=inpt.shape, dtype=float)
   layer.backward(delta, copy=True)
 
   # Visualizations

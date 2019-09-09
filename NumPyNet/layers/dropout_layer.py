@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -28,9 +29,8 @@ class Dropout_layer(object):
       self.scale = 1. # it doesn't matter anyway, since everything is zero
 
 
-    self.batch, self.w, self.h, self.c = (0, 0, 0, 0)
-
     self.output, self.delta = (None, None)
+    self._out_shape = None
 
   def __str__(self):
     batch, out_width, out_height, out_channels = self.out_shape
@@ -39,9 +39,19 @@ class Dropout_layer(object):
            batch, out_width , out_height , out_channels,
            batch, out_width , out_height , out_channels)
 
+  def __call__(self, previous_layer):
+
+    if previous_layer.out_shape is None:
+      class_name = self.__class__.__name__
+      prev_name  = layer.__class__.__name__
+      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
+
+    self._out_shape = previous_layer.out_shape
+    return self
+
   @property
   def out_shape(self):
-    return (self.batch, self.w, self.h, self.c)
+    return self._out_shape
 
   def forward(self, inpt):
     '''
@@ -53,7 +63,7 @@ class Dropout_layer(object):
       inpt : array of shape (batch, w, h, c), input of the layer
     '''
 
-    self.batch, self.w, self.h, self.c = inpt.shape
+    self._out_shape = inpt.shape
 
     self.output = inpt.copy()
 
@@ -112,7 +122,7 @@ if __name__ == '__main__':
   # BACKWARD
 
   delta = np.ones(shape=inpt.shape, dtype=float)
-  layer.delta = np.ones(shape=layer.out_shape)
+  layer.delta = np.ones(shape=layer.out_shape, dtype=float)
   layer.backward(delta)
 
   # Visualitations

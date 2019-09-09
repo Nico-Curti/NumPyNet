@@ -5,6 +5,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import os
 import re
 import pickle
 
@@ -51,9 +52,11 @@ class Network(object):
             'yolo'          :  Yolo_layer,
             }
 
-  def __init__(self, input_shape=None, batch=None, train=None):
+  def __init__(self, batch, input_shape=None, train=None):
     '''
     '''
+    self.batch = batch
+    self.train = train
 
     if input_shape is not None:
 
@@ -64,17 +67,19 @@ class Network(object):
       except:
         raise ValueError('Network model : incorrect input_shape. Expected a 3D array (width, height, channel). Given {}'.format(input_shape))
 
-      self.net = [ Input_layer((batch, self.w, self.h, self.c)) ]
+      self.net = [ Input_layer(input_shape=(self.batch, self.w, self.h, self.c)) ]
 
-    self.batch = batch
-    self.train = train
 
   def add_layer(self, layer):
     '''
     '''
     # TODO add input_shape as first input argument of each layer object!
-    if self.net[-1].out_shape() != layer.input_shape:
-      raise ValueError('Incorrect shape found')
+    #if self.net[-1].out_shape() != layer.input_shape:
+    #  raise ValueError('Incorrect shape found')
+    type_layer = str(type(layer))
+
+    if type_layer not in self.LAYERS.keys():
+      raise ValueError('Incorrect Layer type found.')
 
     self.net.append(layer)
 
@@ -100,13 +105,14 @@ class Network(object):
 
     model = net_config(cfg_filename)
 
+    self.batch = model.get('net1', 'batch', 1)
     self.w = model.get('net1', 'width', 416)
     self.h = model.get('net1', 'height', 416)
     self.c = model.get('net1', 'channels', 3)
     # TODO: add other network parameters
 
-    self.net = dict()
     input_shape = (self.batch, self.w, self.h, self.c)
+    self.net = [ Input_layer(input_shape=input_shape) ]
 
     for layer in model:
       layer_t = re.split(r'\d+', layer)[0]
@@ -123,8 +129,18 @@ class Network(object):
 
         layer_params[k] = val
 
-      self.net[layer_t] = self.LAYERS[layer_t](input_shape=input_shape, **layer_params)
-      #input_shape = self.net[layer_t].out_shape # TODO
+      if layer_t == 'shortcut':
+        _from = model.get(layer, 'from', 0)
+        self.net.append( self.LAYERS[layer_t](input_shape=input_shape, **layer_params)([self.net[-1], self.net[_from]]) )
+
+      elif layer_t == 'route':
+        _layers = model.get(layer, 'layers', [])
+        self.net.append( self.LAYERS[layer_t](input_shape=input_shape, **layer_params)(self.net[_layers]) )
+
+      else:
+        self.net.append( self.LAYERS[layer_t](input_shape=input_shape, **layer_params)(self.net[-1]) )
+
+      print(self.net[-1], flush=True, end='\n')
 
     return self
 
@@ -138,9 +154,13 @@ class Network(object):
     '''
     with open(weights_filename, 'rb') as fp:
 
-      for layer in self:
-        if hasattr(layer, 'load_weights'):
-          layer.load_weights(fp)
+      major, minor, revision = np.fromfile(fp, dtype=np.int, count=3)
+      full_weights = np.fromfile(fp, dtype=np.float, count=-1)
+
+    pos = 0
+    for layer in self:
+      if hasattr(layer, 'load_weights'):
+        pos = layer.load_weights(full_weights, pos)
 
     return self
 
@@ -148,11 +168,18 @@ class Network(object):
     '''
     Dump current network weights
     '''
-    with open(filename, 'wb') as fp:
+    full_weights = []
 
-      for layer in self:
-        if hasattr(layer, 'save_weights'):
-          layer.save_weights(fp)
+    for layer in self:
+      if hasattr(layer, 'save_weights'):
+        full_weights += layer.save_weights()
+
+    full_weights = np.asarray(full_weights, dtype=np.float)
+    version = np.array([1, 0, 0], dtype=np.int)
+
+    with open(filename, 'wb') as fp:
+      version.tofile(fp, sep='')
+      full_weights.tofile(fp, sep='') # for binary format
 
     return self
 
@@ -206,7 +233,7 @@ if __name__ == '__main__':
   weight_filename = os.path.join(os.path.dirname(__file__), '..', 'data', 'yolov3.weights.byron')
   mask_w_filename = os.path.join(os.path.dirname(__file__), '..', 'data', 'yolov3.weights.mask')
 
-  net = Network()
+  net = Network(batch=32)
   net.load(config_filename)
 
   print(net.input_shape)

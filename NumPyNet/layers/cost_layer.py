@@ -9,7 +9,7 @@ import functools
 from enum import Enum
 
 import numpy as np
-#import utils     # not here yet
+from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -50,16 +50,26 @@ class Cost_layer(object):
     self.threshold = threshold
     self.smoothing = smoothing
 
+    self._out_shape = input_shape
     # Need an empty initialization to work out _smooth_l1 and _wgan
-    self.output = np.empty(shape=input_shape)
-    self.delta = np.empty(shape=input_shape)
+    self.output = np.empty(shape=self._out_shape)
+    self.delta = np.empty(shape=self._out_shape)
 
   def __str__(self):
-    return 'cost                                          ({:>4d} x{:>4d} x{:>4d} x{:>4d})'.format(*self.output.shape)
+    return 'cost                                          ({:>4d} x{:>4d} x{:>4d} x{:>4d})'.format(*self.out_shape)
+
+  def __call__(self, previous_layer):
+
+    if previous_layer.out_shape is None or self.out_shape != previous_layer.out_shape:
+      class_name = self.__class__.__name__
+      prev_name  = layer.__class__.__name__
+      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
+
+    return self
 
   @property
   def out_shape(self):
-    return self.output.shape
+    return self._out_shape
 
   def forward(self, inpt, truth=None):
     '''
@@ -71,6 +81,7 @@ class Cost_layer(object):
       truth: truth values, it should have the same
         dimension as inpt.
     '''
+    self._out_shape = inpt.shape
 
     if truth is not None:
 
@@ -296,30 +307,58 @@ class Cost_layer(object):
 
 if __name__ == '__main__':
 
-  np.random.seed(123)
+  import os
 
-  outputs = 100
+  import pylab as plt
+  from PIL import Image
 
-  # Random input and truth values
-  truth = np.random.uniform(low=0., high=1., size=(outputs,))
-  inpt = np.random.uniform(low=0., high=1., size=(outputs,))
+  img_2_float = lambda im : ((im - im.min()) * (1. / (im.max() - im.min()) * 1.)).astype(float)
+  float_2_img = lambda im : ((im - im.min()) * (1. / (im.max() - im.min()) * 255.)).astype(np.uint8)
 
-  # select cost type
-  cost = cost_type.mse
+  filename = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'dog.jpg')
+  input = np.asarray(Image.open(filename), dtype=float)
+  input.setflags(write=1)
+  input = img_2_float(input)
 
-  # Model initialization
-  layer = Cost_layer(inpt.size, cost, scale=1., ratio=0., noobject_scale=1., threshold=0., smoothing=0.)
+  # batch == 1
+  input = np.expand_dims(input, axis=0)
 
-  # FORWARD
+  cost_type = cost_type.mse
+  scale = 1.
+  ratio = 0.
+  noobject_scale = 1.
+  threshold = 0.
+  smoothing = 0.
 
-  layer.forward(inpt, truth)
-  byron_loss = layer.cost
+  truth = np.random.uniform(low=0., high=1., size=input.shape)
 
+  layer = Cost_layer(input_shape=input.shape, cost_type=cost_type, scale=scale, ratio=ratio, noobject_scale=noobject_scale, threshold=threshold, smoothing=smoothing, trainable=True)
   print(layer)
-  print(layer.out_shape)
-  print('Loss: {:.3f}'.format(byron_loss))
 
-  # BACKWARD
+  layer.forward(input, truth)
+  forward_out = layer.output
 
-  delta = np.zeros(shape=inpt.shape)
+  print('Cost: {:.3f}'.format(layer.cost))
+  print(layer.cost)
+
+  delta = np.zeros(shape=input.shape, dtype=float)
   layer.backward(delta)
+
+  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
+  fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
+
+  fig.suptitle('Cost Layer:\n{0}'.format(cost_type))
+
+  ax1.imshow(float_2_img(input[0]))
+  ax1.axis('off')
+  ax1.set_title('Original Image')
+
+  ax2.imshow(float_2_img(forward_out[0]))
+  ax2.axis('off')
+  ax2.set_title('Forward Image')
+
+  ax3.imshow(float_2_img(delta[0]))
+  ax3.axis('off')
+  ax3.set_title('Delta Image')
+
+  plt.show()

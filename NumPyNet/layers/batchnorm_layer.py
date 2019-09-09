@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -30,20 +31,55 @@ class BatchNorm_layer(object):
     self.scales = scales
     self.bias = bias
 
-    self.batch, self.w, self.h, self.c = (0, 0, 0, 0)
     self.output, self.delta = (None, None)
 
     #Updates
     self.scales_updates, self.bias_updates = (None, None)
+    self._out_shape = None
 
 
   def __str__(self):
-    return 'Batch Normalization Layer: {:4d} x {:4d} x {:4d} image'.format(
-           self.w, self.h, self.c)
+    return 'Batch Normalization Layer: {:4d} x {:4d} x {:4d} image'.format(*self._out_shape[1:])
+
+  def __call__(self, previous_layer):
+
+    if previous_layer.out_shape is None:
+      class_name = self.__class__.__name__
+      prev_name  = layer.__class__.__name__
+      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
+
+    self._out_shape = previous_layer.out_shape
+    return self
 
   @property
   def out_shape(self):
-    return (self.batch, self.w, self.h, self.c)
+    return self._out_shape
+
+  def load_weights(self, chunck_weights, pos=0):
+    '''
+    Load weights from full array of model weights
+
+    Parameters:
+      chunck_weights : numpy array of model weights
+      pos : current position of the array
+    '''
+    outputs = np.prod(self.out_shape)
+
+    self.bias = chunck_weights[pos : pos + outputs]
+    self.bias = self.bias.reshape(self.out_shape)
+    pos += outputs
+
+    self.scales = chunck_weights[pos : pos + outputs]
+    self.scales = self.scales.reshape(self.out_shape)
+    pos += outputs
+
+    return pos
+
+  def save_weights(self):
+    '''
+    Return the biases and weights in a single ravel fmt to save in binary file
+    '''
+    return np.concatenate([self.bias.ravel(), self.scales.ravel()], axis=0).tolist()
 
   def forward(self, inpt, epsil=1e-8):
     '''
@@ -64,7 +100,7 @@ class BatchNorm_layer(object):
       epsil : float, used to avoi division by zero when computing 1. / var
     '''
 
-    self.batch, self.w, self.h, self.c = inpt.shape
+    self._out_shape = inpt.shape
 
     # Copy input, compute mean and inverse variance with respect the batch axis
     self.x    = inpt

@@ -7,6 +7,7 @@ from __future__ import print_function
 import itertools
 
 import numpy as np
+from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -58,6 +59,20 @@ class Maxpool_layer(object):
            self.batch, self.w, self.h, self.c,
            batch, out_width, out_height, out_channels)
 
+  def __call__(self, previous_layer):
+
+    if previous_layer.out_shape is None:
+      class_name = self.__class__.__name__
+      prev_name  = layer.__class__.__name__
+      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
+
+    self.batch, self.w, self.h, self.c = previous_layer.out_shape
+
+    if self.pad:
+      self._evaluate_padding()
+
+    return self
+
   @property
   def out_shape(self):
     out_height   = (self.h + self.pad_left + self.pad_right - self.size[1]) // self.stride[1] + 1
@@ -98,37 +113,37 @@ class Maxpool_layer(object):
     subs = np.lib.stride_tricks.as_strided(inpt, view_shape, strides = strides)
     return subs
 
-  def _pad(self, inpt, size, stride):
+  def _evaluate_padding(self):
     '''
-    Padd every image in a batch with np.nan, following keras SAME padding.
-    See also:
-      https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
-
-    Parameters:
-      inpt    : input images in the format (batch, in_w, in_h, in_c)
-      size    : tuple, size of the kernel in the format (kx, ky)
-      stride  : tuple, size of the strides of the kernel in the format (st1, st2)
+    Compute padding dimensions
     '''
-
-    _, w, h, c = inpt.shape
-
     # Compute how many raws are needed to pad the image in the 'w' axis
-    if (w % stride[0] == 0):
-      pad_w = max(size[0] - stride[0], 0)
+    if (self.w % self.stride[0] == 0):
+      pad_w = max(self.size[0] - self.stride[0], 0)
     else:
-      pad_w = max(size[0] - (w % stride[0]), 0)
+      pad_w = max(self.size[0] - (self.w % self.stride[0]), 0)
 
     # Compute how many Columns are needed
-    if (h % stride[1] == 0):
-      pad_h = max(size[1] - stride[1], 0)
+    if (self.h % self.stride[1] == 0):
+      pad_h = max(self.size[1] - self.stride[1], 0)
     else:
-      pad_h = max(size[1] - (h % stride[1]), 0)
+      pad_h = max(self.size[1] - (self.h % self.stride[1]), 0)
 
     # Number of raws/columns to be added for every directons
     self.pad_top    = pad_w >> 1 # bit shift, integer division by two
     self.pad_bottom = pad_w - self.pad_top
     self.pad_left   = pad_h >> 1
     self.pad_right  = pad_h - self.pad_left
+
+  def _pad(self, inpt):
+    '''
+    Padd every image in a batch with np.nan following keras SAME padding
+    See also:
+      https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
+
+    Parameters:
+      inpt    : input images in the format (batch, width, height, channels)
+    '''
 
     # return the nan-padded image, in the same format as inpt (batch, width + pad_w, height + pad_h, channels)
     return np.pad(inpt, ((0, 0), (self.pad_top, self.pad_bottom), (self.pad_left, self.pad_right), (0, 0)),
@@ -152,7 +167,8 @@ class Maxpool_layer(object):
     st1, st2 = self.stride
 
     if self.pad:
-      mat_pad = self._pad(inpt, self.size, self.stride)
+      self._evaluate_padding()
+      mat_pad = self._pad(inpt)
     else:
       # If no padding, cut the last raws/columns in every image in the batch
       mat_pad = inpt[:, : (self.w - kx) // st1*st1 + kx, : (self.h - ky) // st2*st2 + ky, ...]
@@ -187,7 +203,7 @@ class Maxpool_layer(object):
 
     # Padding delta in order to create another view
     if self.pad:
-      mat_pad = self._pad(delta, self.size, self.stride)
+      mat_pad = self._pad(delta)
     else:
       mat_pad = delta
 
@@ -246,8 +262,8 @@ if __name__ == '__main__':
 
   # BACKWARD
 
-  delta = np.zeros(inpt.shape)
-  layer.delta = np.ones(layer.out_shape)
+  delta = np.zeros(inpt.shape, dtype=float)
+  layer.delta = np.ones(layer.out_shape, dtype=float)
   layer.backward(delta)
 
   # Visualizations

@@ -7,6 +7,7 @@ from __future__ import print_function
 
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
+from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -25,6 +26,7 @@ class Upsample_layer(object):
       scale  : floating point scale factor of the input
     '''
 
+    self.batch, self.w, self.h, self.c = (0, 0, 0, 0)
     self.scale = float(scale)
     self.stride = stride
 
@@ -44,11 +46,11 @@ class Upsample_layer(object):
       raise NotImplementedError('Mixture upsample/downsample are not yet implemented')
 
     self.output, self.delta = (None, None)
+    self._out_shape = None
 
 
   def __str__(self):
-    out_w = self.w // self.stride[0] if self.reverse else self.w * self.stride[0]
-    out_h = self.h // self.stride[1] if self.reverse else self.h * self.stride[1]
+    out_w, out_h = self.out_shape[1:3]
 
     if self.reverse: # downsample
       return 'downsample         {0:>2d}/{1:>2d}x {2:>4d} x{3:>4d} x{4:>4d}  -> {5:>4d} x{6:>4d} x{7:4d}'.format(
@@ -56,10 +58,22 @@ class Upsample_layer(object):
     else:            # upsample
       return 'upsample           {0:>2d}/{1:>2d}x {2:>4d} x{3:>4d} x{4:>4d}  -> {5:>4d} x{6:>4d} x{7:4d}'.format(
         self.stride[0], self.stride[1], self.w, self.h, self.c, out_w, out_h, self.c)
+    return self
+
+  def __call__(self, previous_layer):
+
+    if previous_layer.out_shape is None:
+      class_name = self.__class__.__name__
+      prev_name  = layer.__class__.__name__
+      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
+
+    self.batch, self.w, self.h, self.c = previous_layer.out_shape
 
   @property
   def out_shape(self):
-    return self.output.shape
+    out_w = self.w // self.stride[0] if self.reverse else self.w * self.stride[0]
+    out_h = self.h // self.stride[1] if self.reverse else self.h * self.stride[1]
+    return (self.batch, out_w, out_h, self.c)
 
   def _downsample (self, inpt):
     batch, w, h, c = inpt.shape

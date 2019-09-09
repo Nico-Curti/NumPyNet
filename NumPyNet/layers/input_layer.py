@@ -11,6 +11,7 @@ __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 __package__ = 'Input Layer'
 
+
 class Input_layer(object):
 
   def __init__(self, input_shape, **kwargs):
@@ -85,7 +86,7 @@ if __name__ == '__main__':
 
   # BACKWARD
 
-  delta = np.empty(shape=inpt.shape)
+  delta = np.zeros(shape=inpt.shape, dtype=float)
   layer.backward(delta)
 
   # Visualizations

@@ -9,7 +9,7 @@ from NumPyNet.activations import Activations
 from NumPyNet.utils import _check_activation
 
 import numpy as np
-
+from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -29,7 +29,7 @@ class Connected_layer(object):
       weights     : array of shape (w * h * c, outputs), weights of the dense layer
       bias        : array of shape (outputs, ), bias of the dense layer
     '''
-    self.batch, self.w, self.h, self.c = input_shape
+    self._out_shape = input_shape
     self.inputs = np.prod(input_shape[1:])
     self.outputs = outputs
 
@@ -42,24 +42,58 @@ class Connected_layer(object):
       self.weights = np.asarray(weights)
     else:
       # initialize weights with shape (w*h*c, outputs)
-      self.weights = np.random.uniform(low=0., high=1., size=(self.inputs, outputs))
+      self.weights = np.random.uniform(low=0., high=1., size=(self.inputs, self.outputs))
 
     if bias is not None:
       self.bias = np.asarray(bias)
     else:
-      self.bias = np.ones(shape=(outputs,))
+      self.bias = np.ones(shape=(self.outputs,))
 
     self.output, self.delta = (None, None)
     self.weights_update = np.zeros(shape=self.weights.shape, dtype=float)
-    self.bias_update = np.zeros(shape=(outputs,), dtype=float)
+    self.bias_update = np.zeros(shape=(self.outputs,), dtype=float)
 
   def __str__(self):
     return 'connected            {:4d} x{:4d} x{:4d}  ->  {:4d}'.format(
-            self.w, self.h, self.c, self.outputs)
+            *self._out_shape[1:], self.outputs)
+
+  def __call__(self, previous_layer):
+
+    if previous_layer.out_shape is None:
+      class_name = self.__class__.__name__
+      prev_name  = layer.__class__.__name__
+      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
+
+    self._out_shape = previous_layer.out_shape
+    return self
 
   @property
   def out_shape(self):
-    return (self.batch, self.outputs)
+    return (self._out_shape[0], self.outputs)
+
+  def load_weights(self, chunck_weights, pos=0):
+    '''
+    Load weights from full array of model weights
+
+    Parameters:
+      chunck_weights : numpy array of model weights
+      pos : current position of the array
+    '''
+    self.bias = chunck_weights[pos : pos + self.outputs]
+    pos += self.outputs
+
+    self.weights = chunck_weights[pos : pos + self.weights.size]
+    self.weights = self.weights.reshape(self.inputs, self.outputs)
+    pos += self.weights.size
+
+    return pos
+
+  def save_weights(self):
+    '''
+    Return the biases and weights in a single ravel fmt to save in binary file
+    '''
+    return np.concatenate([self.bias.ravel(), self.weights.ravel()], axis=0).tolist()
+
 
   def forward(self, inpt, copy=False):
     '''
@@ -73,7 +107,7 @@ class Connected_layer(object):
             input or not.
     '''
 
-    inpt = inpt.reshape(-1, self.w * self.h * self.c)    # shape (batch, w*h*c)
+    inpt = inpt.reshape(-1, self.inputs)                  # shape (batch, w*h*c)
 
     #z = (inpt @ self.weights) + self.bias                # shape (batch, outputs)
     z = np.einsum('ij, jk -> ik', inpt, self.weights, optimize=True) + self.bias
@@ -95,7 +129,7 @@ class Connected_layer(object):
     '''
 
     # reshape to (batch , w * h * c)
-    inpt = inpt.reshape(self.batch, -1)
+    inpt = inpt.reshape(self._out_shape[0], -1)
 
     self.delta *= self.gradient(self.output, copy=copy)
 
@@ -105,7 +139,7 @@ class Connected_layer(object):
     self.weights_update += np.dot(inpt.transpose(), self.delta)
 
     if delta is not None:
-      delta_shaped = delta.reshape(self.batch, -1)  # it's a reshaped VIEW
+      delta_shaped = delta.reshape(self._out_shape[0], -1)  # it's a reshaped VIEW
 
       # shapes : (batch , w * h * c) = (batch , w * h * c) + (batch, outputs) @ (outputs, w * h * c)
 

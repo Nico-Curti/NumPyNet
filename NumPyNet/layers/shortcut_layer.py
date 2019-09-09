@@ -8,6 +8,7 @@ from NumPyNet.activations import Activations
 from NumPyNet.utils import _check_activation
 
 import numpy as np
+from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -39,16 +40,34 @@ class Shortcut_layer(object):
 
     self.alpha, self.beta = alpha, beta
 
-    self.output, self.delta, self.out = (None, None, None)
+    self.output, self.delta = (None, None)
+    self._out_shape = None
 
   def __str__(self):
-    b1, w1, h1, c1 = self.layer1_shape
-    b2, w2, h2, c2 = self.layer2_shape
-    return 'Shortcut                 {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}'.format(b1, w2, h2, c2, w1, h1, c1)
+    (b1, w1, h1, c1), (b2, w2, h2, c2) = self._out_shape
+    return 'Shortcut                 {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}'.format(b2, w2, h2, c2, b1, w1, h1, c1)
+
+  def __call__(self, previous_layer):
+
+    prev1, prev2 = previous_layer
+
+    if prev1.out_shape is None or prev2.out_shape is None:
+      class_name = self.__class__.__name__
+      prev_name  = layer.__class__.__name__
+      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
+
+    # TODO: to remove when the input layers could be different in shape
+    if prev1.out_shape != prev2.out_shape:
+      prev1_name  = prev1.__class__.__name__
+      prev2_name  = prev2.__class__.__name__
+      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to layer {}.'.format(prev1_name, prev2_name))
+
+    self._out_shape = [prev1.out_shape, prev2.out_shape]
+    return self
 
   @property
   def out_shape(self):
-    return self.layer2_shape
+    return max(self._out_shape) # TODO: to check when the input layers will have different shapes
 
   def forward(self, inpt, prev_output):
     '''
@@ -58,13 +77,11 @@ class Shortcut_layer(object):
       inpt        : array of shape (batch, w, h, c), first input of the layer
       prev_output : array of shape (batch, w, h, c), second input of the layer
     '''
+    # assert inpt.shape == prev_output.shape
 
-    self.layer1_shape = inpt.shape
-    self.layer2_shape = prev_output.shape
+    self._out_shape = [inpt.shape, prev_output.shape]
 
-    self.output = inpt.copy()
-
-    self.output[:] = self.alpha * self.output[:] + self.beta * prev_output[:]
+    self.output = self.alpha * inpt[:] + self.beta * prev_output[:]
     # MISS combination
     self.output = self.activation(self.output)
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
@@ -80,8 +97,7 @@ class Shortcut_layer(object):
     '''
 
     # derivatives of the activation funtion w.r.t. to input
-    self.out = self.gradient(self.output)
-    self.delta *= self.out
+    self.delta *= self.gradient(self.output)
 
     delta      += self.delta * self.alpha
     # MISS combination
@@ -122,12 +138,14 @@ if __name__ == '__main__':
   layer.forward(inpt1, inpt2)
   forward_out = layer.output.copy()
 
+  print(layer)
+
   # BACKWARD
 
-  delta      = np.zeros(shape=inpt1.shape)
-  delta_prev = np.zeros(shape=inpt2.shape)
+  delta      = np.zeros(shape=inpt1.shape, dtype=float)
+  delta_prev = np.zeros(shape=inpt2.shape, dtype=float)
 
-  layer.delta = np.ones(shape=layer.out_shape)
+  layer.delta = np.ones(shape=layer.out_shape, dtype=float)
   layer.backward(delta, delta_prev)
 
   # Visualizations

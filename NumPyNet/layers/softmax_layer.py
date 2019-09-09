@@ -5,10 +5,12 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 __package__ = 'Softmax layer'
+
 
 class Softmax_layer():
 
@@ -37,6 +39,16 @@ class Softmax_layer():
     batch, out_width, out_height, out_channels = self.out_shape
     return 'softmax x entropy                            {:4d} x{:4d} x{:4d} x{:4d}'.format(
            batch, out_width, out_height, out_channels)
+
+  def __call__(self, previous_layer):
+
+    if previous_layer.out_shape is None:
+      class_name = self.__class__.__name__
+      prev_name  = layer.__class__.__name__
+      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
+
+    self.batch, self.w, self.h, self.c = previous_layer.out_shape
+    return self
 
   @property
   def out_shape(self):

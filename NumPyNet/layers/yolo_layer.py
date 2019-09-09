@@ -8,13 +8,13 @@ from __future__ import print_function
 import itertools
 
 import numpy as np
+from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 __package__ = 'Yolo Layer'
 
 # Reference: https://github.com/experiencor/keras-yolo3/blob/master/yolo.py
-
 
 class Yolo_layer(object):
 
@@ -50,6 +50,16 @@ class Yolo_layer(object):
 
   def __str__(self):
     return 'yolo'
+
+  def __call__(self, previous_layer):
+
+    if previous_layer.out_shape is None:
+      class_name = self.__class__.__name__
+      prev_name  = layer.__class__.__name__
+      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
+
+    self.batch, self.grid_w, self.grid_h, self.c = previous_layer.out_shape
+    return self
 
   @property
   def out_shape(self):

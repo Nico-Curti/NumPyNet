@@ -10,6 +10,7 @@ from NumPyNet.activations import Activations
 from NumPyNet.utils import _check_activation
 
 import numpy as np
+from NumPyNet.exception import LayerError
 
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
@@ -58,6 +59,7 @@ class Convolutional_layer(object):
     assert len(self.size) == 2 and len(self.stride) == 2
 
     self.pad = pad
+    self.pad_left, self.pad_right, self.pad_bottom, self.pad_top = (0, 0, 0, 0)
 
     activation = _check_activation(self, activation)
 
@@ -90,9 +92,46 @@ class Convolutional_layer(object):
            batch, out_w, out_h, out_c,
            (2 * self.weights.size * out_h * out_w) * 1e-9)
 
+  def __call__(self, previous_layer):
+
+    if previous_layer.out_shape is None:
+      class_name = self.__class__.__name__
+      prev_name  = layer.__class__.__name__
+      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
+
+    self.batch, self.w, self.h, self.c = previous_layer.out_shape
+
+    if self.pad:
+      self._evaluate_padding() # WRONG
+
+    return self
+
   @property
   def out_shape(self):
     return (self.batch, self.out_w, self.out_h, self.channels_out)
+
+  def load_weights(self, chunck_weights, pos=0):
+    '''
+    Load weights from full array of model weights
+
+    Parameters:
+      chunck_weights : numpy array of model weights
+      pos : current position of the array
+    '''
+    self.bias = chunck_weights[pos : pos + self.channels_out]
+    pos += self.channels_out
+
+    self.weights = chunck_weights[pos : pos + self.weights.size]
+    self.weights = self.weights.reshape(self.size[0], self.size[1], self.c, self.channels_out)
+    pos += self.weights.size
+
+    return pos
+
+  def save_weights(self):
+    '''
+    Return the biases and weights in a single ravel fmt to save in binary file
+    '''
+    return np.concatenate([self.bias.ravel(), self.weights.ravel()], axis=0).tolist()
 
   def _asStride(self, arr, sub_shape, stride):
     '''
@@ -323,8 +362,8 @@ if __name__ == '__main__':
 
   # BACKWARD
 
-  layer.delta = np.ones(layer.out_shape)
-  delta = np.zeros(shape=inpt.shape)
+  layer.delta = np.ones(layer.out_shape, dtype=float)
+  delta = np.zeros(shape=inpt.shape, dtype=float)
   layer.backward(delta)
 
 #  layer.update()
