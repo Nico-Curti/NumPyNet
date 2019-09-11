@@ -175,6 +175,23 @@ class Image (object):
     cv2.flip(self._data, axis)
     return self
 
+  def transpose (self):
+    '''
+    Transpose width and height
+    '''
+    self._data = self._data.transpose(1, 0, 2)
+    return self
+
+  def crop (self, dsize, size):
+    '''
+    Crop the image according to the given dimensions [dsize[0] : dsize[0] + size[0], dsize[1] : dsize[1] + size[1]]
+    '''
+    dx, dy = dsize
+    sx, sy = size
+
+    self._data[dx : dx + sx, dy : dy + sy]
+    return self
+
   def rgb2rgba (self):
     '''
     Add alpha channel to the original image
@@ -224,6 +241,14 @@ class Image (object):
     self._data = self._cv2image(array)
     return self
 
+  def resize (self, dsize=None, scale_factor=(None, None)):
+    '''
+    Resize the image according to the new shape given
+    '''
+    fx, fy = scale_factor
+
+    return cv2.resize(self._data, dsize=dsize, fx=fx, fy=fy,
+                      interpolation=cv2.INTER_LANCZOS4)
 
   def letterbox (self, net_dim):
     '''

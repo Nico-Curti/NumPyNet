@@ -17,6 +17,7 @@ from NumPyNet.layers.convolutional_layer import Convolutional_layer
 from NumPyNet.layers.cost_layer import Cost_layer
 from NumPyNet.layers.dropout_layer import Dropout_layer
 from NumPyNet.layers.input_layer import Input_layer
+from NumPyNet.layers.l2norm_layer import L2Norm_layer
 from NumPyNet.layers.logistic_layer import Logistic_layer
 from NumPyNet.layers.maxpool_layer import Maxpool_layer
 from NumPyNet.layers.route_layer import Route_layer
@@ -44,6 +45,7 @@ class Network(object):
             'cost'          :  Cost_layer,
             'dropout'       :  Dropout_layer,
             'input'         :  Input_layer,
+            'l2norm'        :  L2Norm_layer,
             'logistic'      :  Logistic_layer,
             'maxpool'       :  Maxpool_layer,
             'route'         :  Route_layer,
@@ -141,6 +143,9 @@ class Network(object):
 
       else:
         self.net.append( self.LAYERS[layer_t](input_shape=input_shape, **layer_params)(self.net[-1]) )
+
+        if model.get(layer, 'batch_normalize', 0):
+          self.net.append( BatchNorm_layer()(self.net[-1]) )
 
       print(self.net[-1], flush=True, end='\n')
 
