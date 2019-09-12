@@ -168,37 +168,38 @@ class Convolutional_layer(object):
     # without any reshape, it's indeed a view of the input
     return subs
 
-  def _pad(self, inpt, size, stride):
+  def _evaluate_padding(self):
     '''
-    Padd every image in a batch with zeros, following keras SAME padding
+    Compute padding dimensions following keras SAME padding
     See also:
-      https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
-
-    Parameters:
-      inpt    : input images in the format (batch, in_w, in_h, in_c)
-      size    : tuple, size of the kernel in the format (kx, ky)
-      stride  : tuple, size of the strides of the kernel in the format (st1, st2)
+    https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
     '''
-
-    b, w, h, c = inpt.shape
 
     # Compute how many Raws are needed to pad the image in the 'w' axis
-    if (w % stride[0] == 0):
-      pad_w = max(size[0] - stride[0], 0)
+    if (self.w % self.stride[0] == 0):
+      pad_w = max(self.size[0] - self.stride[0], 0)
     else:
-      pad_w = max(size[0] - (w % stride[0]), 0)
+      pad_w = max(self.size[0] - (self.w % self.stride[0]), 0)
 
     # Compute how many Columns are needed to pad the image in 'h' axis
-    if (h % stride[1] == 0):
-      pad_h = max(size[1] - stride[1], 0)
+    if (self.h % self.stride[1] == 0):
+      pad_h = max(self.size[1] - self.stride[1], 0)
     else:
-      pad_h = max(size[1] - (h % stride[1]), 0)
+      pad_h = max(self.size[1] - (self.h % self.stride[1]), 0)
 
     # Number of raws/columns to be added for every directons
     self.pad_top    = pad_w >> 1 # bit shift, integer division by two
     self.pad_bottom = pad_w - self.pad_top
     self.pad_left   = pad_h >> 1
     self.pad_right  = pad_h - self.pad_left
+
+  def _pad(self, inpt):
+    '''
+    Padd every image in a batch with zeros, following keras SAME padding
+
+    Parameters:
+      inpt    : input images in the format (batch, in_w, in_h, in_c)
+    '''
 
     # return the zeros-padded image, in the same format as inpt (batch, in_w + pad_w, in_h + pad_h, in_c)
     return np.pad(inpt, ((0, 0), (self.pad_top, self.pad_bottom), (self.pad_left, self.pad_right), (0, 0)),
@@ -223,7 +224,8 @@ class Convolutional_layer(object):
 
     # Padding
     if self.pad :
-      mat_pad = self._pad(inpt, self.size, self.stride)
+      self._evaluate_padding()
+      mat_pad = self._pad(inpt)
     else :
       # If no pad, every image in the batch is cut
       mat_pad = inpt[:, : (self.w - kx) // sx*sx + kx, : (self.h - ky) // sy*sy + ky, ...]
@@ -237,10 +239,8 @@ class Convolutional_layer(object):
 
     z = np.einsum('lmnijk,ijko -> lmno', self.view, self.weights, optimize=True) + self.bias
 
-    self.output = self.activation(z, copy=copy) # (batch * out_w * out_h, out_c)
-    # final output shape : (batch, out_w, out_h, out_c)
+    self.output = self.activation(z, copy=copy) # (batch, out_w, out_h, out_c)
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
-
 
   def backward(self, delta, copy=False):
     '''
@@ -249,13 +249,14 @@ class Convolutional_layer(object):
     Parameters:
       delta : array of shape (batch, in_w, in _h, in_c). Global delta to be
         backpropagated
-      copy :
+      copy : bool, specifies if the gradient of the activation functions needs to
+        return a copy of its input
 
     '''
 
     # delta padding to match dimension with padded input when computing the view
     if self.pad:
-      mat_pad = self._pad(delta, self.size, self.stride)
+      mat_pad = self._pad(delta) # padded with same values as input
     else  :
       mat_pad = delta
 
@@ -270,11 +271,11 @@ class Convolutional_layer(object):
     # out_c number of bias_updates.
     self.bias_updates = self.delta.sum(axis=(0, 1, 2)) # shape = (channels_out,)
 
-    # to access every pixel one at a time I need to create evry combinations of indexes
+    # to access every pixel one at a time I need to create every combinations of indexes
     b, w, h, kx, ky, c = delta_view.shape
     combo = itertools.product(range(b), range(w), range(h) , range(kx), range(ky), range(c))
 
-    # Actual operation to be performed, it's basically the convolution of self.delta with filters.transpose
+    # Actual operation to be performed, it's basically the convolution of self.delta with weights.transpose
     operator = np.einsum('ijkl, mnol -> ijkmno', self.delta, self.weights)
 
     # Atomically modify , really slow as for maxpool and avgpool
@@ -334,8 +335,8 @@ if __name__ == '__main__':
 
   channels_out = 5
   size         = (3, 3)
-  stride       = (1, 1)
-  pad          = False
+  stride       = (2, 2)
+  pad          = True
 
   layer_activation = activations.Relu()
 
