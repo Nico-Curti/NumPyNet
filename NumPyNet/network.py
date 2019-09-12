@@ -17,6 +17,7 @@ from NumPyNet.layers.convolutional_layer import Convolutional_layer
 from NumPyNet.layers.cost_layer import Cost_layer
 from NumPyNet.layers.dropout_layer import Dropout_layer
 from NumPyNet.layers.input_layer import Input_layer
+from NumPyNet.layers.l1norm_layer import L1Norm_layer
 from NumPyNet.layers.l2norm_layer import L2Norm_layer
 from NumPyNet.layers.logistic_layer import Logistic_layer
 from NumPyNet.layers.maxpool_layer import Maxpool_layer
@@ -24,6 +25,7 @@ from NumPyNet.layers.route_layer import Route_layer
 from NumPyNet.layers.shortcut_layer import Shortcut_layer
 from NumPyNet.layers.shuffler_layer import Shuffler_layer
 from NumPyNet.layers.softmax_layer import Softmax_layer
+from NumPyNet.layers.upsample_layer import Upsample_layer
 from NumPyNet.layers.yolo_layer import Yolo_layer
 
 from NumPyNet.parser import net_config
@@ -45,6 +47,7 @@ class Network(object):
             'cost'          :  Cost_layer,
             'dropout'       :  Dropout_layer,
             'input'         :  Input_layer,
+            'l1norm'        :  L1Norm_layer,
             'l2norm'        :  L2Norm_layer,
             'logistic'      :  Logistic_layer,
             'maxpool'       :  Maxpool_layer,
@@ -52,6 +55,7 @@ class Network(object):
             'shortcut'      :  Shortcut_layer,
             'shuffler'      :  Shuffler_layer,
             'softmax'       :  Softmax_layer,
+            'upsample'      :  Upsample_layer,
             'yolo'          :  Yolo_layer,
             }
 
@@ -70,11 +74,16 @@ class Network(object):
       except:
         raise ValueError('Network model : incorrect input_shape. Expected a 3D array (width, height, channel). Given {}'.format(input_shape))
 
-      self.net = [ Input_layer(input_shape=(self.batch, self.w, self.h, self.c)) ]
+      self._net = [ Input_layer(input_shape=(self.batch, self.w, self.h, self.c)) ]
+
+    else:
+      self._net = []
 
 
-  def add_layer(self, layer):
+  def add(self, layer):
     '''
+    Add a new layer to the network model.
+    Layers are progressively appended to the tail of the model.
     '''
     try:
       type_layer = layer.__class__.__name__.lower().split('_layer')[0]
@@ -85,7 +94,11 @@ class Network(object):
     if type_layer not in self.LAYERS.keys():
       raise LayerError('Incorrect Layer type found.')
 
-    self.net.append(layer(self.net[-1]))
+    if type_layer != 'input':
+      self._net.append(layer(self._net[-1]))
+
+    else:
+      self._net.append(layer)
 
     return self
 
@@ -96,10 +109,19 @@ class Network(object):
   def __next__(self):
     if self.layer_index < self.num_layers:
       self.layer_index += 1
-      return self.net[self.layer_index]
+      return self._net[self.layer_index]
 
     else:
       raise StopIteration
+
+
+  def summary(self):
+    '''
+    Print the network model summary
+    '''
+    print('layer     filters    size              input                output')
+    for i, layer in enumerate(self._net):
+      print('{:>4d} {}'.format(i, self._net[i]), flush=True, end='\n')
 
 
   def load(self, cfg_filename, weights=None):
@@ -116,9 +138,11 @@ class Network(object):
     # TODO: add other network parameters
 
     input_shape = (self.batch, self.w, self.h, self.c)
-    self.net = [ Input_layer(input_shape=input_shape) ]
+    self._net = [ Input_layer(input_shape=input_shape) ]
 
-    for layer in model:
+    print('layer     filters    size              input                output')
+
+    for i, layer in enumerate(model):
       layer_t = re.split(r'\d+', layer)[0]
       params = dict(model.get_params(layer))
 
@@ -135,19 +159,20 @@ class Network(object):
 
       if layer_t == 'shortcut':
         _from = model.get(layer, 'from', 0)
-        self.net.append( self.LAYERS[layer_t](input_shape=input_shape, **layer_params)([self.net[-1], self.net[_from]]) )
+        self._net.append( self.LAYERS[layer_t](input_shape=input_shape, **layer_params)([self._net[-1], self._net[_from]]) )
 
       elif layer_t == 'route':
         _layers = model.get(layer, 'layers', [])
-        self.net.append( self.LAYERS[layer_t](input_shape=input_shape, **layer_params)(self.net[_layers]) )
+        self._net.append( self.LAYERS[layer_t](input_shape=input_shape, **layer_params)(self._net[_layers]) )
 
       else:
-        self.net.append( self.LAYERS[layer_t](input_shape=input_shape, **layer_params)(self.net[-1]) )
+        self._net.append( self.LAYERS[layer_t](input_shape=input_shape, **layer_params)(self._net[-1]) )
 
-        if model.get(layer, 'batch_normalize', 0):
-          self.net.append( BatchNorm_layer()(self.net[-1]) )
+      print('{:>4d} {}'.format(i, self._net[-1]), flush=True, end='\n')
 
-      print(self.net[-1], flush=True, end='\n')
+      if model.get(layer, 'batch_normalize', 0):
+        self._net.append( BatchNorm_layer()(self._net[-1]) )
+        print('{:>4d} {}'.format(i, self._net[-1]), flush=True, end='\n')
 
     return self
 
@@ -213,12 +238,20 @@ class Network(object):
     return self
 
 
+  def fit (self):
+    raise NotImplementedError
+
+
+  def predict (self):
+    raise NotImplementedError
+
+
   @property
   def out_shape(self):
     '''
     Output shape
     '''
-    return self.net[0].out_shape()[1:]
+    return self._net[0].out_shape()[1:]
 
   @property
   def input_shape(self):
@@ -229,21 +262,24 @@ class Network(object):
 
   @property
   def num_layers(self):
-    return len(self.net)
+    return len(self._net)
 
 
 if __name__ == '__main__':
 
   import os
 
+  batch = 32
+  w, h, c = (512, 512, 3)
+
   config_filename = os.path.join(os.path.dirname(__file__), '..', 'cfg', 'yolov3.cfg')
-  weight_filename = os.path.join(os.path.dirname(__file__), '..', 'data', 'yolov3.weights.byron')
-  mask_w_filename = os.path.join(os.path.dirname(__file__), '..', 'data', 'yolov3.weights.mask')
 
-  net = Network(batch=32)
+  net = Network(batch=batch)
   net.load(config_filename)
-
   print(net.input_shape)
 
+  #net.add(Input_layer(input_shape=(batch, w, h, c)))
+  #net.add(Convolutional_layer(input_shape=(batch, w, h, c), filters=64, size=3, stride=1))
+  #net.add(Convolutional_layer(input_shape=(batch, w, h, c), filters=16, size=3, stride=1))
 
-
+  net.summary()

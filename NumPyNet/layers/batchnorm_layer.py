@@ -39,7 +39,7 @@ class BatchNorm_layer(object):
 
 
   def __str__(self):
-    return 'Batch Normalization Layer: {:4d} x {:4d} x {:4d} image'.format(*self._out_shape[1:])
+    return 'BatchNorm                    {:4d} x{:4d} x{:4d} image'.format(*self._out_shape[1:])
 
   def __call__(self, previous_layer):
 

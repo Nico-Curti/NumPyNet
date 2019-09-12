@@ -86,8 +86,8 @@ class Convolutional_layer(object):
 
   def __str__(self):
     batch, out_w, out_h, out_c = self.out_shape
-    return 'Convolutional     {} x {} / {}  {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}  {:>5.3f} BFLOPs'.format(
-           self.size[0], self.size[1], self.stride[0],
+    return 'conv   {:>4d} {} x {} / {}  {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}  {:>5.3f} BFLOPs'.format(
+           out_c, self.size[0], self.size[1], self.stride[0],
            self.batch, self.w, self.h, self.c,
            batch, out_w, out_h, out_c,
            (2 * self.weights.size * out_h * out_w) * 1e-9)
@@ -101,8 +101,11 @@ class Convolutional_layer(object):
 
     self.batch, self.w, self.h, self.c = previous_layer.out_shape
 
+    self.out_w = 1 + (self.w - self.size[0]) // self.stride[0]
+    self.out_h = 1 + (self.h - self.size[1]) // self.stride[1]
+
     if self.pad:
-      self._evaluate_padding() # WRONG
+      self._evaluate_padding()
 
     return self
 
@@ -265,7 +268,7 @@ class Convolutional_layer(object):
 
     self.delta *= self.gradient(self.output, copy=copy)
 
-    # this operation should be +=, as darknet and byron suggest
+    # this operation should be +=, as darknet suggest (?)
     self.weights_updates = np.einsum('ijklmn, ijko -> lmno', self.view, self.delta)
 
     # out_c number of bias_updates.

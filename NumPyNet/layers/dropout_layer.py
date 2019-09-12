@@ -34,7 +34,7 @@ class Dropout_layer(object):
 
   def __str__(self):
     batch, out_width, out_height, out_channels = self.out_shape
-    return 'Dropout       p = {:.2f}        {:4d}, {:4d}, {:4d}, {:4d}  ->  {:4d}, {:4d}, {:4d}, {:4d}'.format(
+    return 'dropout       p = {:.2f} {:4d} x{:4d} x{:4d} x{:4d}   ->  {:4d} x{:4d} x{:4d} x{:4d}'.format(
            self.probability,
            batch, out_width , out_height , out_channels,
            batch, out_width , out_height , out_channels)

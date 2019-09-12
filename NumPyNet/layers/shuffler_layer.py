@@ -33,7 +33,7 @@ class Shuffler_layer(object):
 
   def __str__(self):
     batch, out_width, out_height, out_channels = self.out_shape
-    return 'Shuffler x {:3d}            {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}'.format(
+    return 'Shuffler x {:3d}         {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}'.format(
            self.scale,
            batch, self.w, self.h, self.c,
            batch, out_width, out_height, out_channels)

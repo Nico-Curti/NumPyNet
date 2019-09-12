@@ -37,7 +37,7 @@ class Softmax_layer():
 
   def __str__(self):
     batch, out_width, out_height, out_channels = self.out_shape
-    return 'softmax x entropy                            {:4d} x{:4d} x{:4d} x{:4d}'.format(
+    return 'softmax x entropy                                   {:4d} x{:4d} x{:4d} x{:4d}'.format(
            batch, out_width, out_height, out_channels)
 
   def __call__(self, previous_layer):

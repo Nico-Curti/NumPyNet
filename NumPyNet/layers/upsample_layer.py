@@ -53,10 +53,10 @@ class Upsample_layer(object):
     out_w, out_h = self.out_shape[1:3]
 
     if self.reverse: # downsample
-      return 'downsample         {0:>2d}/{1:>2d}x {2:>4d} x{3:>4d} x{4:>4d}  -> {5:>4d} x{6:>4d} x{7:4d}'.format(
+      return 'downsample         {0:>2d}/{1:>2d}x    {2:>4d} x{3:>4d} x{4:>4d}   ->        {5:>4d} x{6:>4d} x{7:4d}'.format(
         self.stride[0], self.stride[1], self.w, self.h, self.c, out_w, out_h, self.c)
     else:            # upsample
-      return 'upsample           {0:>2d}/{1:>2d}x {2:>4d} x{3:>4d} x{4:>4d}  -> {5:>4d} x{6:>4d} x{7:4d}'.format(
+      return 'upsample           {0:>2d}/{1:>2d}x    {2:>4d} x{3:>4d} x{4:>4d}   ->        {5:>4d} x{6:>4d} x{7:4d}'.format(
         self.stride[0], self.stride[1], self.w, self.h, self.c, out_w, out_h, self.c)
     return self
 

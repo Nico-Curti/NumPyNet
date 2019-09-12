@@ -29,7 +29,7 @@ class Input_layer(object):
     self.delta = np.empty(shape=input_shape, dtype=float)
 
   def __str__(self):
-    return 'input:                  {0:>4d} x{1:>4d} x{2:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d}'.format(self.w, self.h, self.c)
+    return 'input                        {0:>4d} x{1:>4d} x{2:>4d}   ->        {0:>4d} x{1:>4d} x{2:>4d}'.format(self.w, self.h, self.c)
 
   @property
   def out_shape(self):

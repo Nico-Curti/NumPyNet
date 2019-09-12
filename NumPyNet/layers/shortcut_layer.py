@@ -8,6 +8,7 @@ from NumPyNet.activations import Activations
 from NumPyNet.utils import _check_activation
 
 import numpy as np
+from itertools import product
 from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
@@ -45,7 +46,7 @@ class Shortcut_layer(object):
 
   def __str__(self):
     (b1, w1, h1, c1), (b2, w2, h2, c2) = self._out_shape
-    return 'Shortcut                 {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}'.format(b2, w2, h2, c2, b1, w1, h1, c1)
+    return 'res                    {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}'.format(b2, w2, h2, c2, b1, w1, h1, c1)
 
   def __call__(self, previous_layer):
 
@@ -56,13 +57,18 @@ class Shortcut_layer(object):
       prev_name  = layer.__class__.__name__
       raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
 
-    # TODO: to remove when the input layers could be different in shape
-    if prev1.out_shape != prev2.out_shape:
-      prev1_name  = prev1.__class__.__name__
-      prev2_name  = prev2.__class__.__name__
-      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to layer {}.'.format(prev1_name, prev2_name))
-
     self._out_shape = [prev1.out_shape, prev2.out_shape]
+
+    _, w2, h2, c2 = prev1.out_shape
+    _, w1, h1, c1 = prev2.out_shape
+    stride = w1 // w2
+    sample = w2 // w1
+
+    if not ( stride == h1 // h2 and sample == h2 // h1 ):
+      class_name = self.__class__.__name__
+      prev_name  = layer.__class__.__name__
+      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
+
     return self
 
   @property
@@ -81,8 +87,42 @@ class Shortcut_layer(object):
 
     self._out_shape = [inpt.shape, prev_output.shape]
 
-    self.output = self.alpha * inpt[:] + self.beta * prev_output[:]
-    # MISS combination
+    if inpt.shape == prev_output.shape:
+      self.output = self.alpha * inpt[:] + self.beta * prev_output[:]
+
+    else:
+
+      # If the layer are combined the smaller one is distributed according to the
+      # sample stride
+      # Example:
+      #
+      # inpt = [[1, 1, 1, 1],        prev_output = [[1, 1],
+      #         [1, 1, 1, 1],                       [1, 1]]
+      #         [1, 1, 1, 1],
+      #         [1, 1, 1, 1]]
+      #
+      # output = [[2, 1, 2, 1],
+      #           [1, 1, 1, 1],
+      #           [2, 1, 2, 1],
+      #           [1, 1, 1, 1]]
+
+      _, w2, h2, c2 = inpt.shape
+      _, w1, h1, c1 = prev_output.shape
+      stride = w1 // w2
+      sample = w2 // w1
+
+      assert stride == h1 // h2 and sample == h2 // h1
+
+      idx = product(range(0, w2, sample), range(0, h2, sample), range(0, c2, sample))
+      ix, jx, kx = zip(*idx)
+
+      idx = product(range(0, w1, stride), range(0, w1, stride), range(0, c1, stride))
+      iy, jy, ky = zip(*idx)
+
+      self.output = inpt.copy()
+      self.output[:, ix, jx, kx] = self.alpha * self.outpu[:, ix, jx, kx] + self.beta * prev_output[:, iy, jy, ky]
+
+
     self.output = self.activation(self.output)
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
 

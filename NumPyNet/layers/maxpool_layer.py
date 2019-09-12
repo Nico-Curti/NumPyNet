@@ -54,7 +54,7 @@ class Maxpool_layer(object):
 
   def __str__(self):
     batch, out_width, out_height, out_channels = self.out_shape
-    return 'MaxPool      {} x {} / {}  {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}'.format(
+    return 'max         {} x {} / {}  {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}'.format(
            self.size[0], self.size[1], self.stride[0],
            self.batch, self.w, self.h, self.c,
            batch, out_width, out_height, out_channels)

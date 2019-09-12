@@ -55,9 +55,9 @@ class Avgpool_layer(object):
 
   def __str__(self):
     batch, out_width, out_height, out_channels = self.out_shape
-    return 'avg          {} x {} / {}  {:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d}'.format(
+    return 'avg         {} x {} / {}  {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d}'.format(
            self.size[0], self.size[1], self.stride[0],
-           self.w, self.h, self.c,
+           self.batch, self.w, self.h, self.c,
            out_width, out_height, out_channels)
 
   def __call__(self, previous_layer):

@@ -54,9 +54,9 @@ class Connected_layer(object):
     self.bias_update = np.zeros(shape=(self.outputs,), dtype=float)
 
   def __str__(self):
-    w, h, c = self._out_shape[1:]
-    return 'connected            {:4d} x{:4d} x{:4d}  ->  {:4d}'.format(
-            w, h, c, self.outputs)
+    b, w, h, c = self._out_shape
+    return 'connected              {:4d} x{:4d} x{:4d} x{:4d}   ->  {:4d}'.format(
+            b, w, h, c, self.outputs)
 
   def __call__(self, previous_layer):
 
