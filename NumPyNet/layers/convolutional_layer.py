@@ -81,7 +81,7 @@ class Convolutional_layer(object):
       self.bias = bias
 
     # Updates
-    self.filters_updates, self.bias_updates = (None, None)
+    self.weights_updates, self.bias_updates = (None, None)
 
 
   def __str__(self):
@@ -263,6 +263,8 @@ class Convolutional_layer(object):
     delta_view = self._asStride(mat_pad, self.size, self.stride)
 
     self.delta *= self.gradient(self.output, copy=copy)
+
+    # this operation should be +=, as darknet and byron suggest
     self.weights_updates = np.einsum('ijklmn, ijko -> lmno', self.view, self.delta)
 
     # out_c number of bias_updates.
