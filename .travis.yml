@@ -87,6 +87,7 @@ before_install:
   # testing libraries
   - pip install keras
   - pip install tensorflow
+  - pip install hypothesis
 
 install:
   - python setup.py install

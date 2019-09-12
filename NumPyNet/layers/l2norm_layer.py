@@ -15,7 +15,7 @@ __package__ = 'L2Normalization Layer'
 
 class L2Norm_layer(object):
 
-  def __init__(self, axis=-1, **kwargs):
+  def __init__(self, axis=None, **kwargs):
     '''
     L2Norm layer
     '''
