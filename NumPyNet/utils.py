@@ -97,3 +97,43 @@ def print_statistics (arr):
   print('MSE: {:>3.3f}, Mean: {:>3.3f}, Variance: {:>3.3f}'.format(mse, mean, variance))
 
   return (mse, mean, variance)
+
+
+def to_categorical (arr):
+  '''
+  Converts a vector of labels into one-hot encoding format
+
+  Parameters
+  ----------
+    arr : array-like 1D
+      array of integer labels (without holes)
+
+  Returns
+  -------
+  2D matrix in one-hot encoding format
+  '''
+
+  n = len(arr)
+  uniques, index = np.unique(arr, return_inverse=True)
+
+  categorical = np.zeros(shape=(n, uniques.size), dtype=float)
+  categorical[range(0, n), index] = 1.
+
+  return categorical
+
+
+def from_categorical (categoricals):
+  '''
+  Convert a one-hot encoding format into a vector of labels
+
+  Parameters
+  ----------
+    categoricals : array-like 2D
+      one-hot encoding format of a label set
+
+  Returns
+  -------
+  Corresponding labels in 1D array
+  '''
+
+  return np.argmax(categoricals, axis=1)

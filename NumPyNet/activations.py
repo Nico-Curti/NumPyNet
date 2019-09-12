@@ -6,9 +6,10 @@ from __future__ import print_function
 
 import numpy as np
 
+__author__ = ['Mattia Ceccarelli', 'Nico Curti']
+__email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 __package__ = 'activations_function_wrap'
-__author__  = ['Nico Curti']
-__email__   = ['nico.curti2@unibo.it']
+
 
 class Activations (object):
 
@@ -340,3 +341,97 @@ class Selu (Activations):
     y[x >= 0.]  = 1.0507
     y[x <  0.] += 1.0507 * 1.6732
     return y
+
+
+class Elliot (Activations):
+
+  BYRON_INDEX = 14
+  STEEPNESS = 1.
+
+  def __init__ (self):
+    super(Elliot, self).__init__('Elliot')
+
+  @staticmethod
+  def activate (x, copy=False):
+    if copy: y = x.copy()
+    else:    y = x
+
+    return .5 * STEEPNESS * y / (1. + np.abs(y + STEEPNESS)) + .5
+
+  @staticmethod
+  def gradient (x, copy=False):
+    if copy: y = x.copy()
+    else:    y = x
+
+    last_fwd = 1. + np.abs(y * STEEPNESS)
+    return .5 * STEEPNESS / (last_fwd * last_fwd)
+
+
+class SymmElliot (Activations):
+
+  BYRON_INDEX = 15
+  STEEPNESS = 1.
+
+  def __init__ (self):
+    super(SymmElliot, self).__init__('SymmElliot')
+
+  @staticmethod
+  def activate (x, copy=False):
+    if copy: y = x.copy()
+    else:    y = x
+
+    return y * STEEPNESS / (1. + np.abs(y * STEEPNESS))
+
+  @staticmethod
+  def gradient (x, copy=False):
+    if copy: y = x.copy()
+    else:    y = x
+
+    last_fwd = 1. + np.abs(y * STEEPNESS)
+    return STEEPNESS / (last_fwd * last_fwd)
+
+
+class SoftPlus (Activations):
+
+  BYRON_INDEX = 16
+
+  def __init__ (self):
+    super(SoftPlus, self).__init__('SoftPlus')
+
+  @staticmethod
+  def activate (x, copy=False):
+    if copy: y = x.copy()
+    else:    y = x
+
+    return np.log(1. + np.exp(y))
+
+  @staticmethod
+  def gradient (x, copy=False):
+    if copy: y = x.copy()
+    else:    y = x
+
+    ey = np.exp(y)
+    return ey / (1. + ey)
+
+
+class SoftSign (Activations):
+
+  BYRON_INDEX = 17
+
+  def __init__ (self):
+    super(SoftSign, self).__init__('SoftSign')
+
+  @staticmethod
+  def activate (x, copy=False):
+    if copy: y = x.copy()
+    else:    y = x
+
+    return y / (np.abs(y) + 1.)
+
+  @staticmethod
+  def gradient (x, copy=False):
+    if copy: y = x.copy()
+    else:    y = x
+
+    fy = np.abs(y) + 1.
+    return 1. / (fy * fy)
