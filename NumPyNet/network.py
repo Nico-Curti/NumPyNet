@@ -31,6 +31,7 @@ from NumPyNet.layers.yolo_layer import Yolo_layer
 from NumPyNet.parser import net_config
 from NumPyNet.exception import DataVariableError
 from NumPyNet.exception import LayerError
+from NumPyNet.exception import NetworkError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -78,6 +79,8 @@ class Network(object):
 
     else:
       self._net = []
+
+    self._fitted = False
 
 
   def add(self, layer):
@@ -170,9 +173,9 @@ class Network(object):
 
       print('{:>4d} {}'.format(i, self._net[-1]), flush=True, end='\n')
 
-      if model.get(layer, 'batch_normalize', 0):
-        self._net.append( BatchNorm_layer()(self._net[-1]) )
-        print('{:>4d} {}'.format(i, self._net[-1]), flush=True, end='\n')
+      #if model.get(layer, 'batch_normalize', 0): # wrong because it add a new layer and so the shortcut is broken
+      #  self._net.append( BatchNorm_layer()(self._net[-1]) )
+      #  print('{:>4d} {}'.format(i, self._net[-1]), flush=True, end='\n')
 
     return self
 
@@ -193,6 +196,8 @@ class Network(object):
     for layer in self:
       if hasattr(layer, 'load_weights'):
         pos = layer.load_weights(full_weights, pos)
+
+    self._fitted = True
 
     return self
 
@@ -225,6 +230,8 @@ class Network(object):
     self.__dict__.clear()
     self.__dict__.update(tmp_dict)
 
+    self._fitted = True
+
     return self
 
 
@@ -238,12 +245,85 @@ class Network(object):
     return self
 
 
-  def fit (self):
+  def fit(self, X, y, max_iter=100, shuffle=True):
+    '''
+    '''
     raise NotImplementedError
 
+    for i in range(max_iter):
+      continue
 
-  def predict (self):
-    raise NotImplementedError
+      out = self._forward(X)
+      self._backward(X)
+
+
+    self._fitted = True
+
+
+  def fit_generator(self, Xy_generator, max_iter=100):
+    '''
+    Fit function using a train generator (ref. DataGenerator in data.py)
+    '''
+
+    Xy_generator.start()
+
+    for i in range(max_iter):
+
+      grabbed = False
+
+      while not grabbed:
+
+        data, label, grabbed = Xy_generator.load_data()
+
+
+      self.fit(data, label, max_iter=1, shuffle=False) # data already shuffled
+
+    Xy_generator.stop()
+
+    self._fitted = True
+
+
+  def predict(self, X):
+    '''
+    Predict the given input
+    '''
+    if not self._fitted:
+      raise NetworkError('This Network model instance is not fitted yet. Please use the "fit" function before the predict')
+
+    output = self._forward(X)
+    return output
+
+
+  def _forward(self, x):
+    '''
+    Forward function.
+    Apply the forward method on all layers
+    '''
+    y = x.copy()
+
+    for layer in self:
+      layer.forward(y)
+      y = layer.output
+
+    return y
+
+  def _backward(self, x):
+    '''
+    BackPropagate the error
+    '''
+
+    for i in reversed(range(1, self.num_layers)):
+
+      input = self.net[i - 1].output
+      delta = self.net[i - 1].delta
+
+      self.net[i].backward(input, delta)
+
+    # last iteration
+    delta = None
+    input = x.copy()
+
+    self.net[0].backward(input, delta)
 
 
   @property
