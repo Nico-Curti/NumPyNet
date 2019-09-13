@@ -20,7 +20,7 @@ The activation layer applies the selected activation function to its input
 
 
 this is the forward function of the activation layer:
-```python
+
 <script src="https://github.com/Nico-Curti/NumPyNet/blob/7b07dfebcac7d5b457b6d3e8f4b70bd4409e2e03/NumPyNet/layers/activation_layer.py#L56-L68"></script>
-```
+
 #### Average Pool Layer <a name="avgpool_layer"></a>
