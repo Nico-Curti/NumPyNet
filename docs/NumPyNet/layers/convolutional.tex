@@ -1,0 +1,41 @@
+
+
+% https://victorzhou.com/blog/intro-to-cnns-part-1/
+% https://towardsdatascience.com/a-comprehensive-guide-to-convolutional-neural-networks-the-eli5-way-3bd2b1164a53
+% https://ujjwalkarn.me/2016/08/11/intuitive-explanation-convnets/
+
+
+Convolutional Neural Network (CNN) are particularly designed for image analysis.
+Convolution is the mathematical integration of two functions in which the second one is translated by a given value.
+
+In signal processing this operation is also called \emph{crossing correlation} and it is equivalent to the \emph{autocorrelation} function computed in a given point.
+In image processing the first function is represented by the image $I$ and the second one is a kernel $k$ (or filter) which shift along the image.
+In this case we will have a 2D discrete version of the formula given by:
+
+$$
+C = k * I
+$$
+
+$$
+C[i, j] = \sum_{u=-N}^{N} \sum_{v=-M}^{M} k[u, v] \cdot I[i - u, j - v]
+$$
+
+where $C[i, j]$ is the pixel value of the resulting image and $N, M$ are kernel dimensions.
+
+The use of CNN in modern image analysis applications can be traced back to multiple causes.
+First of all the image dimensions are increasingly bigger and thus the number of variables/features, i.e pixels, is often too big to manage with standard DNN\footnote{
+  If we consider a simple image $224\times224$ with $3$ color channels we obtain a set of $150'528$ features.
+  A classical DNN layer with this input size should have $1024$ nodes for a total of more than $150$ million weights to tune.
+}.
+Moreover if we consider detection problems, i.e the problem of detecting an set of features (or an object) inside a larger pattern, we want a system able to recognize the object regardless of where it appears into the input.
+In other words, we want that our model would be independent by simple translations.
+
+Both the above problems can overcome by CNN models using a small kernel, i.e weight mask, which maps the full input.
+A CNN is able to successfully capture the spatial and temporal dependencies in an signal through the application of relevant filters.
+
+
+
+
+%https://victorzhou.com/blog/intro-to-cnns-part-1/
+
+
