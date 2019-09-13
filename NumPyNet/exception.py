@@ -42,6 +42,14 @@ class LayerError (Exception):
 
     self.errors = errors
 
+class NetworkError (Exception):
+
+  def __init__ (self, message, errors=1):
+
+    super().__init__(message)
+
+    self.errors = errors
+
 class VideoError (Exception):
 
   def __init__ (self, message, errors=1):

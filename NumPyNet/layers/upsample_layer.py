@@ -87,7 +87,7 @@ class Upsample_layer(object):
     b,     ws, hs, cs = inpt.strides   # row/column strides
 
     x = as_strided(inpt, (batch, w, self.stride[0], h, self.stride[1], c), (b, ws, 0, hs, 0, cs)) # view a as larger 4D array
-    return x.reshape(batch, w * self.stride[0], h * self.stride[1], c)                                     # create new 2D array
+    return x.reshape(batch, w * self.stride[0], h * self.stride[1], c)                            # create new 2D array
 
   def forward(self, inpt):
     '''

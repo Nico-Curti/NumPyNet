@@ -43,6 +43,8 @@ class Shortcut_layer(object):
 
     self.output, self.delta = (None, None)
     self._out_shape = None
+    self.ix, self.jx, self.kx = (None, None, None)
+    self.iy, self.jy, self.ky = (None, None, None)
 
   def __str__(self):
     (b1, w1, h1, c1), (b2, w2, h2, c2) = self._out_shape
@@ -59,8 +61,20 @@ class Shortcut_layer(object):
 
     self._out_shape = [prev1.out_shape, prev2.out_shape]
 
-    _, w2, h2, c2 = prev1.out_shape
-    _, w1, h1, c1 = prev2.out_shape
+    self._stride_index(prev1.out_shape, prev2.out_shape)
+
+    return self
+
+  @property
+  def out_shape(self):
+    return max(self._out_shape)
+
+  def _stride_index (self, shape1, shape2):
+    '''
+    Evaluate the strided indexes if the input shapes are different
+    '''
+    _, w2, h2, c2 = shape1
+    _, w1, h1, c1 = shape2
     stride = w1 // w2
     sample = w2 // w1
 
@@ -69,11 +83,12 @@ class Shortcut_layer(object):
       prev_name  = layer.__class__.__name__
       raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
 
-    return self
+    idx = product(range(0, w2, sample), range(0, h2, sample), range(0, c2, sample))
+    self.ix, self.jx, self.kx = zip(*idx)
 
-  @property
-  def out_shape(self):
-    return max(self._out_shape) # TODO: to check when the input layers will have different shapes
+    idx = product(range(0, w1, stride), range(0, w1, stride), range(0, c1, stride))
+    self.iy, self.jy, self.ky = zip(*idx)
+
 
   def forward(self, inpt, prev_output):
     '''
@@ -106,18 +121,8 @@ class Shortcut_layer(object):
       #           [2, 1, 2, 1],
       #           [1, 1, 1, 1]]
 
-      _, w2, h2, c2 = inpt.shape
-      _, w1, h1, c1 = prev_output.shape
-      stride = w1 // w2
-      sample = w2 // w1
-
-      assert stride == h1 // h2 and sample == h2 // h1
-
-      idx = product(range(0, w2, sample), range(0, h2, sample), range(0, c2, sample))
-      ix, jx, kx = zip(*idx)
-
-      idx = product(range(0, w1, stride), range(0, w1, stride), range(0, c1, stride))
-      iy, jy, ky = zip(*idx)
+      if (self.ix, self.iy, self.kx) is (None, None, None):
+        self._stride_index(inpt.shape, prev_output.shape)
 
       self.output = inpt.copy()
       self.output[:, ix, jx, kx] = self.alpha * self.outpu[:, ix, jx, kx] + self.beta * prev_output[:, iy, jy, ky]
@@ -140,8 +145,13 @@ class Shortcut_layer(object):
     self.delta *= self.gradient(self.output)
 
     delta      += self.delta * self.alpha
-    # MISS combination
-    prev_delta += self.delta * self.beta
+
+    if (self.ix, self.iy, self.kx) is (None, None, None): # same shapes
+      prev_delta[:] += self.delta[:] * self.beta
+
+    else: # different shapes
+      prev_delta[:, self.ix, self.jx, self.kx] += self.beta * self.delta[:, self.iy, self.jy, self.ky]
+
 
 
 if __name__ == '__main__':
