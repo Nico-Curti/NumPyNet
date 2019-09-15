@@ -6,11 +6,11 @@ It slides a 2D kernel of arbitrary size over the image and the output is the mea
 In the images below are shown some results obtained by performing an average pool (forward and backward) with different kernel sizes and strides:
 
 
-![]()
-![]()
+![](https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/average_3-2.png)
+![](https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/average_30-20.png)
 *Fig.1: in the image are shown the effects of different kernel size-stride couplets. From up to down : size=3 and stride=2, size=30 and stride=20.*
 
-
+(I'm not showing the backward image because it looks like a random image passing a random delta).
 The code used to obtain those images can be found [in this repository](https://github.com/Nico-Curti/NumPyNet/blob/master/NumPyNet/layers/avgpool_layer.py), after the average pool layer class definition.
 
 This is an example code on how to use the single layer to perform its *forward* and *backward* functions:
