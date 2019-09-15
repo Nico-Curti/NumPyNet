@@ -108,6 +108,6 @@ Here instead :
 
 
 
-[activation_relu]: https://github.com/Nico-Curti/NumPyNet/blob/master/NumPyNet/docs/images/activation_relu.png "activation_relu"
-[activation_logitic]: https://github.com/Nico-Curti/NumPyNet/blob/master/NumPyNet/docs/images/activation_logistic.png "activation_logitic"
-[actvation_elu]: https://github.com/Nico-Curti/NumPyNet/blob/master/NumPyNet/docs/images/activation_elu.png "activation_elu"
+[activation_relu]: https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/activation_relu.png "activation_relu"
+[activation_logitic]: https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/activation_logistic.png "activation_logitic"
+[actvation_elu]: https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/activation_elu.png "activation_elu"
