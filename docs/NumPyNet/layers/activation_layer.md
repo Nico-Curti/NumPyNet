@@ -18,9 +18,9 @@ An important feature of any activation function, in fact, is that it should be d
 
 The images below show some examples about the effect of the forward and backward pass of the activation layer on the same input picture:
 
-![][activation_relu]
-![][activation_logistic]
-![][activation_elu]
+![](https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/activation_relu.png)
+![](https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/activation_logistic.png )
+![](https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/activation_elu.png)
 *Fig. 1: examples of activation functions being applied to the same input image. From up to down: Relu, Logistic and Elu*
 
 The code used to generate those images can be found [in this repository](https://github.com/Nico-Curti/NumPyNet/blob/master/NumPyNet/layers/activation_layer.py "activation_layer.py"), after the activation layer class definition.
@@ -104,10 +104,3 @@ def backward(self, delta, copy=False):
 Here instead :
 1. multiply *layer.delta* for the derivative of the activation function (computed on the **activated** output)image
 2. modify delta with the current value of *layer.delta*.
-
-
-
-
-[activation_relu]: https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/activation_relu.png "activation_relu"
-[activation_logitic]: https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/activation_logistic.png "activation_logitic"
-[actvation_elu]: https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/activation_elu.png "activation_elu"
