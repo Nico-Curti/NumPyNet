@@ -53,31 +53,33 @@ To have a look more in details on what's happening:
 ##### Forward:
 
 ```python
-'''
-Forward function of the average pool layer: it slide a kernel of size (kx,ky) = size
-and with step (st1, st2) = strides over every image in the batch. For every sub-matrix
-it computes the average value without considering NAN value (padding), and passes it
-to the output.
-Parameters:
-  inpt : input batch of image, with the shape (batch, input_w, input_h, input_c)
-'''
+def forward(self, inpt):
+  '''
+  Forward function of the average pool layer: it slide a kernel of size (kx,ky) = size
+  and with step (st1, st2) = strides over every image in the batch. For every sub-matrix
+  it computes the average value without considering NAN value (padding), and passes it
+  to the output.
 
-self.batch, self.w, self.h, self.c = inpt.shape
-kx, ky = self.size
-sx, sy = self.stride
+  Parameters:
+    inpt : input batch of image, with the shape (batch, input_w, input_h, input_c)
+  '''
 
-# Padding
-if self.pad:
-  self._evaluate_padding()
-  mat_pad = self._pad(inpt)
-else:
-  # If padding false, it cuts images' raws/columns
-  mat_pad = inpt[:, : (self.w - kx) // sx*sx + kx, : (self.h - ky) // sy*sy + ky, ...]
+  self.batch, self.w, self.h, self.c = inpt.shape
+  kx, ky = self.size
+  sx, sy = self.stride
 
-# 'view' is the strided input image, shape = (batch, out_w, out_h, out_c, kx, ky)
-view = self._asStride(mat_pad, self.size, self.stride)
+  # Padding
+  if self.pad:
+    self._evaluate_padding()
+    mat_pad = self._pad(inpt)
+  else:
+    # If padding false, it cuts images' raws/columns
+    mat_pad = inpt[:, : (self.w - kx) // sx*sx + kx, : (self.h - ky) // sy*sy + ky, ...]
 
-# Mean of every sub matrix, computed without considering the padd(np.nan)
-self.output = np.nanmean(view, axis=(4, 5))
-self.delta = np.zeros(shape=self.out_shape, dtype=float)
+  # 'view' is the strided input image, shape = (batch, out_w, out_h, out_c, kx, ky)
+  view = self._asStride(mat_pad, self.size, self.stride)
+
+  # Mean of every sub matrix, computed without considering the padd(np.nan)
+  self.output = np.nanmean(view, axis=(4, 5))
+  self.delta = np.zeros(shape=self.out_shape, dtype=float)
 ```
