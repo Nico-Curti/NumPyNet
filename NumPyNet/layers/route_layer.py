@@ -16,13 +16,11 @@ class Route_layer():
 
   def __init__(self, **kwargs):
     '''
-    Route layer. Incomplete, I need to know how the network object wiil behave.
+    Route layer
       For Now the idea is : it takes the seleted layers output, concatenate them, and
       then performs a linear combination with the output of the previous layer.
 
-      This layer will be completed afterwards.
-
-    Paramters:
+    Parameters:
       input_layers : list of previous layer for which concatenate outputs
     '''
 
@@ -55,18 +53,18 @@ class Route_layer():
 
   def forward(self, inpt, net):
 
-    # I will need a net object, that store all the layers in a list or something like that
     for layer_idx in self.input_layers:
       self.output = np.concatenate(self.output, net.layers[layer_idx].output, axis=1)
     self.delta = np.zeros(shape=self.output.shape, dtype=float)
 
   def backward(self, delta, net):
 
-    # Do I need a backwad for the route layer?
     for layer_idx in self.input_layers:
       delta += net.layers[layer_idx].delta
 
 
 if __name__ == '__main__':
 
+  layer = Route_layer()
+#  print(layer)
   print('Insert test visualization here')

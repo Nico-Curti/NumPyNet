@@ -88,7 +88,7 @@ if __name__ == '__main__':
 
   from NumPyNet import activations
 
-  activation_func = activations.Relu()
+  activation_func = activations.Hardtan()
 
   img_2_float = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 1.)).astype(float)
   float_2_img = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 255.)).astype(np.uint8)

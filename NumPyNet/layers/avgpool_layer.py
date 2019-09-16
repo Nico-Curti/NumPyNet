@@ -223,7 +223,6 @@ class Avgpool_layer(object):
     else:
       delta[:] = mat_pad
 
-
 if __name__ == '__main__':
 
   import os
@@ -240,9 +239,9 @@ if __name__ == '__main__':
   inpt = img_2_float(inpt)
 
   inpt = np.expand_dims(inpt, axis=0)
-  pad = True
+  pad  = False
 
-  size = 3
+  size   = 3
   stride = 2
 
   # Model initialization
@@ -257,7 +256,7 @@ if __name__ == '__main__':
 
   # BACKWARD
 
-  delta = np.zeros(shape=inpt.shape, dtype=float)
+  delta = np.random.uniform(low=0., high=1.,size=inpt.shape)
   layer.delta = np.ones(layer.out_shape, dtype=float)
   layer.backward(delta)
 
