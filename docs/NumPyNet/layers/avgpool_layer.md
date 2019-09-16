@@ -12,7 +12,7 @@ In the images below are shown some results obtained by performing an average poo
 <p align="center">
   <img src="https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/average_30-20.png">
 </p>
-*Fig.1: in the image are shown the effects of different kernel size-stride couplets. From up to down : size=3 and stride=2, size=30 and stride=20.*
+*Fig.1: in the image are shown the effects of different kernel size-stride couplets. From up to down : size=3 and stride=2, size=30 and stride=20*
 
 (I'm not showing the backward image, since it looks like a random noise)
 The code used to obtain those images can be found [in this repository](https://github.com/Nico-Curti/NumPyNet/blob/master/NumPyNet/layers/avgpool_layer.py), after the average pool layer class definition.
@@ -104,8 +104,60 @@ Then the padded images are passed as argument to *_asStride*, that returns a **v
 The variable *view* stores data in the shapes (batch, out_width, out_height, channels, size, size):
 basically N = batch * out_width * out_height * c matrices size * size, or every set of pixels under the kernel slice.
 
-The output dimensions of the image are compueted as such:
+The output dimensions of the image are computed as such:
 
   <a href="https://www.codecogs.com/   eqnedit.php?latex=out\_width&space;=&space;\lfloor\frac{width&space;&plus;&space;pad&space;-&space;size}{stride}\rfloor&space;&plus;&space;1" target="_blank"><img src="https://latex.codecogs.com/gif.latex?out\_width&space;=&space;\lfloor\frac{width&space;&plus;&space;pad&space;-&space;size}{stride}\rfloor&space;&plus;&space;1" title="out\_width = \lfloor\frac{width + pad - size}{stride}\rfloor + 1" /></a>
 
   <a href="https://www.codecogs.com/eqnedit.php?latex=out\_height&space;=&space;\lfloor\frac{height&space;&plus;&space;pad&space;-&space;size}{stride}\rfloor&space;&plus;&space;1" target="_blank"><img src="https://latex.codecogs.com/gif.latex?out\_height&space;=&space;\lfloor\frac{height&space;&plus;&space;pad&space;-&space;size}{stride}\rfloor&space;&plus;&space;1" title="out\_height = \lfloor\frac{height + pad - size}{stride}\rfloor + 1" /></a>
+
+After the view is created, the output is computed by `numpy.nanmean(view, axis=(4,5))`, which returns an array containing all the N average values, excluding nan value from the equations.
+
+The next code shows, instead, the backward function definition :
+
+```python
+
+def backward(self, delta):
+  '''
+  backward function of the average_pool layer: the function modifies the net delta
+  to be backpropagated.
+  Parameters:
+    delta : global delta to be backpropagated with shape (batch, out_w, out_h, out_c)
+  '''
+
+  kx, ky = self.size
+
+  # Padding delta for a coherent _asStride dimension
+  if self.pad:
+    mat_pad = self._pad(delta)
+  else :
+    mat_pad = delta
+
+  # _asStride of padded delta let me access every pixel of the memory in the order I want.
+  # This is used to create a 1-1 correspondence between output and input pixels.
+  net_delta_view = self._asStride(mat_pad, self.size, self.stride)
+
+  # needs to count only non nan values for keras
+  b, w, h, c = self.output.shape
+  combo = itertools.product(range(b), range(w), range(h), range(c)) # every combination of indices
+
+  # The indexes are necessary to access every pixel value one at a time, since
+  # modifing the same memory address more times at once doesn't produce the correct result
+
+  for b, i, j, k in combo:
+    norm = 1./ np.count_nonzero(~np.isnan(net_delta_view[b, i, j, k, :])) # this only counts non nan values for norm
+    net_delta_view[b, i, j, k, :] += self.delta[b, i, j, k] * norm
+
+  # Here delta is updated correctly
+  if self.pad:
+    _, w_pad, h_pad, _ = mat_pad.shape
+    # Excluding the padded part of the image
+    delta[:] = mat_pad[:, self.pad_top : w_pad - self.pad_bottom, self.pad_left : h_pad - self.pad_right, :]
+  else:
+    delta[:] = mat_pad
+```
+
+The backpropagation of the average pool layer implies that every value of *delta* is updated with the corresponding value of *layer.delta* multiplied by a normalization factor, that is the inverse of the number of non nan values in a kernel windows.
+
+Unfortunately, the use of the *view* object is not "thread safe", so if there are superposition between two kernel windows (stride < size), the same pixel will be present more than one time in *net_delta_view*. That requires a "one a time" modification of every single pixels.
+
+In the end of the function delta is modified with the correct values of *mat_pad*, excluding nan values added by padding.
