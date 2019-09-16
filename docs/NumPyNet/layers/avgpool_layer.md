@@ -1,7 +1,7 @@
 ### Average Pool Layer
 
 The Average Pool layer perfoms a down sampling on the batch of images.
-It slides a 2D kernel of arbitrary size over the image and the output is the mean value of the pixels inside the kernel. Also the slide of the kernel (how many pixel it moves on the x and the y axis) isn't fixed.
+It slides a 2D kernel of arbitrary size over the image and the output is the mean value of the pixels inside the kernel. The slide of the kernel (how many pixel it moves on the x and the y axis) can be modified.
 
 In the images below are shown some results obtained by performing an average pool (forward and backward) with different kernel sizes and strides:
 
@@ -160,4 +160,4 @@ The backpropagation of the average pool layer implies that every value of *delta
 
 Unfortunately, the use of the *view* object is not "thread safe", so if there are superposition between two kernel windows (stride < size), the same pixel will be present more than one time in *net_delta_view*. That requires a "one a time" modification of every single pixels.
 
-In the end of the function delta is modified with the correct values of *mat_pad*, excluding nan values added by padding.
+In the end of the function delta is modified with the correct values of *mat_pad*, excluding nan values added by padding. 
