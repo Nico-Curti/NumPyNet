@@ -1,27 +1,26 @@
-#### Activation Layer <a name="activation_Layer"></a>
+### Activation Layer
 
-Activation functions (or transfer functions) are linear or non linear equations which process the output of a Neural Network neuron and bound it into a limit range of values (usually [-1,1] or [0,1]).
+Activation functions (or transfer functions) are linear or non linear equations which process the output of a Neural Network's neuron and bound it into a limited range of values (usually [-1,1] or [0,1]).
 
-In a fully connected neural network, the output of a simple neuron is the dot product between weight and input vectors, ranging from $-\infty$ to $+\infty$, but most importantly the function is linear.
+In a fully connected neural network, the output of a simple neuron is the dot product between weight and input vectors, ranging from to -&infin; to +&infin;  but most importantly the output is the result of a linear function.
 Linear functions are very simple to be dealt with, but they are limited in their complexity and thus in their learning power.
 Neural Networks without activation functions are just simple linear regression model.
-The introduction of non-linearity allow Neural Network to model a wide range of functions and to learn more complex relations in the pattern data.
+The introduction of non-linearity allow them to model a wide range of functions and to learn more complex relations in the pattern data.
 From a biological point of view, the activation function models the on/off state of a neuron in the output decision process.
 
 Many activation functions were proposed during the years and each one has its characteristics but not an appropriate field of application.
 The better one to use in a particular situation is still an open question.
 Each one has its pro and cons, so each Neural Network libraries implements a wide range of activations and leaves the user to perform his own tests.
 
-We stored the whole list of activation functions available in [activations.py](https://github.com/Nico-Curti/NumPyNet/blob/master/NumPyNet/activations.py) we show the list of activation functions implemented in our library with mathematical formulations and their derivatives.
-An important feature of any activation function, in fact, is that it should be differentiable since the main procedure of model optimization implies the backpropagation of the error gradients.
-
+We stored the whole list of activation functions available in [activations.py](https://github.com/Nico-Curti/NumPyNet/blob/master/NumPyNet/activations.py), with their own formulations and derivatives.
+An important feature of any activation function, in fact, is that it should be differentiable, since the main procedure of model optimization (Learning) implies the backpropagation of the error gradients.
 
 The images below show some examples about the effect of the forward and backward pass of the activation layer on the same input picture:
 
 ![](https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/activation_relu.png)
 ![](https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/activation_logistic.png )
 ![](https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/activation_elu.png)
-*Fig. 1: examples of activation functions being applied to the same input image. From up to down: Relu, Logistic and Elu*
+*Fig. 1: examples of activation functions being applied to the same input image. From up to down: Relu, Logistic and Elu, for both forward pass and backward pass*
 
 The code used to generate those images can be found [in this repository](https://github.com/Nico-Curti/NumPyNet/blob/master/NumPyNet/layers/activation_layer.py "activation_layer.py"), after the activation layer class definition.
 
