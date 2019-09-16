@@ -6,11 +6,15 @@ It slides a 2D kernel of arbitrary size over the image and the output is the mea
 In the images below are shown some results obtained by performing an average pool (forward and backward) with different kernel sizes and strides:
 
 
-![](https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/average_3-2.png)
-![](https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/average_30-20.png)
+<p align="center">
+  <img src="https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/average_3-2.png" >
+</p>
+<p align="center">
+  <img src="https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/average_30-20.png">
+</p>
 *Fig.1: in the image are shown the effects of different kernel size-stride couplets. From up to down : size=3 and stride=2, size=30 and stride=20.*
 
-(I'm not showing the backward image because it looks like a random image passing a random delta).
+(I'm not showing the backward image, since it looks like a random noise)
 The code used to obtain those images can be found [in this repository](https://github.com/Nico-Curti/NumPyNet/blob/master/NumPyNet/layers/avgpool_layer.py), after the average pool layer class definition.
 
 This is an example code on how to use the single layer to perform its *forward* and *backward* functions:
@@ -47,7 +51,6 @@ layer.backward(delta, copy=False)
 # now net_delta is modified and ready to be passed to the previous layer.delta
 ```
 
-
 To have a look more in details on what's happening:
 
 ##### Forward:
@@ -79,7 +82,30 @@ def forward(self, inpt):
   # 'view' is the strided input image, shape = (batch, out_w, out_h, out_c, kx, ky)
   view = self._asStride(mat_pad, self.size, self.stride)
 
-  # Mean of every sub matrix, computed without considering the padd(np.nan)
+  # Mean of every sub matrix, computed without considering the pad (np.nan)
   self.output = np.nanmean(view, axis=(4, 5))
-  self.delta = np.zeros(shape=self.out_shape, dtype=float)
+  self.delta  = np.zeros(shape=self.out_shape, dtype=float)
 ```
+
+In the first place, if required by the user, the image is padded:
+
+  1. The function *_evaluate_padding* take no parameters and compute the number of rows/columns to be added to every image on the batch, following keras SAME padding as described [here](https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave).
+  2. The function _pad is just a wrap for:
+
+```python
+numpy.pad(array=inpt, pad_with=((0, 0), (self.pad_top, self.pad_bottom), (self.pad_left, self.pad_right), (0, 0)), mode='constant', constant_values=(np.nan, np.nan))
+```
+that pads the images with a number of rows equal to pad_top + pad_bottom, and a number of columns equal to pad_left + pad_right. All values are np.nan.
+
+  3. If no padding is requested, the colums and rows that would be left out from the kernel sliding are cut from every image on the batch.
+
+Then the padded images are passed as argument to *_asStride*, that returns a **view** of the strided image. A view contains the same data as the original array, but arranged in a different way, without taking up more space.
+
+The variable *view* stores data in the shapes (batch, out_width, out_height, channels, size, size):
+basically N = batch * out_width * out_height * c matrices size * size, or every set of pixels under the kernel slice.
+
+The output dimensions of the image are compueted as such:
+
+  <a href="https://www.codecogs.com/   eqnedit.php?latex=out\_width&space;=&space;\lfloor\frac{width&space;&plus;&space;pad&space;-&space;size}{stride}\rfloor&space;&plus;&space;1" target="_blank"><img src="https://latex.codecogs.com/gif.latex?out\_width&space;=&space;\lfloor\frac{width&space;&plus;&space;pad&space;-&space;size}{stride}\rfloor&space;&plus;&space;1" title="out\_width = \lfloor\frac{width + pad - size}{stride}\rfloor + 1" /></a>
+
+  <a href="https://www.codecogs.com/eqnedit.php?latex=out\_height&space;=&space;\lfloor\frac{height&space;&plus;&space;pad&space;-&space;size}{stride}\rfloor&space;&plus;&space;1" target="_blank"><img src="https://latex.codecogs.com/gif.latex?out\_height&space;=&space;\lfloor\frac{height&space;&plus;&space;pad&space;-&space;size}{stride}\rfloor&space;&plus;&space;1" title="out\_height = \lfloor\frac{height + pad - size}{stride}\rfloor + 1" /></a>
