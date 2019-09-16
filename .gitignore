@@ -15,6 +15,10 @@ __pycache__/
 *.synctex.gz
 *.tex.backup
 
+# markdown
+*.dvi
+*.pyg
+
 # C extensions
 *.so
 
