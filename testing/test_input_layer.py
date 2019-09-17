@@ -26,7 +26,8 @@ __package__ = 'Input Layer testing'
        w     = st.integers(min_value=1, max_value=100),
        h     = st.integers(min_value=1, max_value=100),
        c     = st.integers(min_value=1, max_value=10 ))
-@settings(max_examples=10)
+@settings(max_examples=10,
+          deadline=1000)
 def test_input_layer(batch, w, h, c):
   '''
   Tests:

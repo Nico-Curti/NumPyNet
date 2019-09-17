@@ -22,23 +22,28 @@ Implementation in **pure** numpy of neural networks models. This library is usef
 1. [Introduction](#introduction)
 2. [Layers](#layers)
 3. [Installation](#installation)
+4. [Authors](#authors)
+5. [License](#license)
+6. [Contributions](#contributions)
+7. [Acknowledgment](#acknowledgment)
+8. [Citation](#citation)
 
 ### Introduction
 
-Bla bla Bla.\
-Hello world
+**TODO:** Insert here introduction about neural network models starting from the Simple Perceptron model provided [here](https://gist.github.com/Nico-Curti/358b7a2ffed1abbb57ee87a5338ca073)
 
 ### Layers
 
 Some text for introduction
 
-1. [Activation Layer](./NumPyNet/layers/activation_layer.md)
-2. [Avgpool Layer](./NumPyNet/layers/avgpool_layer.md)
+* [Activation Layer](./NumPyNet/layers/activation_layer.md)
+* [Avgpool Layer](./NumPyNet/layers/avgpool_layer.md)
+* [BatchNorm Layer](./NumPyNet/layers/batchnorm_layer.md)
+* [Connected Layer](./NumPyNet/layers/connected_layer.md)
 
 ### Installation
 
-For the **Python installation** see [here](./python_install.md).
-
+For a complete guide to the Python **installation** procedure see [here](./python_install.md).
 
 ### [Authors](./authors.md)
 

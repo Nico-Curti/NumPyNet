@@ -97,11 +97,11 @@ class Network(object):
     if type_layer not in self.LAYERS.keys():
       raise LayerError('Incorrect Layer type found.')
 
-    if type_layer != 'input':
-      self._net.append(layer(self._net[-1]))
+    if type_layer == 'input':
+      self._net.append(layer)
 
     else:
-      self._net.append(layer)
+      self._net.append(layer(self._net[-1]))
 
     return self
 

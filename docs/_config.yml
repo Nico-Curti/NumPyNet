@@ -28,5 +28,7 @@ include:
   - NumPyNet.md
   - NumPyNet/layers/activation_layer.md
   - NumPyNet/layers/avgpool_layer.md
+  - NumPyNet/layers/batchnorm_layer.md
+  - NumPyNet/layers/connected_layer.md
 
 theme:              jekyll-theme-slate

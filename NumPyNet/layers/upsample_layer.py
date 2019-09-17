@@ -82,7 +82,7 @@ class Upsample_layer(object):
     scale_w = w // self.stride[0]
     scale_h = h // self.stride[1]
 
-    return inpt.reshape(batch, scale_w, self.stride[0], scale_h, self.stride[1], c).sum(axis=(2, 4))
+    return inpt.reshape(batch, scale_w, self.stride[0], scale_h, self.stride[1], c).mean(axis=(2, 4))
 
   def _upsample (self, inpt):
     batch, w,  h,  c  = inpt.shape     # number of rows/columns
