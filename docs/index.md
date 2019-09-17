@@ -70,7 +70,7 @@ Please cite `NumPyNet` if you use it in your research.
 ```tex
 @misc{NumPyNet,
   author = {Nico Curti and Mattia Ceccarelli},
-  title = {{N}um{P}y{N}et},
+  title = {NumPyNet - Neural Networks in Pure NumPy},
   year = {2019},
   publisher = {GitHub},
   journal = {GitHub repository},
