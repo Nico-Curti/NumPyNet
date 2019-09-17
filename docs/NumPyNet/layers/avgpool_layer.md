@@ -17,7 +17,7 @@ In the images below are shown some results obtained by performing an average poo
 (I'm not showing the backward image, since it looks like a random noise)
 The code used to obtain those images can be found [in this repository](https://github.com/Nico-Curti/NumPyNet/blob/master/NumPyNet/layers/avgpool_layer.py), after the average pool layer class definition.
 
-This is an example code on how to use the single layer to perform its *forward* and *backward* functions:
+This is an example code on how to use the single layer to perform its `forward` and `backward` functions:
 
 ```python
 # first the essential import for the library.
@@ -89,8 +89,8 @@ def forward(self, inpt):
 
 In the first place, if required by the user, the image is padded:
 
-  1. The function *_evaluate_padding* take no parameters and compute the number of rows/columns to be added to every image on the batch, following keras SAME padding as described [here](https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave).
-  2. The function _pad is just a wrap for:
+  1. The function `_evaluate_padding` take no parameters and compute the number of rows/columns to be added to every image on the batch, following keras SAME padding as described [here](https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave).
+  2. The function `_pad` is just a wrap for:
 
 ```python
 numpy.pad(array=inpt, pad_with=((0, 0), (self.pad_top, self.pad_bottom), (self.pad_left, self.pad_right), (0, 0)), mode='constant', constant_values=(np.nan, np.nan))
@@ -99,9 +99,9 @@ that pads the images with a number of rows equal to pad_top + pad_bottom, and a 
 
   3. If no padding is requested, the colums and rows that would be left out from the kernel sliding are cut from every image on the batch.
 
-Then the padded images are passed as argument to *_asStride*, that returns a **view** of the strided image. A view contains the same data as the original array, but arranged in a different way, without taking up more space.
+Then the padded images are passed as argument to `_asStride`, that returns a **view** of the strided image. A view contains the same data as the original array, but arranged in a different way, without taking up more space.
 
-The variable *view* stores data in the shapes (batch, out_width, out_height, channels, size, size):
+The variable `view` stores data in the shapes (batch, out_width, out_height, channels, size, size):
 basically N = batch * out_width * out_height * c matrices size * size, or every set of pixels under the kernel slice.
 
 The output dimensions of the image are computed as such:
@@ -156,8 +156,8 @@ def backward(self, delta):
     delta[:] = mat_pad
 ```
 
-The backpropagation of the average pool layer implies that every value of *delta* is updated with the corresponding value of *layer.delta* multiplied by a normalization factor, that is the inverse of the number of non nan values in a kernel windows.
+The backpropagation of the average pool layer implies that every value of `delta` is updated with the corresponding value of `layer.delta` multiplied by a normalization factor, that is the inverse of the number of non nan values in a kernel windows.
 
-Unfortunately, the use of the *view* object is not "thread safe", so if there are superposition between two kernel windows (stride < size), the same pixel will be present more than one time in *net_delta_view*. That requires a "one a time" modification of every single pixels.
+Unfortunately, the use of the `view` object is not "thread safe", so if there are superposition between two kernel windows (stride < size), the same pixel will be present more than one time in `net_delta_view`. That requires a "one a time" modification of every single pixels.
 
-In the end of the function delta is modified with the correct values of *mat_pad*, excluding nan values added by padding. 
+In the end of the function delta is modified with the correct values of `mat_pad`, excluding nan values added by padding.

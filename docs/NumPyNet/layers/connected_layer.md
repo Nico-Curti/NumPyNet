@@ -7,7 +7,7 @@ Given a batch of images arranged in a matrix *X* of shape (batch, image_size) an
 <a href="https://www.codecogs.com/eqnedit.php?latex=z&space;=&space;XW&space;&plus;&space;b" target="_blank"><img src="https://latex.codecogs.com/gif.latex?z&space;=&space;XW&space;&plus;&space;b" title="z = XW + b" /></a>
 </p>
 
-To develop non-linearity and improve the learning capabilities of the layer, *z* is "activated" by an activation function, so that the final output of the layer will be:
+To develop non-linearity and improve the learning capabilities of the layer, `z` is "activated" by an activation function, so that the final output of the layer will be:
 
 <p align="center">
 <a href="https://www.codecogs.com/eqnedit.php?latex=y&space;=&space;f(z)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?y&space;=&space;f(z)" title="y = f(z)" /></a>

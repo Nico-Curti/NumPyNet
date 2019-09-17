@@ -4,7 +4,7 @@ Batch Normalization is the operation that involves the normalization of every fe
 
 The layer has been implemented following the original paper [Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift](https://arxiv.org/abs/1502.03167), where is also possible to find the entire implementation of the algorithm and teoretical explanations of forward and backward pass.
 
-According to the paper, if x<sub>i</sub> is the value of the x pixel in the i-th image of the batch, where i range from 1 to *batch_size*, then the forward pass look as follow:
+According to the paper, if x<sub>i</sub> is the value of the x pixel in the i-th image of the batch, where i range from 1 to `batch_size`, then the forward pass look as follow:
 
 <p align="center">
 <a href="https://www.codecogs.com/eqnedit.php?latex=\bar&space;x&space;=\frac{1}{batch\_size}&space;\sum_{i=0}^{batch\_size}x_i" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\bar&space;x&space;=\frac{1}{batch\_size}&space;\sum_{i=0}^{batch\_size}x_i" title="\bar x =\frac{1}{batch\_size} \sum_{i=0}^{batch\_size}x_i" /></a>
@@ -42,7 +42,7 @@ And the formula for the error to be back-propaate &delta;<sup>l-1</sup> is :
 <a href="https://www.codecogs.com/eqnedit.php?latex=\delta^{l-1}_i&space;=&space;\frac{batch\_size&space;\cdot&space;\delta&space;\hat&space;x_i&space;-&space;\sum_{j=0}^{batch\_size}\delta&space;\hat&space;x_j&space;-&space;\hat&space;x_i&space;\cdot&space;\sum_{j=0}^{batch\_size}\delta&space;\hat&space;x_j&space;\cdot&space;\hat&space;x_j}{batch\_size&space;\cdot&space;\sqrt{\sigma^2&space;&plus;&space;\epsilon}}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\delta^{l-1}_i&space;=&space;\frac{batch\_size&space;\cdot&space;\delta&space;\hat&space;x_i&space;-&space;\sum_{j=0}^{batch\_size}\delta&space;\hat&space;x_j&space;-&space;\hat&space;x_i&space;\cdot&space;\sum_{j=0}^{batch\_size}\delta&space;\hat&space;x_j&space;\cdot&space;\hat&space;x_j}{batch\_size&space;\cdot&space;\sqrt{\sigma^2&space;&plus;&space;\epsilon}}" title="\delta^{l-1}_i = \frac{batch\_size \cdot \delta \hat x_i - \sum_{j=0}^{batch\_size}\delta \hat x_j - \hat x_i \cdot \sum_{j=0}^{batch\_size}\delta \hat x_j \cdot \hat x_j}{batch\_size \cdot \sqrt{\sigma^2 + \epsilon}}" /></a>
 </p>
 
-Where &delta;&gamma;, &delta;beta; etc... are the derivatives of *y* with the correspondent variable.
+Where &delta;&gamma;, &delta;&beta; etc... are the derivatives of `y` with the correspondent variable.
 
 For an in details derivation, check the paper we linked above or [this very clear blog](https://kevinzakka.github.io/2016/09/14/batch_normalization/).
 

@@ -24,7 +24,7 @@ The images below show some examples about the effect of the forward and backward
 
 The code used to generate those images can be found [in this repository](https://github.com/Nico-Curti/NumPyNet/blob/master/NumPyNet/layers/activation_layer.py "activation_layer.py"), after the activation layer class definition.
 
-Below is shown an example on how to use the single layer to perform its *forward* and *backward* function:
+Below is shown an example on how to use the single layer to perform its `forward` and `backward` function:
 
 ```python
 # first the essential import for the library.
@@ -101,5 +101,5 @@ def backward(self, delta, copy=False):
   delta[:] = self.delta
 ```
 Here instead :
-1. multiply *layer.delta* for the derivative of the activation function (computed on the **activated** output)image
-2. modify delta with the current value of *layer.delta*.
+1. multiply `layer.delta` for the derivative of the activation function (computed on the **activated** output)image
+2. modify delta with the current value of `layer.delta`.
