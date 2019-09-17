@@ -76,11 +76,13 @@ class Upsample_layer(object):
     return (self.batch, out_w, out_h, self.c)
 
   def _downsample (self, inpt):
+    # This function works only if the dimensions are perfectly divisible by strides
+    # TODO: add padding (?)
     batch, w, h, c = inpt.shape
     scale_w = w // self.stride[0]
     scale_h = h // self.stride[1]
 
-    return inpt.reshape(batch, scale_w, self.stride[0], scale_h, self.stride[1], c).mean(axis=(2, 4))
+    return inpt.reshape(batch, scale_w, self.stride[0], scale_h, self.stride[1], c).sum(axis=(2, 4))
 
   def _upsample (self, inpt):
     batch, w,  h,  c  = inpt.shape     # number of rows/columns
@@ -139,11 +141,12 @@ if __name__ == '__main__':
   inpt = np.asarray(Image.open(filename), dtype=float)
   inpt.setflags(write=1)
   inpt = img_2_float(inpt)
+  inpt = inpt[1:, 1:, :]
 
   # add batch = 1
   inpt = np.expand_dims(inpt, axis=0)
 
-  stride = 2
+  stride = -3
   scale = 1.5
 
   layer = Upsample_layer(scale=scale, stride=stride)
