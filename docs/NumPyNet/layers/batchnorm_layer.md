@@ -65,7 +65,7 @@ scales = np.random.uniform(low=0., high=1., size=(w, h, c))
 bias   = np.random.uniform(low=0., high=1., size=(w, h, c))
 
 # Layer initialization, with parameters scales and bias
-layer = Avgpool_layer(scales=scales, bias=bias)
+layer = BatchNorm_layer(scales=scales, bias=bias)
 
 # Forward pass
 layer.forward(inpt=input, copy=False)
