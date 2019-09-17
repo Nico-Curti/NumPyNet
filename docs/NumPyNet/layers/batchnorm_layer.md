@@ -46,8 +46,6 @@ Where &delta;&gamma;, &delta;beta; etc... are the derivatives of *y* with the co
 
 For an in details derivation, check the paper we linked above or [this very clear blog](https://kevinzakka.github.io/2016/09/14/batch_normalization/).
 
-# IMAGE
-
 In the code below we present an example on how to use this single layer as it is:
 
 ```python
@@ -172,3 +170,7 @@ def backward(self, delta=None):
 ```
 
 Here every single step of the derivation is computed singularly:
+
+  * compute bias and scales updates as described above
+  * <a href="https://www.codecogs.com/eqnedit.php?latex=\delta&space;\hat&space;x" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\delta&space;\hat&space;x" title="\delta \hat x" /></a> is computed modifying directly the variable &delta;
+  * then with the derivatives w. r. t. the mean and to the variance are used to compute the delta to be backpropagated

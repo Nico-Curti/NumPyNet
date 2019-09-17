@@ -204,7 +204,7 @@ if __name__ == '__main__':
   np.random.seed(123) # set seed to have fixed bias and scales
 
   # create a pseudo-input with batch_size images with a random offset from the original image
-  rng = np.random.uniform(low=0., high=100., size=(batch_size, w, h, c))
+  rng  = np.random.uniform(low=0., high=100., size=(batch_size, w, h, c))
   inpt = np.concatenate([np.expand_dims(inpt, axis=0) + r for r in rng], axis=0) # create a set of image
 
   # img_to_float of input, to work with numbers btween 0. and 1.
@@ -212,8 +212,8 @@ if __name__ == '__main__':
 
   b, w, h, c = inpt.shape # needed for initializations of bias and scales
 
-  # bias   = np.random.uniform(0., 1., size=(w, h, c)) # random biases
-  # scales = np.random.uniform(0., 1., size=(w, h, c)) # random scales
+  bias   = np.random.uniform(0., 1., size=(w, h, c)) # random biases
+  scales = np.random.uniform(0., 1., size=(w, h, c)) # random scales
 
   bias = np.zeros(shape=(w, h, c), dtype=float)
   scales = np.ones(shape=(w, h, c), dtype=float)
