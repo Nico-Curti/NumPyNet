@@ -45,7 +45,7 @@ install:
   - "%PYTHON%\\python.exe setup.py install"
   # testing libraries
   - IF [%VERSION%] GEQ [35] IF [%ARCH%] == [x64] %PYTHON%\\python.exe -m pip install hypothesis
-  - IF [%VERSION%] GEQ [35] IF [%ARCH%] == [x64] %PYTHON%\\python.exe -m pip install keras
+  - IF [%VERSION%] GEQ [35] IF [%ARCH%] == [x64] %PYTHON%\\python.exe -m pip install keras==2.2.5
   - IF [%VERSION%] GEQ [35] IF [%ARCH%] == [x64] %PYTHON%\\python.exe -m pip install tensorflow
 
 test_script:
