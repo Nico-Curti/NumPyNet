@@ -96,9 +96,7 @@ def test_cost_layer():
 
     # create a function to be able to run this computation graph
     func = K.function(model.inputs + [truth_tf], grad_loss)
-    inpt_tf = tf.Variable(np.expand_dims(inpt, axis=0))
-    truth_tf = tf.Variable(truth)
-    keras_delta = func([inpt_tf, truth_tf])
+    keras_delta = func([np.expand_dims(inpt, axis=0), truth])
 
     numpynet_delta = numpynet_layer.delta
 

@@ -7,10 +7,10 @@ In the images below are shown some results obtained by performing an average poo
 
 
 <p align="center">
-  <img src="https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/average_3-2.png" >
+  <img src="./images/average_3-2.png" >
 </p>
 <p align="center">
-  <img src="https://github.com/Nico-Curti/NumPyNet/blob/master/docs/NumPyNet/images/average_30-20.png">
+  <img src="./images/average_30-20.png">
 </p>
 *Fig.1: in the image are shown the effects of different kernel size-stride couplets. From up to down : size=3 and stride=2, size=30 and stride=20*
 

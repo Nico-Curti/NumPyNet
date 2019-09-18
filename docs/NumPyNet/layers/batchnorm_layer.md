@@ -4,7 +4,7 @@ Batch Normalization is the operation that involves the normalization of every fe
 
 The layer has been implemented following the original paper [Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift](https://arxiv.org/abs/1502.03167), where is also possible to find the entire implementation of the algorithm and teoretical explanations of forward and backward pass.
 
-According to the paper, if x<sub>i</sub> is the value of the x pixel in the i-th image of the batch, where i range from 1 to `batch_size`, then the forward pass look as follow:
+According to the paper, if x_i is the value of the x pixel in the i-th image of the batch, where i range from 1 to `batch_size`, then the forward pass look as follow:
 
 <p align="center">
 <a href="https://www.codecogs.com/eqnedit.php?latex=\bar&space;x&space;=\frac{1}{batch\_size}&space;\sum_{i=0}^{batch\_size}x_i" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\bar&space;x&space;=\frac{1}{batch\_size}&space;\sum_{i=0}^{batch\_size}x_i" title="\bar x =\frac{1}{batch\_size} \sum_{i=0}^{batch\_size}x_i" /></a>
@@ -21,7 +21,7 @@ According to the paper, if x<sub>i</sub> is the value of the x pixel in the i-th
 <a href="https://www.codecogs.com/eqnedit.php?latex=y_i&space;=&space;\gamma&space;\hat&space;x_i&space;&plus;&space;\beta" target="_blank"><img src="https://latex.codecogs.com/gif.latex?y_i&space;=&space;\gamma&space;\hat&space;x_i&space;&plus;&space;\beta" title="y_i = \gamma \hat x_i + \beta" /></a>
 </p>
 
-Where y<sub>i</sub> is the x pixel normalized, rescaled and shifted of the i-th image in the batch, and &epsilon; is a (very small) constant, to avoid division by zero.
+Where y_i is the x pixel normalized, rescaled and shifted of the i-th image in the batch, and &epsilon; is a (very small) constant, to avoid division by zero.
 
 On the other hand, the backward is slightly more complicated, since we have to derive some formulas for the backpropagation and, moreover, &gamma; (scales) and &beta;'s (biases) update values (&delta;&gamma; and &delta;&beta; ), because they're trainable weigths.
 
@@ -35,8 +35,8 @@ The two updates are computed as:
 <a href="https://www.codecogs.com/eqnedit.php?latex=\delta&space;\gamma&space;=&space;\sum_{i=0}^{batch\_size}&space;\delta_i^l&space;\cdot&space;\hat&space;x_i" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\delta&space;\gamma&space;=&space;\sum_{i=0}^{batch\_size}&space;\delta_i^l&space;\cdot&space;\hat&space;x_i" title="\delta \gamma = \sum_{i=0}^{batch\_size} \delta_i^l \cdot \hat x_i" /></a>
 <p>
 
-Where &delta;<sup>l</sup> is the error passed from the next layer.
-And the formula for the error to be back-propaate &delta;<sup>l-1</sup> is :
+Where &delta;l is the error passed from the next layer.
+And the formula for the error to be back-propaate &delta;l-1 is :
 
 <p align="center">
 <a href="https://www.codecogs.com/eqnedit.php?latex=\delta^{l-1}_i&space;=&space;\frac{batch\_size&space;\cdot&space;\delta&space;\hat&space;x_i&space;-&space;\sum_{j=0}^{batch\_size}\delta&space;\hat&space;x_j&space;-&space;\hat&space;x_i&space;\cdot&space;\sum_{j=0}^{batch\_size}\delta&space;\hat&space;x_j&space;\cdot&space;\hat&space;x_j}{batch\_size&space;\cdot&space;\sqrt{\sigma^2&space;&plus;&space;\epsilon}}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\delta^{l-1}_i&space;=&space;\frac{batch\_size&space;\cdot&space;\delta&space;\hat&space;x_i&space;-&space;\sum_{j=0}^{batch\_size}\delta&space;\hat&space;x_j&space;-&space;\hat&space;x_i&space;\cdot&space;\sum_{j=0}^{batch\_size}\delta&space;\hat&space;x_j&space;\cdot&space;\hat&space;x_j}{batch\_size&space;\cdot&space;\sqrt{\sigma^2&space;&plus;&space;\epsilon}}" title="\delta^{l-1}_i = \frac{batch\_size \cdot \delta \hat x_i - \sum_{j=0}^{batch\_size}\delta \hat x_j - \hat x_i \cdot \sum_{j=0}^{batch\_size}\delta \hat x_j \cdot \hat x_j}{batch\_size \cdot \sqrt{\sigma^2 + \epsilon}}" /></a>
