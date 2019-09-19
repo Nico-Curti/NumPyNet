@@ -13,11 +13,27 @@ To develop non-linearity and improve the learning capabilities of the layer, `z`
 <a href="https://www.codecogs.com/eqnedit.php?latex=y&space;=&space;f(z)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?y&space;=&space;f(z)" title="y = f(z)" /></a>
 </p>
 
-Tha backward function computes the updates for weights and bias and the error to be backpropagated:
+Tha backward function computes the updates for weights and bias and the error to be backpropagated, following the rules descripted in the backpropation algorithm, if `f` is the activation function:
 
+<p align="center">
+<a href="https://www.codecogs.com/eqnedit.php?latex=\delta&space;\beta&space;=&space;\sum_{i=0}^{batch\_size}\frac{\partial&space;f(y)}{\partial&space;y_i}&space;\odot&space;\delta_i^l" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\delta&space;\beta&space;=&space;\sum_{i=0}^{batch\_size}\frac{\partial&space;f(y)}{\partial&space;y_i}&space;\odot&space;\delta_i^l" title="\delta \beta = \sum_{i=0}^{batch\_size}\frac{\partial f(y)}{\partial y_i} \odot \delta_i^l" /></a>
+</p>
 
+of dimension `(outputs,)`
 
+<p align="center">
+<a href="https://www.codecogs.com/eqnedit.php?latex=\delta&space;W&space;=&space;\delta&space;W&space;&plus;&space;X^T&space;\cdot&space;(\frac{\partial&space;f(y)}{\partial&space;y}&space;\odot&space;\delta^l&space;)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\delta&space;W&space;=&space;\delta&space;W&space;&plus;&space;X^T&space;\cdot&space;(\frac{\partial&space;f(y)}{\partial&space;y}&space;\odot&space;\delta^l&space;)" title="\delta W = \delta W + X^T \cdot (\frac{\partial f(y)}{\partial y} \odot \delta^l )" /></a>
+</p>
 
+of dimension `(inputs, outputs)`.
+
+<p align="center">
+<a href="https://www.codecogs.com/eqnedit.php?latex=\delta^{l-1}&space;=&space;(\frac{\partial&space;f(y)}{\partial&space;y}\odot&space;\delta^l)&space;\cdot&space;W^T" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\delta^{l-1}&space;=&space;(\frac{\partial&space;f(y)}{\partial&space;y}\odot&space;\delta^l)&space;\cdot&space;W^T" title="\delta^{l-1} = (\frac{\partial f(y)}{\partial y}\odot \delta^l) \cdot W^T" /></a>
+</p>
+
+of dimension `(batch, width, height, channels)`
+
+The output of the layer is a single vector of dimension `outputs`.
 
 Here there's an example on how to use the single connected layer forward, backward and update functions:
 
@@ -49,8 +65,7 @@ layer = Connected_layer(input_shape=input.shape, outputs=outputs,
 
 # Forward pass
 layer.forward(inpt=input, copy=False)
-out_img = layer.output    # the output in this case will be of shape=(batch, w, h, c), so a batch of normalized, rescaled and shifted images
-
+out_img = layer.output    # the output in this case will be a vector of shape = (outputs, )
 
 # Backward pass
 delta       = np.random.uniform(low=0., high=1., size=input.shape)     # definition of network delta, to be backpropagated
@@ -58,7 +73,7 @@ layer.delta = np.random.uniform(low=0., high=1., size=out_img.shape) # layer del
 layer.backward(delta, copy=False)
 
 # now net_delta is modified and ready to be passed to the previous layer.delta
-# and also the updates for scales and bias are computed
+# and also the updates for weights and bias are computed in the backward
 
 # update of the trainable weights
 layer.update(momentum=0., decay=0., lr=1e-2, lr_decay=1.)
@@ -66,6 +81,7 @@ layer.update(momentum=0., decay=0., lr=1e-2, lr_decay=1.)
 ```
 
 To have a look in details on what's happening inside every function, this is the forward:
+
 ```python
 def forward(self, inpt, copy=False):
   '''
@@ -88,10 +104,13 @@ def forward(self, inpt, copy=False):
   self.delta = np.zeros(shape=self.out_shape, dtype=float)
 ```
 
+This is an implementation on what's been discussed above:
 
+  * reshape of the input from `(batch, w, h, c)` to `(batch, w  h  c)`
+  * Matrix multiplication and add bias `XW + b` with [numpy einsum](https://docs.scipy.org/doc/numpy/reference/generated/numpy.einsum.html), for compatibility reasons with previous versions of python.
+  * Activation of the output wiht the selected activation function and init of `layer.delta`
 
-
-Backward function
+The `Backward` instead:
 
 ```python
 def backward(self, inpt, delta=None, copy=False):
@@ -122,5 +141,10 @@ def backward(self, inpt, delta=None, copy=False):
 
     # delta_shaped[:] += self.delta @ self.weights.transpose()')  # I can modify delta using its view
     delta_shaped[:] += np.dot(self.delta, self.weights.transpose())
-
 ```
+
+Again, the backward is an implementation of the operations discussed above:
+
+  * multiply `layer.delta` for the gradient of the activation function computed on the **activated** output. (`layer.delta` is actually overwritten, to occupy less space)
+  * update &delta;&beta; and &delta;W. This time using [numpy dot](https://docs.scipy.org/doc/numpy/reference/generated/numpy.dot.html), but einsum `would` have been still correct.
+  * reshape delta to match dimensions for the next matrix multiplication (note that `delta_shaped` is a **view**). Then compute &delta; for the previous layer.
