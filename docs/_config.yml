@@ -30,5 +30,6 @@ include:
   - NumPyNet/layers/avgpool_layer.md
   - NumPyNet/layers/batchnorm_layer.md
   - NumPyNet/layers/connected_layer.md
+  - NumPyNet/layers/convolutiona_layer.md
 
 theme:              jekyll-theme-slate

@@ -40,6 +40,7 @@ Some text for introduction
 * [Avgpool Layer](./NumPyNet/layers/avgpool_layer.md)
 * [BatchNorm Layer](./NumPyNet/layers/batchnorm_layer.md)
 * [Connected Layer](./NumPyNet/layers/connected_layer.md)
+* [Convolutional Layer](./NumPyNet/layers/convolutional_layer.md)
 
 ### Installation
 
@@ -82,5 +83,3 @@ Please cite `NumPyNet` if you use it in your research.
   howpublished = {\url{https://github.com/Nico-Curti/NumPyNet}},
 }
 ```
-
-
