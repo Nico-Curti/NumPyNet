@@ -70,12 +70,12 @@ out_img = layer.output    # the output in this case will be a vector of shape = 
 # Backward pass
 delta       = np.random.uniform(low=0., high=1., size=input.shape)     # definition of network delta, to be backpropagated
 layer.delta = np.random.uniform(low=0., high=1., size=out_img.shape) # layer delta, ideally coming from the next layer
-layer.backward(delta, copy=False)
+layer.backward(inpt=input, delta=delta, copy=False)
 
 # now net_delta is modified and ready to be passed to the previous layer.delta
 # and also the updates for weights and bias are computed in the backward
 
-# update of the trainable weights
+# update of the trainable weights 
 layer.update(momentum=0., decay=0., lr=1e-2, lr_decay=1.)
 
 ```
