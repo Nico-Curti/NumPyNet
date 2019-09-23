@@ -43,6 +43,7 @@ Some text for introduction
 * [Convolutional Layer](./NumPyNet/layers/convolutional_layer.md)
 * [Cost Layer](./NumPyNet/layers/cost_layer.md)
 * [DropOut Layer](./NumPyNet/layers/dropout_layer.md)
+* [Input Layer](./NumPyNet/layers/input_layer.md)
 
 ### Installation
 

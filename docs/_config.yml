@@ -33,5 +33,6 @@ include:
   - NumPyNet/layers/convolutional_layer.md
   - NumPyNet/layers/cost_layer.md
   - NumPyNet/layers/dropout_layer.md
-
+  - NumPyNet/layers/input_layer.md
+  
 theme:              jekyll-theme-slate
