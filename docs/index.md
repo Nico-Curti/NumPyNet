@@ -41,6 +41,8 @@ Some text for introduction
 * [BatchNorm Layer](./NumPyNet/layers/batchnorm_layer.md)
 * [Connected Layer](./NumPyNet/layers/connected_layer.md)
 * [Convolutional Layer](./NumPyNet/layers/convolutional_layer.md)
+* [Cost Layer](./NumPyNet/layers/cost_layer.md)
+* [DropOut Layer](./NumPyNet/layers/dropout_layer.md)
 
 ### Installation
 
