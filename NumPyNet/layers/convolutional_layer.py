@@ -336,7 +336,7 @@ if __name__ == '__main__':
 
   inpt = np.expand_dims(inpt, axis=0) # shape from (w, h, c) to (1, w, h, c)
 
-  channels_out = 1
+  channels_out = 10
   size         = (3, 3)
   stride       = (1, 1)
   pad          = False
@@ -345,13 +345,8 @@ if __name__ == '__main__':
 
   np.random.seed(123)
 
-  borderx = np.array([[[-1,0,1], [-1,0,1], [-1,0,1]],
-                      [[-1,0,1], [-1,0,1], [-1,0,1]],
-                      [[-1,0,1], [-1,0,1], [-1,0,1]]])
-
   b, w, h, c = inpt.shape
-#  filters    = np.random.uniform(-1., 1., size = (size[0], size[1], c, channels_out))
-  filters = borderx.reshape(3, 3, 3, 1)
+  filters    = np.random.uniform(-1., 1., size = (size[0], size[1], c, channels_out))
 #  bias       = np.random.uniform(-1., 1., size = (channels_out,))
   bias = np.zeros(shape=(channels_out,))
 
@@ -393,7 +388,7 @@ if __name__ == '__main__':
   ax1.set_title('Original image')
   ax1.axis('off')
   # here every filter effect on the image can be shown
-  ax2.imshow(float_2_img(forward_out[0, :, :,:]))
+  ax2.imshow(float_2_img(forward_out[0, :, :,1]))
   ax2.set_title('Forward')
   ax2.axis('off')
 
