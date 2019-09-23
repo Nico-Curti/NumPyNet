@@ -10,7 +10,7 @@ For a deeper explanation of the drop out operation you can take a look at the [o
 In the image below ther's an example output of a single image processed by the DropOut layer:
 
 <p align="center">
-  <img src="./images/dropout_prob10.png" >
+  <img src="../images/dropout_prob10.png" >
 </p>
 
 *Fig.: the image show the input image and the outputs of the forward function and backward function(given a random delta) of a DropOut layer with drops probability of 10%*
@@ -88,7 +88,7 @@ The code proceeds as follow:
 <a href="https://www.codecogs.com/eqnedit.php?latex=scale&space;=&space;\frac{1}{1-prob}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?scale&space;=&space;\frac{1}{1-prob}" title="scale = \frac{1}{1-prob}" /></a>
 </p>
 
-while if `prob=1`, `scale` is set to one, but it does'nt really matter, since every pixel is zero at that point, it's just to avoid the division
+while if `prob=1`, `scale` is set to one, but it doesn't really matter, since every pixel is zero at that point, it's just to avoid the division.
 
 The backward function is:
 
