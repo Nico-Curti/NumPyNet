@@ -18,13 +18,13 @@ An important feature of any activation function, in fact, is that it should be d
 The images below show some examples about the effect of the forward and backward pass of the activation layer on the same input picture:
 
 <p align="center">
-  <img src="./images/activation_relu.png" >
+  <img src="../images/activation_relu.png" >
 </p>
 <p align="center">
-  <img src="./images/activation_logistic.png">
+  <img src="../images/activation_logistic.png">
 </p>
 <p align="center">
-  <img src="./images/activation_elu.png">
+  <img src="../images/activation_elu.png">
 </p>
 *Fig. 1: examples of activation functions being applied to the same input image. From up to down: Relu, Logistic and Elu, for both forward pass and backward pass*
 
