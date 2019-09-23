@@ -15,7 +15,7 @@ In the image below ther's an example output of a single image processed by the D
 
 *Fig.: the image show the input image and the outputs of the forward function and backward function(given a random delta) of a DropOut layer with drops probability of 10%*
 
-The black dots are the dropped pixel (or neuron), while in the backward the delta is passed only through
+The black dots are the dropped pixel (or neuron), while in the backward the delta is passed only through the remaing pixels.
 
 That's a simple example on how to use the layer as a single operation (also used to produce the image above):
 
