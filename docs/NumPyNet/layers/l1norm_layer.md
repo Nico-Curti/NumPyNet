@@ -26,8 +26,9 @@ The code below is an example on how to use the single layer:
 ```python
 import os
 
-import pylab as plt
-from PIL import Image
+from NumPyNet.layers.l1norm_layer import L1Norm_layer
+
+import numpy as np 
 
 # those functions rescale the pixel values [0,255]->[0,1] and [0,1->[0,255]
 img_2_float = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 1.)).astype(float)
@@ -36,7 +37,7 @@ float_2_img = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 255.)).
 filename = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'dog.jpg')
 inpt = np.asarray(Image.open(filename), dtype=float)
 inpt.setflags(write=1)
-inpt = img_2_float(inpt)
+inpt = img_2_float(inpt) # preparation of the image
 
 # add batch = 1
 inpt = np.expand_dims(inpt, axis=0)
@@ -52,7 +53,7 @@ forward_out = layer.output # the shape of the output is the same as the one of t
 # BACKWARD
 
 delta = np.zeros(shape=inpt.shape, dtype=float)
-layer.backward(delta, copy=True)
+layer.backward(delta, copy=False)
 ```
 
 To have a look more in details on what's happening, here are presented the defition of the functions `forward` and `backward`:
