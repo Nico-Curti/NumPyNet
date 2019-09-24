@@ -44,6 +44,7 @@ Some text for introduction
 * [Cost Layer](./NumPyNet/layers/cost_layer.md)
 * [DropOut Layer](./NumPyNet/layers/dropout_layer.md)
 * [Input Layer](./NumPyNet/layers/input_layer.md)
+* [L1norm Layer](./NumPyNet/layers/l1norm_layer.md)
 
 ### Installation
 
