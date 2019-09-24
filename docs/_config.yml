@@ -35,5 +35,6 @@ include:
   - NumPyNet/layers/dropout_layer.md
   - NumPyNet/layers/input_layer.md
   - NumPyNet/layers/l1norm_layer.md
+  - NumPyNet/layers/l2norm_layer.md
 
 theme:              jekyll-theme-slate
