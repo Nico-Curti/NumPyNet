@@ -30,7 +30,7 @@ In other words, we want that our model would be independent by simple translatio
 Both the above problems can be overcome by CNN models using a small kernel, i.e weight mask, which maps the full input.
 A CNN is able to successfully capture the spatial and temporal dependencies in any signal through the application of relevant filters.
 
-In the image below some example on how the application of different kernel can highlight different features. (TODO: add images)
+In the image below some example on how the application of different kernel can highlight different features.
 
 Here's an example code on how to use the single convolutional layer:
 
@@ -81,6 +81,7 @@ layer.backward(delta, copy=False)
 
 # update of the trainable weights (filters and bias)
 layer.update(momentum=0., decay=0., lr=1e-2, lr_decay=1.)
+
 ```
 
 To have a look more in details on what's happening, here's the definition of `forward` and `backward` function:

@@ -44,7 +44,7 @@ And the formula for the error to be back-propaate &delta;l-1 is :
 
 Where &delta;&gamma;, &delta;&beta; etc... are the derivatives of `y` with the correspondent variable.
 
-For an in details derivation, check the paper we linked above or [this very clear blog](https://kevinzakka.github.io/2016/09/14/batch_normalization/).
+For an in details derivation, check the paper we linked above or [this very clear blog](https://kevinzakka.github.io/2016/09/14/batch_normalization).
 
 In the code below we present an example on how to use this single layer as it is:
 

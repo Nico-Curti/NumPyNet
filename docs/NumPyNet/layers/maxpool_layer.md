@@ -52,6 +52,7 @@ delta 			= np.zeros(shape=input.shape)
 layer.backward(delta=delta)
 
 # now delta is updated and ready to be passed backward
+
 ```
 
 To have a look more in details, here the defitions of `forward` and `backward`:
@@ -97,12 +98,12 @@ def forward(self, inpt):
 	self.delta   = np.zeros(shape=self.out_shape, dtype=float)
 ```
 
-`forward` is very similar to what has already been described for [Average Pool Layers](./avgpool_layer.md), the only differences are:
+The function `forward` is very similar to what has already been described for [Average Pool Layers](./avgpool_layer.md), the only differences are:
 
-	* After `view` is created, the function call for `numpy.nanmax`, instead of averaging. `nanmax` is able to avoid the nan padding
-	* After that, `view` is reshaped to (batch * out_w * out_h * c, Kx, Ky): in that way, a `for` loop over `view.reshape(new_shape)` is able to acces every Kx * Ky matrix, that contains every window slided by the kernel.
-	* `self.index` stores couples of indexes: those couples are the `i,j` position of the max inside every window. So there will be batch * out_w * out_h * c couples.
-	* the transposition is used in `backward` to retrieves the exact position of the maxima in `delta` array
+ * After `view` is created, the function call for `numpy.nanmax`, instead of averaging. `nanmax` is able to avoid the nan padding
+ * After that, `view` is reshaped to (batch * out_w * out_h * c, Kx, Ky): in that way, a `for` loop over `view.reshape(new_shape)` is able to acces every Kx * Ky matrix, that contains every window slided by the kernel.
+ * `self.index` stores couples of indexes: those couples are the `i,j` position of the max inside every window. So there will be batch * out_w * out_h * c couples.
+ * the transposition is used in `backward` to retrieves the exact position of the maxima in `delta` array
 
 ```python
 def backward(self, delta):

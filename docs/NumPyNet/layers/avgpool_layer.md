@@ -5,12 +5,11 @@ It slides a 2D kernel of arbitrary size over the image and the output is the mea
 
 In the images below are shown some results obtained by performing an average pool (forward and backward) with different kernel sizes and strides:
 
-
 <p align="center">
-  <img src="./images/average_3-2.png" >
+  <img src="../images/average_3-2.png" >
 </p>
 <p align="center">
-  <img src="./images/average_30-20.png">
+  <img src="../images/average_30-20.png">
 </p>
 *Fig.1: in the image are shown the effects of different kernel size-stride couplets. From up to down : size=3 and stride=2, size=30 and stride=20*
 
@@ -95,7 +94,7 @@ In the first place, if required by the user, the image is padded:
 ```python
 numpy.pad(array=inpt, pad_with=((0, 0), (self.pad_top, self.pad_bottom), (self.pad_left, self.pad_right), (0, 0)), mode='constant', constant_values=(np.nan, np.nan))
 ```
-that pads the images with a number of rows equal to pad_top + pad_bottom, and a number of columns equal to pad_left + pad_right. All values are np.nan.
+that pads the images with a number of rows equal to `pad_top + pad_bottom`, and a number of columns equal to `pad_left + pad_right`. All values are `np.nan`.
 
   3. If no padding is requested, the colums and rows that would be left out from the kernel sliding are cut from every image on the batch.
 
