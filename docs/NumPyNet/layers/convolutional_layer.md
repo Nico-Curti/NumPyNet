@@ -9,7 +9,7 @@ Convolution is the mathematical integration of two functions in which the second
 <p>
 
 In signal processing this operation is also called *crossing correlation* and it is equivalent to the *autocorrelation* function computed in a given point.
-In image processing the first function is represented by the image $I$ and the second one is a kernel $k$ (or filter) which shift along the image.
+In image processing the first function is represented by the image *I* and the second one is a kernel *k* (or filter) which shift along the image.
 In this case we will have a 2D discrete version of the formula given by:
 
 <p align="center">
@@ -20,7 +20,9 @@ In this case we will have a 2D discrete version of the formula given by:
 <a href="https://www.codecogs.com/eqnedit.php?latex=C[i,&space;j]&space;=&space;\sum_{u=-N}^{N}&space;\sum_{v=-M}^{M}&space;k[u,&space;v]&space;\cdot&space;I[i&space;-&space;u,&space;j&space;-&space;v]" target="_blank"><img src="https://latex.codecogs.com/gif.latex?C[i,&space;j]&space;=&space;\sum_{u=-N}^{N}&space;\sum_{v=-M}^{M}&space;k[u,&space;v]&space;\cdot&space;I[i&space;-&space;u,&space;j&space;-&space;v]" title="C[i, j] = \sum_{u=-N}^{N} \sum_{v=-M}^{M} k[u, v] \cdot I[i - u, j - v]" /></a>
 </p>
 
+
 where `C[i, j]` is the pixel value of the resulting image and `N, M` are kernel dimensions.
+
 
 The use of CNN in modern image analysis applications can be traced back to multiple causes.
 First of all the image dimensions are increasingly bigger and thus the number of variables/features, i.e pixels, is often too big to manage with standard DNN.

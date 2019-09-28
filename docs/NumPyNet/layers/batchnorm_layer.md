@@ -4,11 +4,12 @@ Batch Normalization is the operation that involves the normalization of every fe
 
 The layer has been implemented following the original paper [Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift](https://arxiv.org/abs/1502.03167), where is also possible to find the entire implementation of the algorithm and teoretical explanations of forward and backward pass.
 
-According to the paper, if x_i is the value of the x pixel in the i-th image of the batch, where i range from 1 to `batch_size`, then the forward pass look as follow:
+According to the paper, if x<sub>i</sub> is the value of the x pixel in the i-th image of the batch, where i range from 1 to `batch_size`, then the forward pass look as follow:
 
 <p align="center">
 <a href="https://www.codecogs.com/eqnedit.php?latex=\bar&space;x&space;=\frac{1}{batch\_size}&space;\sum_{i=0}^{batch\_size}x_i" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\bar&space;x&space;=\frac{1}{batch\_size}&space;\sum_{i=0}^{batch\_size}x_i" title="\bar x =\frac{1}{batch\_size} \sum_{i=0}^{batch\_size}x_i" /></a>
 </p>
+
 <p align="center">
 <a href="https://www.codecogs.com/eqnedit.php?latex=\sigma^2&space;=&space;\frac{1}{batch\_size}\sum_{i=1}^{batch\_size}(x_i-\bar&space;x)^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\sigma^2&space;=&space;\frac{1}{batch\_size}\sum_{i=1}^{batch\_size}(x_i-\bar&space;x)^2" title="\sigma^2 = \frac{1}{batch\_size}\sum_{i=1}^{batch\_size}(x_i-\bar x)^2" /></a>
 </p>
@@ -35,15 +36,14 @@ The two updates are computed as:
 <a href="https://www.codecogs.com/eqnedit.php?latex=\delta&space;\gamma&space;=&space;\sum_{i=0}^{batch\_size}&space;\delta_i^l&space;\cdot&space;\hat&space;x_i" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\delta&space;\gamma&space;=&space;\sum_{i=0}^{batch\_size}&space;\delta_i^l&space;\cdot&space;\hat&space;x_i" title="\delta \gamma = \sum_{i=0}^{batch\_size} \delta_i^l \cdot \hat x_i" /></a>
 <p>
 
-Where &delta;l is the error passed from the next layer.
-And the formula for the error to be back-propaate &delta;l-1 is :
+Where &delta;<sup>l</sup> is the error passed from the next layer.
+And the formula for the error to be back-propagated &delta;<sup>l-1</sup> is :
 
 <p align="center">
 <a href="https://www.codecogs.com/eqnedit.php?latex=\delta^{l-1}_i&space;=&space;\frac{batch\_size&space;\cdot&space;\delta&space;\hat&space;x_i&space;-&space;\sum_{j=0}^{batch\_size}\delta&space;\hat&space;x_j&space;-&space;\hat&space;x_i&space;\cdot&space;\sum_{j=0}^{batch\_size}\delta&space;\hat&space;x_j&space;\cdot&space;\hat&space;x_j}{batch\_size&space;\cdot&space;\sqrt{\sigma^2&space;&plus;&space;\epsilon}}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\delta^{l-1}_i&space;=&space;\frac{batch\_size&space;\cdot&space;\delta&space;\hat&space;x_i&space;-&space;\sum_{j=0}^{batch\_size}\delta&space;\hat&space;x_j&space;-&space;\hat&space;x_i&space;\cdot&space;\sum_{j=0}^{batch\_size}\delta&space;\hat&space;x_j&space;\cdot&space;\hat&space;x_j}{batch\_size&space;\cdot&space;\sqrt{\sigma^2&space;&plus;&space;\epsilon}}" title="\delta^{l-1}_i = \frac{batch\_size \cdot \delta \hat x_i - \sum_{j=0}^{batch\_size}\delta \hat x_j - \hat x_i \cdot \sum_{j=0}^{batch\_size}\delta \hat x_j \cdot \hat x_j}{batch\_size \cdot \sqrt{\sigma^2 + \epsilon}}" /></a>
 </p>
 
-Where &delta;&gamma;, &delta;&beta; etc... are the derivatives of `y` with the correspondent variable.
-
+Where &delta;&gamma;, &delta;&beta; etc are the derivatives of `y` with the correspondent variable.
 For an in details derivation, check the paper we linked above or [this very clear blog](https://kevinzakka.github.io/2016/09/14/batch_normalization).
 
 In the code below we present an example on how to use this single layer as it is:
@@ -55,7 +55,7 @@ from NumPyNet.layers.batchnorm_layer import BatchNorm_layer # class import
 
 import numpy as np # the library is entirely based on numpy
 
-# define a batch of images (even a single image is ok, but is important that it has all the four dimensions) in the format (batch, width, height, channels)
+# define a batch of images in the format (batch, width, height, channels), a single image won't work in this case
 
 batch, w, h, c = (5, 100, 100, 3) # batch != 1 in this case
 input = np.random.uniform(low=0., high=1., size=(batch, w, h, c)) # you can also import some images from file
@@ -82,7 +82,6 @@ layer.backward(delta, copy=False)
 
 # update of the trainable weights
 layer.update(momentum=0., decay=0., lr=1e-2, lr_decay=1.)
-
 ```
 
 To have a look more in details on what's going on in the forward and backward pass:
@@ -133,7 +132,6 @@ The forward is basically a numpy version of the theory described above:
   * multiply for scales and add bias if necessary.
 
 Here is the code for the backward function :
-
 
 ```python
 def backward(self, delta=None):
