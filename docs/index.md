@@ -46,6 +46,7 @@ Some text for introduction
 * [Input Layer](./NumPyNet/layers/input_layer.md)
 * [L1norm Layer](./NumPyNet/layers/l1norm_layer.md)
 * [L2norm Layer](./NumPyNet/layers/l2norm_layer.md)
+* [Logistic Layer](./NumPyNet/layers/logistic_layer.md)
 * [MaxPool Layer](./NumPyNet/layers/maxpool_layer.md)
 * [PixelShuffle Layer](./NumPyNet/layers/pixelshuffle_layer.md)
 
