@@ -248,16 +248,21 @@ class Network(object):
   def fit(self, X, y, max_iter=100, shuffle=True):
     '''
     '''
-    raise NotImplementedError
-
-    for i in range(max_iter):
-      continue
-
-      out = self._forward(X)
-      self._backward(X)
-
-
-    self._fitted = True
+    
+    num_data = len(X)
+    batches  = num_data // self.batch + 1
+    
+    for _ in range(max_iter):
+      for i in range(batches):
+          
+        input = X[i*self.batch : i*self.batch + self.batch]
+        truth = y[i*self.batch : i*self.batch + self.batch]
+        
+        out = self._forward(input, truth)
+        self._backward(input)
+    
+  
+      self._fitted = True
 
 
   def fit_generator(self, Xy_generator, max_iter=100):
@@ -294,7 +299,7 @@ class Network(object):
     return output
 
 
-  def _forward(self, x):
+  def _forward(self, x, truth):
     '''
     Forward function.
     Apply the forward method on all layers
@@ -302,7 +307,12 @@ class Network(object):
     y = x.copy()
 
     for layer in self:
-      layer.forward(y)
+      if hasattr(layer, 'truth'):
+        print(y.shape)
+        layer.forward(inpt=y, truth=truth)
+      else :
+        print(y.shape)
+        layer.forward(inpt=y)
       y = layer.output
 
     return y
@@ -318,6 +328,9 @@ class Network(object):
       delta = self.net[i - 1].delta
 
       self.net[i].backward(input, delta)
+      
+      if hasattr(self.net[i], 'update'):
+        self.net[i].update()
 
     # last iteration
     delta = None
