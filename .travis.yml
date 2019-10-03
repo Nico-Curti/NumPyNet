@@ -81,7 +81,7 @@ before_install:
   - pip install Pillow==2.2.2
   - pip install opencv-python
   - pip install matplotlib
-  - pip install pytest
+  - pip install pytest==3.0.7
   - pip install enum34
   - pip install configparser
   # testing libraries
