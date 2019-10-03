@@ -1,7 +1,7 @@
 opencv-python
 numpy
 pillow
-pytest
+pytest==5.0.1
 matplotlib
 enum34
 configparser

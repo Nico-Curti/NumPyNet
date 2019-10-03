@@ -46,9 +46,9 @@ def test_l2norm_layer():
     # # Keras Output
     # forward_out_keras = K.eval(K.l1_normalize(inpt, axis=axis)) # IT DOES NOT EXIST
 
-    # # numpynet forward and output
-    # numpynet.forward(inpt)
-    # forward_out_numpynet = numpynet.output
+    # numpynet forward and output
+    numpynet.forward(inpt)
+    forward_out_numpynet = numpynet.output
 
     # # Test for dimension and allclose of all output
     # assert forward_out_numpynet.shape == forward_out_keras.shape
@@ -64,12 +64,12 @@ def test_l2norm_layer():
 
     # delta_keras = func([inpt])[0]
 
-    # # Definition of starting delta for numpynet
-    # numpynet.delta = np.zeros(shape=numpynet.out_shape)
-    # delta = np.zeros(inpt.shape)
+    # Definition of starting delta for numpynet
+    numpynet.delta = np.zeros(shape=numpynet.out_shape)
+    delta = np.zeros(inpt.shape)
 
-    # # numpynet Backward
-    # numpynet.backward(delta)
+    # numpynet Backward
+    numpynet.backward(delta)
 
     # # Back tests
     # assert delta.shape == delta_keras.shape
