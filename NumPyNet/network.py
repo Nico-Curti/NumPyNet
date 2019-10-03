@@ -252,7 +252,7 @@ class Network(object):
     '''
 
     num_data = len(X)
-    batches  = num_data // self.batch 
+    batches  = num_data // self.batch
 
     for _ in range(max_iter):
 
@@ -273,12 +273,12 @@ class Network(object):
         loss = self._get_loss()
 
         done = int(50 * (i + 1) / batches)
-        sys.stdout.write('\r%d/%d [%s%s] (%1.1f iter/sec) %3.3f sec' % ( i + 1, batches,
-                                                                        r'█' * done,
-                                                                         '-' * (50 - done),
-                                                                         (now() - start) / batches,
-                                                                         loss
-                                                                        ))
+        sys.stdout.write('\r%d/%d |%s%s| (%1.1f iter/sec) loss=%3.3f' % ( i + 1, batches,
+                                                                         r'█' * done,
+                                                                          '-' * (50 - done),
+                                                                          (now() - start) / batches,
+                                                                          loss
+                                                                         ))
         sys.stdout.flush()
 
       sys.stdout.write('\n')
@@ -346,17 +346,18 @@ class Network(object):
     '''
 
     for i in reversed(range(1, self.num_layers)):
-      print(self._net[i])
+
       input = self._net[i - 1].output
       delta = self._net[i - 1].delta
 
       backward_args = self._net[i].backward.__code__.co_varnames
-              
+
       if 'inpt' in backward_args:
         self._net[i].backward(inpt=input, delta=delta)
+
       else:
         self._net[i].backward(delta=delta)
-        
+
       if hasattr(self._net[i], 'update'):
 
         self._net[i].update()

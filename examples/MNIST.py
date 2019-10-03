@@ -49,66 +49,66 @@ if __name__ == '__main__':
 
   n_train = X_train.shape[0]
   n_test  = X_test.shape[0]
-  
+
   # reduce the size of the data set for testing
-  
+
   train_size = 1000
   test_size  = 300
-  
+
   X_train = X_train[:train_size, :, :, :]
   y_train = y_train[:train_size]
   X_test  = X_test[ :test_size,  :, :, :]
   y_test  = y_test[ :test_size]
 
   # transform y to array of dimension 10 and in 4 dimension
-  y_train = to_categorical(y_train).reshape(train_size,1, 1, -1)
+  y_train = to_categorical(y_train).reshape(train_size, 1, 1, -1)
   y_test  = to_categorical(y_test).reshape(test_size, 1, 1, -1)
-  
-  
-  # Create the modeland training 
+
+
+  # Create the modeland training
   model = Network(batch=batch, input_shape=X_train.shape[1:])
-  
-#  model.add(Input_layer(input_shape=(batch, 32, 32, 3))) # input is automatic?
-  model.add(Convolutional_layer(input_shape=(batch, 8, 8, 3), 
-                                size=2, filters=32, stride=1, pad=True, 
+
+  # model.add(Input_layer(input_shape=(batch, 32, 32, 3))) # not necessary if input_shape is given to Network
+  model.add(Convolutional_layer(input_shape=(batch, 8, 8, 3),
+                                size=2, filters=32, stride=1, pad=True,
                                 activation='Relu'))
   model.add(Maxpool_layer(size=2, stride=2, padding=False))
   model.add(Dropout_layer(prob=0.3)) # shape (batch, 4, 4, 32)
-  
+
   model.add(Convolutional_layer(input_shape=(batch, 4, 4, 32),
-                                filters=64, activation='Relu', 
+                                filters=64, activation='Relu',
                                 size=2, stride=1, pad=True))
   model.add(Maxpool_layer(size=2, stride=2, padding=True))
   model.add(Dropout_layer(prob=0.3)) # (batch, 2, 2, 64)
-  
+
   model.add(Convolutional_layer(input_shape=(batch, 2, 2, 64),
-                                filters=128, activation='Relu', 
+                                filters=128, activation='Relu',
                                 size=2, stride=1, pad=True))
   model.add(Maxpool_layer(size=2, stride=2, padding=True))
   model.add(Dropout_layer(prob=0.4)) # (batch, 1, 1, 128)
-  
+
   model.add(Connected_layer(input_shape=(batch, 1, 1, 128),
                             outputs=80, activation='Relu'))
   model.add(Dropout_layer(prob=0.3))
   model.add(Connected_layer(input_shape=(batch, 1, 1, 80), outputs=num_classes,
                             activation='linear'))
   model.add(Softmax_layer(spatial=True))
-  
+
   print('*************************************')
   print('\n Total input dimension: {}'.format(X_train.shape), '\n')
   print('*************************************')
 
   model.summary()
-  
+
   print('\n***********START TRAINING***********\n')
 
   # Fit the model on the training set
 
   model.fit(X=X_train, y=y_train, max_iter=3)
-  
+
   print('\n***********END TRAINING**************\n')
 
-#%%
+
   # Test the prediction
 
   out = model.predict(X=X_test)
