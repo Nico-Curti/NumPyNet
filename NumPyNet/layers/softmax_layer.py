@@ -34,7 +34,7 @@ class Softmax_layer():
     self.groups = groups
     self.spatial = spatial
     self.temperature = 1./temperature
-    
+
     self.truth = None
 
   def __str__(self):
@@ -49,12 +49,12 @@ class Softmax_layer():
       prev_name  = layer.__class__.__name__
       raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
 
-    self._out_shape = previous_layer.out_shape
+    self.batch, self.w, self.h, self.c = previous_layer.out_shape
     return self
 
   @property
   def out_shape(self):
-    return self._out_shape
+    return (self.batch, self.w, self.h, self.c)
 
 
   def forward(self, inpt, truth=None) :
@@ -67,7 +67,7 @@ class Softmax_layer():
         if a value is passed, the function compute the cross entropy cost
     '''
 
-    self._out_shape = inpt.shape
+    self.batch, self.w, self.h, self.c = inpt.shape
 
     if self.spatial:
       self.output = np.exp(inpt - inpt.max(axis=-1, keepdims=True))
@@ -76,7 +76,7 @@ class Softmax_layer():
 
     else : # first implementation with groups, inspired from darknet, mhe
       self.output = np.empty(inpt.shape)
-      inputs = np.prod(self._out_shape[1:])
+      inputs = self.w * self.h * self.c
       group_offset = inputs // self.groups
       flat_input = inpt.ravel()
       flat_outpt = self.output.ravel()

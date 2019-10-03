@@ -86,7 +86,7 @@ before_install:
   - pip install configparser
   # testing libraries
   - pip install keras==2.2.5
-  - pip install tensorflow
+  - pip install tensorflow==1.14.0
   - pip install hypothesis
 
 install:
