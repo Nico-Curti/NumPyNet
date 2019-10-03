@@ -261,6 +261,8 @@ class Network(object):
       sys.stdout.write('Iter {:d}/{:d}\n'.format(_ + 1, max_iter))
       sys.stdout.flush()
 
+      loss = 0.
+
       for i in range(batches):
 
         current_batch = i * self.batch
@@ -270,7 +272,7 @@ class Network(object):
         out = self._forward(input, truth)
         self._backward(input)
 
-        loss = self._get_loss()
+        loss += self._get_loss() / self.batch
 
         done = int(50 * (i + 1) / batches)
         sys.stdout.write('\r%d/%d |%s%s| (%1.1f iter/sec) loss=%3.3f' % ( i + 1, batches,
