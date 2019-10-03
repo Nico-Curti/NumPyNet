@@ -67,7 +67,7 @@ def test_connected_layer():
     forward_out_numpynet = numpynet_layer.output
 
     #Forward output Test
-    assert np.allclose(forward_out_numpynet, forward_out_keras, atol = 1e-8)
+    assert np.allclose(forward_out_numpynet[:,0,0,:], forward_out_keras, atol = 1e-8)
 
     #BACKWARD
 

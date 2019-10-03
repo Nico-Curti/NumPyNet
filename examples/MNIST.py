@@ -25,10 +25,10 @@ from keras.datasets import cifar10 # keras comes in handy for datasets loading
 (x_train, y_train), (x_test, y_test) = cifar10.load_data()
 
 # reduce the dataset to 1/5 of the original size
-x_train = x_train[:100,:,:,:]
-y_train = y_train[:100,:]
-x_test  = x_test [:20, :,:,:]
-y_test  = y_test [:20, :]
+x_train = x_train[:10,:,:,:]
+y_train = y_train[:10,:]
+x_test  = x_test [:2, :,:,:]
+y_test  = y_test [:2, :]
 
 
 x_train = x_train / 255.   # normalization to [0, 1]
@@ -53,36 +53,40 @@ y_test  = _y_test
 
 #%%
 
-batch=16
+batch=1
 num_classes = 10
 
 model = Network(batch=batch, input_shape=(32, 32, 3))
 
-model.add(Input_layer(input_shape=(batch, 32, 32, 3)))
+#model.add(Input_layer(input_shape=(batch, 32, 32, 3))) # input is automatic?
 model.add(Convolutional_layer(input_shape=(batch, 32, 32, 3), 
-                              size=3, filters=32, stride=1, pad=False, 
+                              size=3, filters=32, stride=1, pad=True, 
                               activation='Relu'))
-model.add(Maxpool_layer(size=2, stride=1, padding=False))
+model.add(Maxpool_layer(size=2, stride=2, padding=True))
 model.add(Dropout_layer(prob=0.3))
 
 model.add(Convolutional_layer(input_shape=(batch, 16, 16, 32),
                               filters=64, activation='Relu', 
-                              size=3, stride=1, pad=False))
-model.add(Maxpool_layer(size=2, stride=1))
+                              size=3, stride=1, pad=True))
+model.add(Maxpool_layer(size=2, stride=2))
 model.add(Dropout_layer(prob=0.3))
 
 model.add(Convolutional_layer(input_shape=(batch, 8, 8, 64),
-                              filters=64, activation='Relu', 
-                              size=3, stride=1, pad=False))
-model.add(Maxpool_layer(size=2, stride=1))
+                              filters=128, activation='Relu', 
+                              size=3, stride=1, pad=True))
+model.add(Maxpool_layer(size=2, stride=2))
 model.add(Dropout_layer(prob=0.4))
 
 model.add(Connected_layer(input_shape=(batch, 4, 4, 128),
                           outputs=80, activation='Relu'))
 model.add(Dropout_layer(prob=0.3))
-model.add(Connected_layer(input_shape=(batch,80), outputs=num_classes))
+model.add(Connected_layer(input_shape=(batch,80), outputs=num_classes,
+                          activation='linear'))
 model.add(Softmax_layer(spatial=True))
 
+model.summary()
+
+print('Total input dimension: {}'.format(x_train.shape), '\n')
 
 model.fit(X=x_train, y=y_train, max_iter=1)
 

@@ -100,12 +100,12 @@ class Convolutional_layer(object):
       raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
 
     self.batch, self.w, self.h, self.c = previous_layer.out_shape
-
-    self.out_w = 1 + (self.w - self.size[0]) // self.stride[0]
-    self.out_h = 1 + (self.h - self.size[1]) // self.stride[1]
-
+    
     if self.pad:
       self._evaluate_padding()
+
+    self.out_w = 1 + (self.w + self.pad_top + self.pad_bottom - self.size[0]) // self.stride[0]
+    self.out_h = 1 + (self.h + self.pad_left + self.pad_right - self.size[1]) // self.stride[1]
 
     return self
 

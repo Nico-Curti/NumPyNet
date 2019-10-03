@@ -67,7 +67,7 @@ class Dropout_layer(object):
 
     self.output = inpt.copy()
 
-    self.rnd = np.random.uniform(low=0., high=1., size=self.output.shape) < self.probability
+    self.rnd = np.random.uniform(low=0., high=1., size=self.out_shape) < self.probability
     self.output[self.rnd] = 0.
     self.rnd = ~self.rnd
     self.output[self.rnd] *= self.scale

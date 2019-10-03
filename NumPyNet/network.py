@@ -110,7 +110,7 @@ class Network(object):
     return self
 
   def __next__(self):
-    if self.layer_index < self.num_layers:
+    if self.layer_index < self.num_layers-1:
       self.layer_index += 1
       return self._net[self.layer_index]
 
@@ -262,7 +262,7 @@ class Network(object):
         self._backward(input)
     
   
-      self._fitted = True
+    self._fitted = True
 
 
   def fit_generator(self, Xy_generator, max_iter=100):
@@ -305,16 +305,15 @@ class Network(object):
     Apply the forward method on all layers
     '''
     y = x.copy()
-
+    
     for layer in self:
+
       if hasattr(layer, 'truth'):
-        print(y.shape)
         layer.forward(inpt=y, truth=truth)
       else :
-        print(y.shape)
         layer.forward(inpt=y)
       y = layer.output
-
+      
     return y
 
   def _backward(self, x):
@@ -324,13 +323,13 @@ class Network(object):
 
     for i in reversed(range(1, self.num_layers)):
 
-      input = self.net[i - 1].output
-      delta = self.net[i - 1].delta
-
-      self.net[i].backward(input, delta)
+      input = self._net[i - 1].output
+      delta = self._net[i - 1].delta
+      
+      self._net[i].backward(inpt=input, delta=delta)
       
       if hasattr(self.net[i], 'update'):
-        self.net[i].update()
+        self._net[i].update()
 
     # last iteration
     delta = None

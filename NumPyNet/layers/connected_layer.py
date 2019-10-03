@@ -55,8 +55,8 @@ class Connected_layer(object):
 
   def __str__(self):
     b, w, h, c = self._out_shape
-    return 'connected              {:4d} x{:4d} x{:4d} x{:4d}   ->  {:4d}'.format(
-            b, w, h, c, self.outputs)
+    return 'connected              {:4d} x{:4d} x{:4d} x{:4d}   ->  {:4d} x{:4d}'.format(
+            b, w, h, c, b, self.outputs)
 
   def __call__(self, previous_layer):
 
@@ -70,7 +70,7 @@ class Connected_layer(object):
 
   @property
   def out_shape(self):
-    return (self._out_shape[0], self.outputs)
+    return (self._out_shape[0], 1, 1, self.outputs)
 
   def load_weights(self, chunck_weights, pos=0):
     '''
@@ -113,8 +113,9 @@ class Connected_layer(object):
     #z = (inpt @ self.weights) + self.bias                # shape (batch, outputs)
     z = np.einsum('ij, jk -> ik', inpt, self.weights, optimize=True) + self.bias
     #z = np.dot(inpt, self.weights) + self.bias
-
-    self.output = self.activation(z, copy=copy)     # shape (batch, outputs), activated
+    
+    # shape (batch, outputs), activated
+    self.output = self.activation(z, copy=copy).reshape(-1, 1, 1, self.outputs) 
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
   def backward(self, inpt, delta=None, copy=False):
@@ -131,8 +132,9 @@ class Connected_layer(object):
 
     # reshape to (batch , w * h * c)
     inpt = inpt.reshape(self._out_shape[0], -1)
+    out  = self.output.reshape(-1, self.outputs)
 
-    self.delta *= self.gradient(self.output, copy=copy)
+    self.delta *= self.gradient(out, copy=copy)
 
     self.bias_update += self.delta.sum(axis=0)   # shape : (outputs,)
 
@@ -216,7 +218,7 @@ if __name__ == '__main__':
   delta = np.zeros(shape=(batch, w, h, c), dtype=float)
   layer.backward(inpt, delta=delta, copy=True)
 
-  print('Output: {}'.format(', '.join( ['{:.3f}'.format(x) for x in forward_out[0]] ) ) )
+#  print('Output: {}'.format(', '.join( ['{:.3f}'.format(x) for x in forward_out[0]] ) ) )
 
   # Visualizations
 
@@ -228,7 +230,7 @@ if __name__ == '__main__':
   ax1.set_title('Original Image')
   ax1.axis('off')
 
-  ax2.matshow(forward_out, cmap='bwr')
+  ax2.matshow(forward_out[:,0,0,:], cmap='bwr')
   ax2.set_title('Forward', y = 4)
   ax2.axes.get_yaxis().set_visible(False)         # no y axis tick
   ax2.axes.get_xaxis().set_ticks(range(outputs))  # set x axis tick for every output
