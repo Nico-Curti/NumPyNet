@@ -86,7 +86,7 @@ def test_connected_layer():
     updates     = func2([inpt.reshape(batch, -1)])
 
     #Initialization of numpy_net starting delta to ones
-    numpynet_layer.delta = np.ones(shape=(batch, outputs))
+    numpynet_layer.delta = np.ones(shape=numpynet_layer.out_shape)
 
     #Initialization of global delta
     delta = np.zeros(shape=(batch, w, h, c))

@@ -118,6 +118,7 @@ class Softmax_layer():
 
     # darknet issue version
     dot = (self.output * self.delta).sum(axis=(1, 2, 3), keepdims=True)
+    
     delta[:] += self.temperature * self.output * (self.delta - dot) # maybe output normalized
 
     # This is an approximation

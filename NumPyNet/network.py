@@ -124,7 +124,7 @@ class Network(object):
     '''
     Print the network model summary
     '''
-    print('layer     filters    size              input                output')
+    print('layer       filters  size              input                output')
     for i, layer in enumerate(self._net):
       print('{:>4d} {}'.format(i, self._net[i]), flush=True, end='\n')
 
@@ -252,7 +252,7 @@ class Network(object):
     '''
 
     num_data = len(X)
-    batches  = num_data // self.batch + 1
+    batches  = num_data // self.batch 
 
     for _ in range(max_iter):
 
@@ -320,7 +320,7 @@ class Network(object):
     return output
 
 
-  def _forward(self, X, truth):
+  def _forward(self, X, truth=None):
     '''
     Forward function.
     Apply the forward method on all layers
@@ -330,14 +330,14 @@ class Network(object):
 
     for layer in self:
 
-      if hasattr(layer, 'truth'):
+      if hasattr(layer, 'truth') and truth is not None:
         layer.forward(inpt=y, truth=truth)
 
       else :
         layer.forward(inpt=y)
 
       y = layer.output
-      
+
     return y
 
   def _backward(self, X):
@@ -346,21 +346,26 @@ class Network(object):
     '''
 
     for i in reversed(range(1, self.num_layers)):
-
+      print(self._net[i])
       input = self._net[i - 1].output
       delta = self._net[i - 1].delta
-      
-      self._net[i].backward(inpt=input, delta=delta)
-      
+
+      backward_args = self._net[i].backward.__code__.co_varnames
+              
+      if 'inpt' in backward_args:
+        self._net[i].backward(inpt=input, delta=delta)
+      else:
+        self._net[i].backward(delta=delta)
+        
       if hasattr(self._net[i], 'update'):
 
         self._net[i].update()
 
     # last iteration
-    delta = None
-    input = X.copy()
+#    delta = None
+#    input = X.copy()
 
-    self._net[0].backward(input, delta)
+    self._net[0].backward(delta)
 
 
   def _get_loss(self):

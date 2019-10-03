@@ -71,6 +71,7 @@ class Dropout_layer(object):
     self.output[self.rnd] = 0.
     self.rnd = ~self.rnd
     self.output[self.rnd] *= self.scale
+    self.delta = np.zeros(shape=inpt.shape)
 
   def backward(self, delta=None):
     '''

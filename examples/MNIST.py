@@ -38,7 +38,7 @@ if __name__ == '__main__':
                                                       test_size=.33,
                                                       random_state=42)
 
-  batch = 16
+  batch = 50
   num_classes = len(set(y))
 
   del X, y
@@ -52,19 +52,18 @@ if __name__ == '__main__':
   
   # reduce the size of the data set for testing
   
-  train_size = 100
-  test_size  = 30
+  train_size = 1000
+  test_size  = 300
   
   X_train = X_train[:train_size, :, :, :]
   y_train = y_train[:train_size]
   X_test  = X_test[ :test_size,  :, :, :]
   y_test  = y_test[ :test_size]
 
-  # transform y to array of dimension 10
-  y_train = to_categorical(y_train)
-  y_test  = to_categorical(y_test)
-    
-
+  # transform y to array of dimension 10 and in 4 dimension
+  y_train = to_categorical(y_train).reshape(train_size,1, 1, -1)
+  y_test  = to_categorical(y_test).reshape(test_size, 1, 1, -1)
+  
   
   # Create the modeland training 
   model = Network(batch=batch, input_shape=X_train.shape[1:])
@@ -100,15 +99,19 @@ if __name__ == '__main__':
   print('*************************************')
 
   model.summary()
+  
+  print('\n***********START TRAINING***********\n')
 
   # Fit the model on the training set
 
   model.fit(X=X_train, y=y_train, max_iter=3)
+  
+  print('\n***********END TRAINING**************\n')
 
-
+#%%
   # Test the prediction
 
-  out = model.predict(X=X_test[0])
+  out = model.predict(X=X_test)
 
-  print('True      label: {:d}'.format(y_test[0]))
-  print('Predicted label: {:d}'.format(out.argmax()))
+  print('True      label: ',y_test.argmax(axis=3).ravel())
+  print('Predicted label: ',out.argmax(axis=3).ravel())

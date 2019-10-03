@@ -254,7 +254,6 @@ class Convolutional_layer(object):
         backpropagated
       copy : bool, specifies if the gradient of the activation functions needs to
         return a copy of its input
-
     '''
 
     # delta padding to match dimension with padded input when computing the view

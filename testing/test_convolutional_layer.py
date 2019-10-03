@@ -97,7 +97,7 @@ def test_convolutional_layer():
         assert np.allclose(forward_out_keras, forward_out_numpynet,         atol=1e-04, rtol=1e-3)
 
         # BACKWARD
-        global delta_numpynet, delta_keras, weights_updates_keras, bias_upadtes_keras
+        global delta_numpynet, delta_keras, weights_updates_keras, bias_updates_keras
 
         grad1 = K.gradients(model.output, [model.input])
         grad2 = K.gradients(model.output, model.trainable_weights)
@@ -115,8 +115,8 @@ def test_convolutional_layer():
         numpynet.delta = np.ones(shape=numpynet.out_shape, dtype=float)
         numpynet.backward(delta_numpynet, copy=False)
 
-        assert np.allclose(delta_numpynet,           delta_keras,           atol=1e-4, rtol=1e-3)
-        assert np.allclose(numpynet.weights_updates, weights_updates_keras, atol=1e-4, rtol=1e-3) # for a lot of operations, atol is lower
+        assert np.allclose(delta_numpynet,           delta_keras,           atol=1e-3, rtol=1e-3)
+        assert np.allclose(numpynet.weights_updates, weights_updates_keras, atol=1e-3, rtol=1e-3) # for a lot of operations, atol is lower
         assert np.allclose(numpynet.bias_updates,    bias_updates_keras,    atol=1e-8, rtol=1e-3)
 
 if __name__ == '__main__':

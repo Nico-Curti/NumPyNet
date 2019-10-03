@@ -132,9 +132,10 @@ class Connected_layer(object):
 
     # reshape to (batch , w * h * c)
     inpt = inpt.reshape(self._out_shape[0], -1)
-    out  = self.output.reshape(-1, self.outputs)
+#    out  = self.output.reshape(-1, self.outputs)
 
-    self.delta *= self.gradient(out, copy=copy)
+    self.delta *= self.gradient(self.output, copy=copy)
+    self.delta = self.delta.reshape(-1, self.outputs)
 
     self.bias_update += self.delta.sum(axis=0)   # shape : (outputs,)
 
@@ -161,13 +162,13 @@ class Connected_layer(object):
     '''
     # Update rule copied from darknet, missing batch_normalize
     lr *= lr_scale
-    lr /= self.batch
+    lr /= self.out_shape[0]
 
     # Bias update
     self.bias += lr * self.bias_update
 
     # Weights update
-    self.weights_update += (-decay) * batch * self.weights
+    self.weights_update += (-decay) * self.out_shape[0] * self.weights
     self.weights        += lr * self.weights_update
     self.weights_update *= momentum
 
@@ -214,7 +215,7 @@ if __name__ == '__main__':
 
   # BACKWARD
 
-  layer.delta = np.ones(shape=(batch, outputs), dtype=float)
+  layer.delta = np.ones(shape=(layer.out_shape), dtype=float)
   delta = np.zeros(shape=(batch, w, h, c), dtype=float)
   layer.backward(inpt, delta=delta, copy=True)
 
