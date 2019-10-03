@@ -51,7 +51,7 @@ class Connected_layer(object):
 
     self.output, self.delta = (None, None)
     self.weights_update = np.zeros(shape=self.weights.shape, dtype=float)
-    self.bias_update = np.zeros(shape=(self.outputs,), dtype=float)
+    self.bias_update    = np.zeros(shape=(self.outputs,), dtype=float)
 
   def __str__(self):
     b, w, h, c = self._out_shape

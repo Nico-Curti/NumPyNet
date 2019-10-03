@@ -81,7 +81,8 @@ class Convolutional_layer(object):
       self.bias = bias
 
     # Updates
-    self.weights_updates, self.bias_updates = (None, None)
+    self.weights_updates = np.zeros(shape=self.weights.shape) 
+    self.bias_updates    = np.zeros(shape=self.bias.shape) 
 
 
   def __str__(self):
@@ -268,7 +269,7 @@ class Convolutional_layer(object):
     self.delta *= self.gradient(self.output, copy=copy)
 
     # this operation should be +=, as darknet suggest (?)
-    self.weights_updates = np.einsum('ijklmn, ijko -> lmno', self.view, self.delta)
+    self.weights_updates += np.einsum('ijklmn, ijko -> lmno', self.view, self.delta)
 
     # out_c number of bias_updates.
     self.bias_updates = self.delta.sum(axis=(0, 1, 2)) # shape = (channels_out,)

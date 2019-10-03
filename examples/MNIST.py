@@ -112,6 +112,18 @@ if __name__ == '__main__':
   # Test the prediction
 
   out = model.predict(X=X_test)
+  
+  truth     = y_test.argmax(axis=3).ravel()
+  predicted = out.argmax(axis=3).ravel()
 
-  print('True      label: ',y_test.argmax(axis=3).ravel())
-  print('Predicted label: ',out.argmax(axis=3).ravel())
+  print('True      label: ', truth)
+  print('Predicted label: ', predicted)
+  
+
+  # accuracy test 
+  count = 0
+  for i,j in zip(truth, predicted):
+    if i == j:
+      count +=1
+      
+  print('Accuracy Score : {:.3}'.format(count / test_size))    
