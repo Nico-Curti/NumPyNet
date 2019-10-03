@@ -6,7 +6,7 @@ Little example on how to use the Network class to create a model and perform
 a basic classification of the MNIST dataset
 '''
 
-from NumPyNet.layers.input_layer import Input_layer
+#from NumPyNet.layers.input_layer import Input_layer
 from NumPyNet.layers.connected_layer import Connected_layer
 from NumPyNet.layers.convolutional_layer import Convolutional_layer
 from NumPyNet.layers.maxpool_layer import Maxpool_layer
@@ -22,15 +22,6 @@ from sklearn.model_selection import train_test_split
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 __package__ = 'Example MNIST'
-
-<<<<<<< HEAD
-# reduce the dataset to 1/5 of the original size
-x_train = x_train[:10,:,:,:]
-y_train = y_train[:10,:]
-x_test  = x_test [:2, :,:,:]
-y_test  = y_test [:2, :]
-=======
->>>>>>> 0f3ad4959a705e0dca0d5a8a066f804aca32bf86
 
 if __name__ == '__main__':
 
@@ -58,51 +49,62 @@ if __name__ == '__main__':
 
   n_train = X_train.shape[0]
   n_test  = X_test.shape[0]
-
+  
+  # reduce the size of the data set for testing
+  
+  train_size = 100
+  test_size  = 30
+  
+  X_train = X_train[:train_size, :, :, :]
+  y_train = y_train[:train_size]
+  X_test  = X_test[ :test_size,  :, :, :]
+  y_test  = y_test[ :test_size]
 
   # transform y to array of dimension 10
   y_train = to_categorical(y_train)
-  #y_test  = to_categorical(y_test)
+  y_test  = to_categorical(y_test)
+    
 
-  # Create the model
   
-  model = Network()
+  # Create the modeland training 
+  model = Network(batch=batch, input_shape=X_train.shape[1:])
   
-  #model.add(Input_layer(input_shape=(batch, 32, 32, 3))) # input is automatic?
-  model.add(Convolutional_layer(input_shape=(batch, 32, 32, 3), 
-                                size=3, filters=32, stride=1, pad=True, 
+#  model.add(Input_layer(input_shape=(batch, 32, 32, 3))) # input is automatic?
+  model.add(Convolutional_layer(input_shape=(batch, 8, 8, 3), 
+                                size=2, filters=32, stride=1, pad=True, 
                                 activation='Relu'))
-  model.add(Maxpool_layer(size=2, stride=2, padding=True))
-  model.add(Dropout_layer(prob=0.3))
+  model.add(Maxpool_layer(size=2, stride=2, padding=False))
+  model.add(Dropout_layer(prob=0.3)) # shape (batch, 4, 4, 32)
   
-  model.add(Convolutional_layer(input_shape=(batch, 16, 16, 32),
+  model.add(Convolutional_layer(input_shape=(batch, 4, 4, 32),
                                 filters=64, activation='Relu', 
-                                size=3, stride=1, pad=True))
-  model.add(Maxpool_layer(size=2, stride=2))
-  model.add(Dropout_layer(prob=0.3))
+                                size=2, stride=1, pad=True))
+  model.add(Maxpool_layer(size=2, stride=2, padding=True))
+  model.add(Dropout_layer(prob=0.3)) # (batch, 2, 2, 64)
   
-  model.add(Convolutional_layer(input_shape=(batch, 8, 8, 64),
+  model.add(Convolutional_layer(input_shape=(batch, 2, 2, 64),
                                 filters=128, activation='Relu', 
-                                size=3, stride=1, pad=True))
-  model.add(Maxpool_layer(size=2, stride=2))
-  model.add(Dropout_layer(prob=0.4))
+                                size=2, stride=1, pad=True))
+  model.add(Maxpool_layer(size=2, stride=2, padding=True))
+  model.add(Dropout_layer(prob=0.4)) # (batch, 1, 1, 128)
   
-  model.add(Connected_layer(input_shape=(batch, 4, 4, 128),
+  model.add(Connected_layer(input_shape=(batch, 1, 1, 128),
                             outputs=80, activation='Relu'))
   model.add(Dropout_layer(prob=0.3))
-  model.add(Connected_layer(input_shape=(batch,80), outputs=num_classes,
+  model.add(Connected_layer(input_shape=(batch, 1, 1, 80), outputs=num_classes,
                             activation='linear'))
   model.add(Softmax_layer(spatial=True))
   
-  model.summary()
-  
-  print('Total input dimension: {}'.format(x_train.shape), '\n')
+  print('*************************************')
+  print('\n Total input dimension: {}'.format(X_train.shape), '\n')
+  print('*************************************')
 
   model.summary()
 
   # Fit the model on the training set
 
-  model.fit(X=X_train, y=y_train, max_iter=1)
+  model.fit(X=X_train, y=y_train, max_iter=3)
+
 
   # Test the prediction
 
@@ -110,4 +112,3 @@ if __name__ == '__main__':
 
   print('True      label: {:d}'.format(y_test[0]))
   print('Predicted label: {:d}'.format(out.argmax()))
-
