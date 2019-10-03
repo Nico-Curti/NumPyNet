@@ -6,6 +6,7 @@ from __future__ import print_function
 
 from NumPyNet import activations
 from inspect import isclass
+import numpy as np
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']

@@ -7,7 +7,9 @@ from __future__ import print_function
 
 import os
 import re
+import sys
 import pickle
+from time import time as now
 
 from NumPyNet.layers.activation_layer import Activation_layer
 from NumPyNet.layers.avgpool_layer import Avgpool_layer
@@ -248,21 +250,40 @@ class Network(object):
   def fit(self, X, y, max_iter=100, shuffle=True):
     '''
     '''
-    
+
     num_data = len(X)
     batches  = num_data // self.batch + 1
-    
+
     for _ in range(max_iter):
+
+      start = now()
+
+      sys.stdout.write('Iter {:d}/{:d}\n'.format(_ + 1, max_iter))
+      sys.stdout.flush()
+
       for i in range(batches):
-          
-        input = X[i*self.batch : i*self.batch + self.batch]
-        truth = y[i*self.batch : i*self.batch + self.batch]
-        
+
+        current_batch = i * self.batch
+        input = X[current_batch : current_batch + self.batch]
+        truth = y[current_batch : current_batch + self.batch]
+
         out = self._forward(input, truth)
         self._backward(input)
-    
-  
-      self._fitted = True
+
+        loss = self._get_loss()
+
+        done = int(50 * (i + 1) / batches)
+        sys.stdout.write('\r%d/%d [%s%s] (%1.1f iter/sec) %3.3f sec' % ( i + 1, batches,
+                                                                        r'█' * done,
+                                                                         '-' * (50 - done),
+                                                                         (now() - start) / batches,
+                                                                         loss
+                                                                        ))
+        sys.stdout.flush()
+
+      sys.stdout.write('\n')
+
+    self._fitted = True
 
 
   def fit_generator(self, Xy_generator, max_iter=100):
@@ -299,44 +320,58 @@ class Network(object):
     return output
 
 
-  def _forward(self, x, truth):
+  def _forward(self, X, truth):
     '''
     Forward function.
     Apply the forward method on all layers
     '''
-    y = x.copy()
+    y = X.copy()
 
     for layer in self:
+
       if hasattr(layer, 'truth'):
-        print(y.shape)
         layer.forward(inpt=y, truth=truth)
+
       else :
-        print(y.shape)
         layer.forward(inpt=y)
+
       y = layer.output
 
     return y
 
-  def _backward(self, x):
+  def _backward(self, X):
     '''
     BackPropagate the error
     '''
 
     for i in reversed(range(1, self.num_layers)):
 
-      input = self.net[i - 1].output
-      delta = self.net[i - 1].delta
+      input = self._net[i - 1].output
+      delta = self._net[i - 1].delta
 
       self.net[i].backward(input, delta)
-      
-      if hasattr(self.net[i], 'update'):
-        self.net[i].update()
+
+      if hasattr(self._net[i], 'update'):
+        self._net[i].update()
 
     # last iteration
     delta = None
-    input = x.copy()
+    input = X.copy()
 
-    self.net[0].backward(input, delta)
+    self._net[0].backward(input, delta)
+
+
+  def _get_loss(self):
+    '''
+    Extract the loss value as the last cost in the network model
+    '''
+
+    for i in reversed(range(1, self.num_layers)):
+
+      if hasattr(self._net[i], 'cost'):
+        return self._net[i].cost
+
+    return None
 
 
   @property

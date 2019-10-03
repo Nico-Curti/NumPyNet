@@ -59,7 +59,7 @@ def backward (layer, input_shape, params):
   SETUP_CODE = '''
 import numpy as np
 from NumPyNet.layers.{lower_layer} import {layer}
-from NumPyNet.activations import Elu, HardTan, Leaky, LhTan, Linear, Loggy, Logistic, Plse, Ramp, Relie, Relu, Selu, Stair, Tanh
+from NumPyNet.activations import Elu, Hardtan, Leaky, Lhtan, Linear, Loggy, Logistic, Plse, Ramp, Relie, Relu, Selu, Stair, Tanh
 
 parameters = dict()
 for k, v in {params}.items():
@@ -203,7 +203,7 @@ def timing_connected_layer (input_shape):
     weights = np.random.uniform(low=0., high=1., size=(np.prod(input_shape[1:]), output))
     bias    = np.random.uniform(low=0., high=1., size=(output,))
 
-    params = {'inputs' : input_shape, 'outputs' : output,
+    params = {'input_shape' : input_shape, 'outputs' : output,
               'weights' : str(weights.tolist()), 'bias' : str(bias.tolist()),
               'activation' : 'Relu'}
 
@@ -407,7 +407,6 @@ def timing_shuffler_layer (input_shape):
     timing.append( { 'layer' : 'Shuffler',
                      'input_shape' : input_shape,
                      #**params, # useless params
-                     'outputs' : output,
                      'activation' : params['activation'],
 
                      'num_repeatition' : NUM_REPEATS,
@@ -429,8 +428,8 @@ def timing_softmax_layer (input_shape):
 
   spatials = [False, True]
   temperature = 1.5
-  noloss = False
-  groups = 1
+  #noloss = False
+  #groups = 1
 
   for spatial in spatials:
 

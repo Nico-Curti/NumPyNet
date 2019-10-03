@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-__author__ = ['Mattia Ceccarelli', 'Nico Curti']
-__email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Example MNIST'
-
 '''
 Little example on how to use the Network class to create a model and perform
-a basic classification of the CIFAR100 dataset 
+a basic classification of the MNIST dataset
 '''
 
 from NumPyNet.layers.input_layer import Input_layer
@@ -17,77 +13,87 @@ from NumPyNet.layers.maxpool_layer import Maxpool_layer
 from NumPyNet.layers.softmax_layer import Softmax_layer
 from NumPyNet.layers.dropout_layer import Dropout_layer
 from NumPyNet.network import Network
+from NumPyNet.utils import to_categorical
 
-import numpy as np 
+import numpy as np
+from sklearn import datasets
+from sklearn.model_selection import train_test_split
 
-from keras.datasets import cifar10 # keras comes in handy for datasets loading
-
-(x_train, y_train), (x_test, y_test) = cifar10.load_data()
-
-# reduce the dataset to 1/5 of the original size
-x_train = x_train[:100,:,:,:]
-y_train = y_train[:100,:]
-x_test  = x_test [:20, :,:,:]
-y_test  = y_test [:20, :]
+__author__ = ['Mattia Ceccarelli', 'Nico Curti']
+__email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
+__package__ = 'Example MNIST'
 
 
-x_train = x_train / 255.   # normalization to [0, 1]
-x_test  = x_test  / 255.
+if __name__ == '__main__':
 
-n_train = len(x_train)
-n_test  = len(x_test)
+  digits = datasets.load_digits()
+  X, y = digits.images, digits.target
 
+  del digits
 
-# transform y to array of dimension 10
-_y_train = np.zeros(shape=(n_train, 10))
-_y_test  = np.zeros(shape=(n_test , 10))
+  # add channels to images
+  X = np.asarray([[x, x, x] for x in X])
+  X = X.transpose(0, 2, 3, 1)
 
-for i in range(n_train):
-  _y_train[i][y_train[i]] = 1.
+  X_train, X_test, y_train, y_test = train_test_split(X, y,
+                                                      test_size=.33,
+                                                      random_state=42)
 
-for i in range(n_test):
-  _y_test[i][y_test[i]] = 1.  
+  batch = 16
+  num_classes = len(set(y))
 
-y_train = _y_train
-y_test  = _y_test
+  del X, y
 
-#%%
+  # normalization to [0, 1]
+  X_train *= 1. / 255.
+  X_test  *= 1. / 255.
 
-batch=16
-num_classes = 10
+  n_train = X_train.shape[0]
+  n_test  = X_test.shape[0]
 
-model = Network(batch=batch, input_shape=(32, 32, 3))
+  # transform y to array of dimension 10
+  y_train = to_categorical(y_train)
+  #y_test  = to_categorical(y_test)
 
-model.add(Input_layer(input_shape=(batch, 32, 32, 3)))
-model.add(Convolutional_layer(input_shape=(batch, 32, 32, 3), 
-                              size=3, filters=32, stride=1, pad=False, 
-                              activation='Relu'))
-model.add(Maxpool_layer(size=2, stride=1, padding=False))
-model.add(Dropout_layer(prob=0.3))
+  # Create the model
 
-model.add(Convolutional_layer(input_shape=(batch, 16, 16, 32),
-                              filters=64, activation='Relu', 
-                              size=3, stride=1, pad=False))
-model.add(Maxpool_layer(size=2, stride=1))
-model.add(Dropout_layer(prob=0.3))
+  model = Network(batch=batch)
 
-model.add(Convolutional_layer(input_shape=(batch, 8, 8, 64),
-                              filters=64, activation='Relu', 
-                              size=3, stride=1, pad=False))
-model.add(Maxpool_layer(size=2, stride=1))
-model.add(Dropout_layer(prob=0.4))
+  model.add(Input_layer(input_shape=(batch, *X_train[0].shape)))
+  model.add(Convolutional_layer(input_shape=(batch, 32, 32, 3),
+                                size=3, filters=32, stride=1, pad=False,
+                                activation='Relu'))
+  model.add(Maxpool_layer(size=2, stride=1, padding=False))
+  model.add(Dropout_layer(prob=0.3))
 
-model.add(Connected_layer(input_shape=(batch, 4, 4, 128),
-                          outputs=80, activation='Relu'))
-model.add(Dropout_layer(prob=0.3))
-model.add(Connected_layer(input_shape=(batch,80), outputs=num_classes))
-model.add(Softmax_layer(spatial=True))
+  model.add(Convolutional_layer(input_shape=(batch, 16, 16, 32),
+                                filters=64, activation='Relu',
+                                size=3, stride=1, pad=False))
+  model.add(Maxpool_layer(size=2, stride=1))
+  model.add(Dropout_layer(prob=0.3))
 
+  model.add(Convolutional_layer(input_shape=(batch, 8, 8, 64),
+                                filters=64, activation='Relu',
+                                size=2, stride=1, pad=False))
+  model.add(Maxpool_layer(size=2, stride=1))
+  model.add(Dropout_layer(prob=0.4))
 
-model.fit(X=x_train, y=y_train, max_iter=1)
+  model.add(Connected_layer(input_shape=(batch, 4, 4, 128),
+                            outputs=80, activation='Relu'))
+  model.add(Dropout_layer(prob=0.3))
+  model.add(Connected_layer(input_shape=(batch,80), outputs=num_classes))
+  model.add(Softmax_layer(spatial=True))
 
+  model.summary()
 
+  # Fit the model on the training set
 
+  model.fit(X=X_train, y=y_train, max_iter=1)
 
+  # Test the prediction
 
+  out = model.predict(X=X_test[0])
+
+  print('True      label: {:d}'.format(y_test[0]))
+  print('Predicted label: {:d}'.format(out.argmax()))
 

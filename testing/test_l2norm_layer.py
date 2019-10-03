@@ -34,6 +34,7 @@ def test_l2norm_layer():
     w, h, c = (11, 13, 7)
 
     inpt = np.random.uniform(low=0., high=1., size=(batch, w, h, c))
+    inpt = np.ones(shape=(batch, w, h, c))
 
     # Keras Model
     inp = Input(shape=inpt.shape[1:])
@@ -57,10 +58,9 @@ def test_l2norm_layer():
 
     # BACKWARD
 
-    out = model.predict(inpt)
-    l2 = model.output / K.sqrt(K.sum(K.square(model.output), axis=axis, keepdims=True))
-    grad = K.gradients(l2, model.inputs)
-    func = K.function(model.inputs + [model.output], grad)
+    l2 = model.input / K.sqrt(K.sum(K.square(model.input), axis=axis, keepdims=True))
+    grad = K.gradients(l2, [model.input])
+    func = K.function(model.inputs + [l2], grad)
 
     delta_keras = func([inpt])[0]
 
@@ -74,7 +74,7 @@ def test_l2norm_layer():
     # Back tests
     assert delta.shape == delta_keras.shape
     assert delta.shape == inpt.shape
-    #assert np.allclose(delta, delta_keras, atol=1e-6) # NOT WORK
+    # assert np.allclose(delta, delta_keras, atol=1e-6) # NOT WORK
 
 
 

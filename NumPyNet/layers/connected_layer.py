@@ -70,7 +70,7 @@ class Connected_layer(object):
 
   @property
   def out_shape(self):
-    return (self._out_shape[0], self.outputs)
+    return (self._out_shape[0], 1, 1, self.outputs)
 
   def load_weights(self, chunck_weights, pos=0):
     '''
