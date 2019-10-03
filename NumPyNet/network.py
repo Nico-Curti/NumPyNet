@@ -124,7 +124,7 @@ class Network(object):
     '''
     Print the network model summary
     '''
-    print('layer     filters    size              input                output')
+    print('layer       filters  size              input                output')
     for i, layer in enumerate(self._net):
       print('{:>4d} {}'.format(i, self._net[i]), flush=True, end='\n')
 
@@ -337,7 +337,7 @@ class Network(object):
         layer.forward(inpt=y)
 
       y = layer.output
-      
+
     return y
 
   def _backward(self, X):
@@ -349,9 +349,15 @@ class Network(object):
 
       input = self._net[i - 1].output
       delta = self._net[i - 1].delta
-      
-      self._net[i].backward(inpt=input, delta=delta)
-      
+
+      backward_args = self._net[i].backward.__code__.co_varnames
+
+      if 'inpt' in backward_args:
+        self._net[i].backward(inpt=input, delta=delta)
+      else:
+        self._net[i].backward(delta=delta)
+
+
       if hasattr(self._net[i], 'update'):
 
         self._net[i].update()
