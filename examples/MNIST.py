@@ -13,7 +13,9 @@ from NumPyNet.layers.maxpool_layer import Maxpool_layer
 from NumPyNet.layers.softmax_layer import Softmax_layer
 from NumPyNet.layers.dropout_layer import Dropout_layer
 from NumPyNet.network import Network
+from NumPyNet.optimizer import SGD
 from NumPyNet.utils import to_categorical
+from NumPyNet.metrics import accuracy_score
 
 import numpy as np
 from sklearn import datasets
@@ -38,7 +40,7 @@ if __name__ == '__main__':
                                                       test_size=.33,
                                                       random_state=42)
 
-  batch = 50
+  batch = 128
   num_classes = len(set(y))
 
   del X, y
@@ -52,17 +54,9 @@ if __name__ == '__main__':
 
   # reduce the size of the data set for testing
 
-  train_size = 1000
-  test_size  = 300
-
-  X_train = X_train[:train_size, :, :, :]
-  y_train = y_train[:train_size]
-  X_test  = X_test[ :test_size,  :, :, :]
-  y_test  = y_test[ :test_size]
-
   # transform y to array of dimension 10 and in 4 dimension
-  y_train = to_categorical(y_train).reshape(train_size, 1, 1, -1)
-  y_test  = to_categorical(y_test).reshape(test_size, 1, 1, -1)
+  y_train = to_categorical(y_train).reshape(X_train.shape[0], 1, 1, -1)
+  y_test  = to_categorical(y_test).reshape(X_test.shape[0], 1, 1, -1)
 
 
   # Create the modeland training
@@ -70,28 +64,18 @@ if __name__ == '__main__':
 
   # model.add(Input_layer(input_shape=(batch, 32, 32, 3))) # not necessary if input_shape is given to Network
   model.add(Convolutional_layer(input_shape=(batch, 8, 8, 3),
-                                size=2, filters=32, stride=1, pad=True,
+                                size=3, filters=32, stride=1, pad=True,
                                 activation='Relu'))
-  model.add(Maxpool_layer(size=2, stride=2, padding=False))
-  model.add(Dropout_layer(prob=0.3)) # shape (batch, 4, 4, 32)
-
-  model.add(Convolutional_layer(input_shape=(batch, 4, 4, 32),
-                                filters=64, activation='Relu',
-                                size=2, stride=1, pad=True))
-  model.add(Maxpool_layer(size=2, stride=2, padding=True))
-  model.add(Dropout_layer(prob=0.3)) # (batch, 2, 2, 64)
-
-  model.add(Convolutional_layer(input_shape=(batch, 2, 2, 64),
-                                filters=128, activation='Relu',
-                                size=2, stride=1, pad=True))
-  model.add(Maxpool_layer(size=2, stride=2, padding=True))
-  model.add(Dropout_layer(prob=0.4)) # (batch, 1, 1, 128)
-
+  model.add(Convolutional_layer(input_shape=(batch, 8, 8, 32),
+                                size=3, filters=32, stride=1, pad=True,
+                                activation='Relu'))
+  model.add(Maxpool_layer(size=2, stride=1, padding=True))
+  model.add(Dropout_layer(prob=0.25))
+  model.add(Connected_layer(input_shape=(batch, 8, 8, 32),
+                            outputs=128, activation='Relu'))
+  model.add(Dropout_layer(prob=0.5))
   model.add(Connected_layer(input_shape=(batch, 1, 1, 128),
-                            outputs=80, activation='Relu'))
-  model.add(Dropout_layer(prob=0.3))
-  model.add(Connected_layer(input_shape=(batch, 1, 1, 80), outputs=num_classes,
-                            activation='linear'))
+                            outputs=num_classes, activation='Linear'))
   model.add(Softmax_layer(spatial=True))
 
   print('*************************************')
@@ -104,7 +88,7 @@ if __name__ == '__main__':
 
   # Fit the model on the training set
 
-  model.fit(X=X_train, y=y_train, max_iter=3)
+  model.fit(X=X_train, y=y_train, max_iter=12, optimizer=SGD(decay=1e-2))
 
   print('\n***********END TRAINING**************\n')
 
@@ -112,18 +96,12 @@ if __name__ == '__main__':
   # Test the prediction
 
   out = model.predict(X=X_test)
-  
+
   truth     = y_test.argmax(axis=3).ravel()
   predicted = out.argmax(axis=3).ravel()
 
-  print('True      label: ', truth)
-  print('Predicted label: ', predicted)
-  
+  #print('True      label: ', truth)
+  #print('Predicted label: ', predicted)
 
-  # accuracy test 
-  count = 0
-  for i,j in zip(truth, predicted):
-    if i == j:
-      count +=1
-      
-  print('Accuracy Score : {:.3}'.format(count / test_size))    
+  # accuracy test
+  print('Accuracy Score : {:.3f}'.format(accuracy_score(truth, predicted)))

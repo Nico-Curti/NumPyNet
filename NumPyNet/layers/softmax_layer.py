@@ -35,7 +35,6 @@ class Softmax_layer():
     self.spatial = spatial
     self.temperature = 1./temperature
 
-    self.truth = None
 
   def __str__(self):
     batch, out_width, out_height, out_channels = self.out_shape
@@ -117,13 +116,13 @@ class Softmax_layer():
     #delta[:] += np.diagflat(s) - np.dot(s, s.T)
 
     # darknet issue version
-    dot = (self.output * self.delta).sum(axis=(1, 2, 3), keepdims=True)
-    
-    delta[:] += self.temperature * self.output * (self.delta - dot) # maybe output normalized
+    #dot = (self.output * self.delta).sum(axis=(1, 2, 3), keepdims=True)
+
+    #delta[:] += self.temperature * self.output * (self.delta - dot) # maybe output normalized
 
     # This is an approximation
-    #if delta is not None:
-    #  delta[:] += self.delta
+    if delta is not None:
+      delta[:] += self.delta
 
 
 if __name__ == '__main__':

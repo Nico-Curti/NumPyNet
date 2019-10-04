@@ -30,6 +30,8 @@ from NumPyNet.layers.softmax_layer import Softmax_layer
 from NumPyNet.layers.upsample_layer import Upsample_layer
 from NumPyNet.layers.yolo_layer import Yolo_layer
 
+from NumPyNet.optimizer import Optimizer
+
 from NumPyNet.parser import net_config
 from NumPyNet.exception import DataVariableError
 from NumPyNet.exception import LayerError
@@ -247,7 +249,7 @@ class Network(object):
     return self
 
 
-  def fit(self, X, y, max_iter=100, shuffle=True):
+  def fit(self, X, y, max_iter=100, optimizer=Optimizer, shuffle=True):
     '''
     '''
 
@@ -270,25 +272,26 @@ class Network(object):
         truth = y[current_batch : current_batch + self.batch]
 
         out = self._forward(input, truth)
-        self._backward(input)
+        self._backward(input, optimizer)
 
-        loss += self._get_loss() / self.batch
+        loss += self._get_loss() / batches
 
         done = int(50 * (i + 1) / batches)
-        sys.stdout.write('\r%d/%d |%s%s| (%1.1f iter/sec) loss=%3.3f' % ( i + 1, batches,
-                                                                         r'█' * done,
-                                                                          '-' * (50 - done),
-                                                                          (now() - start) / batches,
-                                                                          loss
-                                                                         ))
+        sys.stdout.write('\r%3d/%3d |%s%s| (%1.1f iter/sec) loss=%3.3f' % ( i + 1, batches,
+                                                                          r'█' * done,
+                                                                           '-' * (50 - done),
+                                                                           (now() - start),
+                                                                           loss
+                                                                          ))
         sys.stdout.flush()
+        start = now()
 
       sys.stdout.write('\n')
 
     self._fitted = True
 
 
-  def fit_generator(self, Xy_generator, max_iter=100):
+  def fit_generator(self, Xy_generator, max_iter=100, optimizer=Optimizer):
     '''
     Fit function using a train generator (ref. DataGenerator in data.py)
     '''
@@ -332,7 +335,9 @@ class Network(object):
 
     for layer in self:
 
-      if hasattr(layer, 'truth') and truth is not None:
+      forward_args = layer.forward.__code__.co_varnames
+
+      if 'truth' in forward_args and truth is not None:
         layer.forward(inpt=y, truth=truth)
 
       else :
@@ -342,7 +347,7 @@ class Network(object):
 
     return y
 
-  def _backward(self, X):
+  def _backward(self, X, optimizer):
     '''
     BackPropagate the error
     '''
@@ -361,12 +366,7 @@ class Network(object):
         self._net[i].backward(delta=delta)
 
       if hasattr(self._net[i], 'update'):
-
-        self._net[i].update()
-
-    # last iteration
-#    delta = None
-#    input = X.copy()
+        self._net[i].update(optimizer)
 
     self._net[0].backward(delta)
 

@@ -313,7 +313,6 @@ class Image (object):
         top    = np.clip(top,    0, self.height)
         bottom = np.clip(bottom, 0, self.height)
 
-        ####################### TO CHECK
         # detection box
         cv2.rectangle(img=self._data, pt1=(left, top), pt2=(right, bottom), color=(r, g, b), thickness=width)
 
@@ -321,10 +320,10 @@ class Image (object):
         (label_w, label_h), baseline = cv2.getTextSize(labels, fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale=1, thickness=1)
 
         # boxe around the string
-        cv2.rectangle(img=self._data, pt1=(left, top - label_h - width), pt2=(left + label_w * len(labels), top - width), color=(r, g, b), thickness=cv2.FILLED)
+        cv2.rectangle(img=self._data, pt1=(left, top - label_h - baseline), pt2=(left + label_w, top), color=(r, g, b), thickness=cv2.FILLED)
 
         # label string
-        cv2.putText(img=self._data, text=labels, org=(left, top - label_h - width), fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale=1, color=(0, 0, 0), thickness=1, lineType=1)
+        cv2.putText(img=self._data, text=labels, org=(left, top + baseline - label_h), fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale=1, color=(0, 0, 0), thickness=1, lineType=1)
 
 
   @property

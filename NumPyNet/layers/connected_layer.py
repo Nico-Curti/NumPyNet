@@ -42,16 +42,17 @@ class Connected_layer(object):
       self.weights = np.asarray(weights)
     else:
       # initialize weights with shape (w*h*c, outputs)
-      self.weights = np.random.uniform(low=0., high=1., size=(self.inputs, self.outputs))
+      scale = np.sqrt(2. / self.inputs)
+      self.weights = np.random.uniform(low=-scale, high=scale, size=(self.inputs, self.outputs))
 
     if bias is not None:
       self.bias = np.asarray(bias)
     else:
-      self.bias = np.ones(shape=(self.outputs,))
+      self.bias = np.zeros(shape=(self.outputs,), dtype=float)
 
     self.output, self.delta = (None, None)
-    self.weights_update = np.zeros(shape=self.weights.shape, dtype=float)
-    self.bias_update    = np.zeros(shape=(self.outputs,), dtype=float)
+    self.weights_update = None
+    self.bias_update    = None
 
   def __str__(self):
     b, w, h, c = self._out_shape
@@ -113,9 +114,9 @@ class Connected_layer(object):
     #z = (inpt @ self.weights) + self.bias                # shape (batch, outputs)
     z = np.einsum('ij, jk -> ik', inpt, self.weights, optimize=True) + self.bias
     #z = np.dot(inpt, self.weights) + self.bias
-    
+
     # shape (batch, outputs), activated
-    self.output = self.activation(z, copy=copy).reshape(-1, 1, 1, self.outputs) 
+    self.output = self.activation(z, copy=copy).reshape(-1, 1, 1, self.outputs)
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
   def backward(self, inpt, delta=None, copy=False):
@@ -137,10 +138,10 @@ class Connected_layer(object):
     self.delta *= self.gradient(self.output, copy=copy)
     self.delta = self.delta.reshape(-1, self.outputs)
 
-    self.bias_update += self.delta.sum(axis=0)   # shape : (outputs,)
+    self.bias_update = self.delta.sum(axis=0)   # shape : (outputs,)
 
     # self.weights_update += inpt.transpose() @ self.delta') # shape : (w * h * c, outputs)
-    self.weights_update += np.dot(inpt.transpose(), self.delta)
+    self.weights_update = np.dot(inpt.transpose(), self.delta)
 
     if delta is not None:
       delta_shaped = delta.reshape(self._out_shape[0], -1)  # it's a reshaped VIEW
@@ -150,27 +151,16 @@ class Connected_layer(object):
       # delta_shaped[:] += self.delta @ self.weights.transpose()')  # I can modify delta using its view
       delta_shaped[:] += np.dot(self.delta, self.weights.transpose())
 
-  def update(self, momentum=0., decay=0., lr=1e-2, lr_scale=1.):
+  def update(self, optimizer):
     '''
-    update function for the connected layer
+    update function for the convolution layer
 
     Parameters:
-      momentum : float, default = 0., scale factor of weight update
-      decay    : float, default = 0., determines the decay of weights_update
-      lr       : float, default = 1e-02, learning rate of the layer
-      lr_scale : float, default = 1., learning rate scale of the layer
+      optimizer : Optimizer object
     '''
-    # Update rule copied from darknet, missing batch_normalize
-    lr *= lr_scale
-    lr /= self.out_shape[0]
-
-    # Bias update
-    self.bias += lr * self.bias_update
-
-    # Weights update
-    self.weights_update += (-decay) * self.out_shape[0] * self.weights
-    self.weights        += lr * self.weights_update
-    self.weights_update *= momentum
+    self.bias, self.weights = optimizer.update(params=[self.bias, self.weights],
+                                               gradients=[self.bias_update, self.weights_update]
+                                               )
 
 
 if __name__ == '__main__':

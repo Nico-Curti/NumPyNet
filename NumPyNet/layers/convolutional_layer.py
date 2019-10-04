@@ -71,18 +71,19 @@ class Convolutional_layer(object):
 
     # Weights and bias
     if weights is None:
-      self.weights = np.random.uniform(low=0., high=1., size=(self.size[0], self.size[1], self.c, self.channels_out))
+      scale = np.sqrt(2 / (self.size[0] * self.size[1] * self.c))
+      self.weights = np.random.normal(loc=scale, scale=1., size=(self.size[0], self.size[1], self.c, self.channels_out))
     else :
       self.weights = weights
 
     if bias is None:
-      self.bias = np.random.uniform(low=0., high=1., size=(self.channels_out))
+      self.bias = np.zeros(shape=(self.channels_out, ), dtype=float)
     else :
       self.bias = bias
 
     # Updates
-    self.weights_updates = np.zeros(shape=self.weights.shape) 
-    self.bias_updates    = np.zeros(shape=self.bias.shape) 
+    self.weights_update = None
+    self.bias_update    = None
 
 
   def __str__(self):
@@ -101,7 +102,7 @@ class Convolutional_layer(object):
       raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
 
     self.batch, self.w, self.h, self.c = previous_layer.out_shape
-    
+
     if self.pad:
       self._evaluate_padding()
 
@@ -269,10 +270,10 @@ class Convolutional_layer(object):
     self.delta *= self.gradient(self.output, copy=copy)
 
     # this operation should be +=, as darknet suggest (?)
-    self.weights_updates += np.einsum('ijklmn, ijko -> lmno', self.view, self.delta)
+    self.weights_update = np.einsum('ijklmn, ijko -> lmno', self.view, self.delta)
 
     # out_c number of bias_updates.
-    self.bias_updates += self.delta.sum(axis=(0, 1, 2)) # shape = (channels_out,)
+    self.bias_update = self.delta.sum(axis=(0, 1, 2)) # shape = (channels_out,)
 
     # to access every pixel one at a time I need to create every combinations of indexes
     b, w, h, kx, ky, c = delta_view.shape
@@ -293,26 +294,17 @@ class Convolutional_layer(object):
       delta[:] = mat_pad
 
 
-  def update(self, momentum=0., decay=0., lr=1e-2, lr_scale=1.):
+  def update(self, optimizer):
     '''
     update function for the convolution layer
 
     Parameters:
-      momentum : float, default = 0., scale factor of weight update
-      decay    : float, default = 0., determines the decay of weights_update
-      lr       : float, default = 1e-02, learning rate of the layer
-      lr_scale : float, default = 1., learning rate scale of the layer
+      optimizer : Optimizer object
     '''
-    lr *= lr_scale
-    lr /= self.batch
+    self.bias, self.weights = optimizer.update(params=[self.bias, self.weights],
+                                               gradients=[self.bias_update, self.weights_update]
+                                               )
 
-    # Bias updates
-    self.bias += self.bias_updates * lr
-
-    # Weights_updates
-    self.weights_updates += (-decay) * self.batch * self.weights
-    self.weights         += lr * self.weights_updates
-    self.weights_updates *= momentum
 
 
 if __name__ == '__main__':
@@ -358,7 +350,7 @@ if __name__ == '__main__':
                               size=size,
                               stride=stride,
                               pad=pad)
-  
+
   # FORWARD
 
   layer.forward(inpt)
