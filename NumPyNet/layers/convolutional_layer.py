@@ -272,7 +272,7 @@ class Convolutional_layer(object):
     self.weights_updates += np.einsum('ijklmn, ijko -> lmno', self.view, self.delta)
 
     # out_c number of bias_updates.
-    self.bias_updates = self.delta.sum(axis=(0, 1, 2)) # shape = (channels_out,)
+    self.bias_updates += self.delta.sum(axis=(0, 1, 2)) # shape = (channels_out,)
 
     # to access every pixel one at a time I need to create every combinations of indexes
     b, w, h, kx, ky, c = delta_view.shape
