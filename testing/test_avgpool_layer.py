@@ -26,8 +26,8 @@ def test_avgpool_layer():
   '''
   np.random.seed(123)
 
-  sizes   = [(1,1), (3,3), (30,30)]
-  strides = [(1,1), (2,2), (20,20)]
+  sizes   = [(1, 1), (3, 3), (30, 30)]
+  strides = [(1, 1), (2, 2), (20, 20)]
 
 
   for size, stride in zip(sizes, strides):
@@ -46,7 +46,7 @@ def test_avgpool_layer():
         keras_pad = 'valid'
 
       # Keras model initialization.
-      inp = Input(shape = (w, h, c), batch_shape=inpt.shape)
+      inp = Input(shape=(w, h, c), batch_shape=inpt.shape)
       x = AvgPool2D(pool_size=size, strides=stride, padding=keras_pad)(inp)
       model = Model(inputs=[inp], outputs=x)
 
@@ -59,7 +59,7 @@ def test_avgpool_layer():
 
       # Test for dimension and allclose of all output
       assert forward_out_numpynet.shape == forward_out_keras.shape
-      assert np.allclose(forward_out_numpynet, forward_out_keras,   atol  = 1e-8)
+      assert np.allclose(forward_out_numpynet, forward_out_keras, atol=1e-8)
 
       # BACKWARD
 
@@ -73,8 +73,8 @@ def test_avgpool_layer():
       delta_keras = func([inpt])[0]
 
       # Definition of starting delta for numpynet
-      numpynet.delta = np.ones(shape=numpynet.out_shape)
-      delta = np.zeros(inpt.shape)
+      numpynet.delta = np.ones(shape=numpynet.out_shape, dtype=float)
+      delta = np.zeros(shape=inpt.shape, dtype=float)
 
       # numpynet Backward
       numpynet.backward(delta)
@@ -82,7 +82,8 @@ def test_avgpool_layer():
       # Back tests
       assert delta.shape == delta_keras.shape
       assert delta.shape == inpt.shape
-      assert np.allclose(delta, delta_keras, atol = 1e-8)
+      assert np.allclose(delta, delta_keras, atol=1e-8)
 
 if __name__ == '__main__':
+
   test_avgpool_layer()
