@@ -17,7 +17,8 @@ In this case we will have a 2D discrete version of the formula given by:
 </p>
 
 <p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=C[i,&space;j]&space;=&space;\sum_{u=-N}^{N}&space;\sum_{v=-M}^{M}&space;k[u,&space;v]&space;\cdot&space;I[i&space;-&space;u,&space;j&space;-&space;v]" target="_blank"><img src="https://latex.codecogs.com/gif.latex?C[i,&space;j]&space;=&space;\sum_{u=-N}^{N}&space;\sum_{v=-M}^{M}&space;k[u,&space;v]&space;\cdot&space;I[i&space;-&space;u,&space;j&space;-&space;v]" title="C[i, j] = \sum_{u=-N}^{N} \sum_{v=-M}^{M} k[u, v] \cdot I[i - u, j - v]" /></a>
+<a href="https://www.codecogs.com/eqnedit.php?latex=C[i,&space;j]&space;=&space;\sum_{u=-N}^{N}&space;\sum_{v=-M}^{M}&space;k[u,&space;v]&space;\cdot&space;I[i&space;-&space;u,&space;j&space;-&space;v]" target="_blank"><img src="https://latex.codecogs.com/gif.latex?C[i,&space;j]&space;=&space;\sum_{u=-N}^{N}&space;\sum_{v=-M}^{M}&space;k[u,&space;v]&space;\cdot&space;I[i&space;-&space;u,&space;j&space;-&space;v]" title="C[i, j] = \sum_{u=-N}^{N} \sum_{v=-M}^{M} k[u, v] \cdot I[i - u, j - v]" />
+</a>
 </p>
 
 

@@ -69,20 +69,15 @@ def forward(self, inpt):
 
   self._out_shape = inpt.shape
 
-  self.output = inpt.copy()
-
-  self.rnd = np.random.uniform(low=0., high=1., size=self.output.shape) < self.probability
-  self.output[self.rnd] = 0.
-  self.rnd = ~self.rnd
-  self.output[self.rnd] *= self.scale
+  self.rnd = np.random.uniform(low=0., high=1., size=self.out_shape) > self.probability
+  self.output = self.rnd * inpt * self.scale
+  self.delta = np.zeros(shape=inpt.shape)
 ```
 
 The code proceeds as follow:
-
-  * copy the input
-  * produce the random mask of the same shape of the output
-  * set to zero the selected pixels in `layer.output`
-  * invert the mask and multiply for `layer.scale` every other pixel, where scale is defined as:
+  * create a random mask
+  * multiply the mask (element-wise) to inpt and multiply for `self.scale` 
+  * initialize `self.delta`
 
 <p align="center">
 <a href="https://www.codecogs.com/eqnedit.php?latex=scale&space;=&space;\frac{1}{1-prob}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?scale&space;=&space;\frac{1}{1-prob}" title="scale = \frac{1}{1-prob}" /></a>
@@ -104,10 +99,9 @@ def backward(self, delta=None):
   '''
 
   if delta is not None:
-    delta[self.rnd] *= self.scale
-    self.rnd = ~self.rnd
-    delta[self.rnd] = 0.
+    self.delta = self.rnd * self.delta * self.scale
+    delta[:] = self.delta.copy()
 ```
 
-Tha backward multiply `delta` by scale only for the pixel unaffected by the "dropout" (since at that point `self.rnd` is inverted).
-Then the mask is back to the original, and the correspondnt values of `delta` are dropped.
+Tha backward multiply `delta` by scale only for the pixel unaffected by the "dropout".
+Then the mask sets to zero the correspondnt values of `self.delta`, and `delta` is updated.

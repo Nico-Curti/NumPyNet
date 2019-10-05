@@ -56,7 +56,7 @@ class Cost_layer(object):
     self.delta = np.empty(shape=self._out_shape)
 
   def __str__(self):
-    return 'cost                                          ({:>4d} x{:>4d} x{:>4d} x{:>4d})'.format(*self.out_shape)
+    return 'cost                                            ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}'.format(*self.out_shape)
 
   def __call__(self, previous_layer):
 
@@ -110,9 +110,9 @@ class Cost_layer(object):
 
       norm = 1. / self.delta.size                                            # normalization of delta!
       self.delta *= norm
-
+      
       self.cost = np.mean(self.output)                                       # compute the cost
-
+      
   def backward(self, delta):
     '''
     Backward function of the cost_layer, it updates the delta
