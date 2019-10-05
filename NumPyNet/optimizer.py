@@ -224,9 +224,6 @@ class Adam (Optimizer):
 
     for i, (m, v, p, g) in enumerate(zip(self.ms, self.vs, params, gradients)):
 
-      print(m.shape)
-      print(g.shape)
-      print(p.shape)
       m = self.beta1 * m + (1 - self.beta1) * g
       v = self.beta2 * v + (1 - self.beta2) * g * g
       p -= a_t * m / (np.sqrt(v) + self.epsilon)

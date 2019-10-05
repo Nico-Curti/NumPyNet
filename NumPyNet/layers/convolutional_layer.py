@@ -84,6 +84,7 @@ class Convolutional_layer(object):
     # Updates
     self.weights_update = None
     self.bias_update    = None
+    self.optimizer      = None
 
 
   def __str__(self):
@@ -294,16 +295,16 @@ class Convolutional_layer(object):
       delta[:] = mat_pad
 
 
-  def update(self, optimizer):
+  def update(self):
     '''
     update function for the convolution layer
 
     Parameters:
       optimizer : Optimizer object
     '''
-    self.bias, self.weights = optimizer.update(params=[self.bias, self.weights],
-                                               gradients=[self.bias_update, self.weights_update]
-                                               )
+    self.bias, self.weights = self.optimizer.update(params=[self.bias, self.weights],
+                                                    gradients=[self.bias_update, self.weights_update]
+                                                   )
 
 
 

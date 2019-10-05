@@ -65,12 +65,8 @@ class Dropout_layer(object):
 
     self._out_shape = inpt.shape
 
-    self.output = inpt.copy()
-
     self.rnd = np.random.uniform(low=0., high=1., size=self.out_shape) < self.probability
-    self.output[self.rnd] = 0.
-    self.rnd = ~self.rnd
-    self.output[self.rnd] *= self.scale
+    self.output = self.rnd * inpt * self.scale
     self.delta = np.zeros(shape=inpt.shape)
 
   def backward(self, delta=None):
@@ -85,9 +81,8 @@ class Dropout_layer(object):
     '''
 
     if delta is not None:
-      delta[self.rnd] *= self.scale
-      self.rnd = ~self.rnd
-      delta[self.rnd] = 0.
+      self.delta = self.rnd * self.delta * self.scale
+      delta[:] = self.delta.copy()
 
 
 if __name__ == '__main__':

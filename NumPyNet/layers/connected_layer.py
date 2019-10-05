@@ -53,6 +53,7 @@ class Connected_layer(object):
     self.output, self.delta = (None, None)
     self.weights_update = None
     self.bias_update    = None
+    self.optimizer      = None
 
   def __str__(self):
     b, w, h, c = self._out_shape
@@ -111,9 +112,9 @@ class Connected_layer(object):
 
     inpt = inpt.reshape(-1, self.inputs)                  # shape (batch, w*h*c)
 
-    #z = (inpt @ self.weights) + self.bias                # shape (batch, outputs)
+    # z = (inpt @ self.weights) + self.bias                # shape (batch, outputs)
     z = np.einsum('ij, jk -> ik', inpt, self.weights, optimize=True) + self.bias
-    #z = np.dot(inpt, self.weights) + self.bias
+    # z = np.dot(inpt, self.weights) + self.bias
 
     # shape (batch, outputs), activated
     self.output = self.activation(z, copy=copy).reshape(-1, 1, 1, self.outputs)
@@ -133,7 +134,7 @@ class Connected_layer(object):
 
     # reshape to (batch , w * h * c)
     inpt = inpt.reshape(self._out_shape[0], -1)
-#    out  = self.output.reshape(-1, self.outputs)
+    # out  = self.output.reshape(-1, self.outputs)
 
     self.delta *= self.gradient(self.output, copy=copy)
     self.delta = self.delta.reshape(-1, self.outputs)
@@ -151,16 +152,16 @@ class Connected_layer(object):
       # delta_shaped[:] += self.delta @ self.weights.transpose()')  # I can modify delta using its view
       delta_shaped[:] += np.dot(self.delta, self.weights.transpose())
 
-  def update(self, optimizer):
+  def update(self):
     '''
     update function for the convolution layer
 
     Parameters:
       optimizer : Optimizer object
     '''
-    self.bias, self.weights = optimizer.update(params=[self.bias, self.weights],
-                                               gradients=[self.bias_update, self.weights_update]
-                                               )
+    self.bias, self.weights = self.optimizer.update(params=[self.bias, self.weights],
+                                                    gradients=[self.bias_update, self.weights_update]
+                                                   )
 
 
 if __name__ == '__main__':
@@ -209,7 +210,7 @@ if __name__ == '__main__':
   delta = np.zeros(shape=(batch, w, h, c), dtype=float)
   layer.backward(inpt, delta=delta, copy=True)
 
-#  print('Output: {}'.format(', '.join( ['{:.3f}'.format(x) for x in forward_out[0]] ) ) )
+  # print('Output: {}'.format(', '.join( ['{:.3f}'.format(x) for x in forward_out[0]] ) ) )
 
   # Visualizations
 

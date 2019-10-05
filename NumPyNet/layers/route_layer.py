@@ -60,7 +60,7 @@ class Route_layer():
   def backward(self, delta, net):
 
     for layer_idx in self.input_layers:
-      delta += net.layers[layer_idx].delta
+      delta[:] += net.layers[layer_idx].delta
 
 
 if __name__ == '__main__':

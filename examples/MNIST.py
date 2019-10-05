@@ -13,7 +13,7 @@ from NumPyNet.layers.maxpool_layer import Maxpool_layer
 from NumPyNet.layers.softmax_layer import Softmax_layer
 from NumPyNet.layers.dropout_layer import Dropout_layer
 from NumPyNet.network import Network
-from NumPyNet.optimizer import SGD
+from NumPyNet.optimizer import Adam
 from NumPyNet.utils import to_categorical
 from NumPyNet.metrics import accuracy_score
 
@@ -49,14 +49,25 @@ if __name__ == '__main__':
   X_train *= 1. / 255.
   X_test  *= 1. / 255.
 
+  # reduce the size of the data set for testing
+  ############################################
+
+  train_size = 512
+  test_size  = 300
+
+  X_train = X_train[:train_size, ...]
+  y_train = y_train[:train_size]
+  X_test  = X_test[ :test_size,  ...]
+  y_test  = y_test[ :test_size]
+
+  ############################################
+
   n_train = X_train.shape[0]
   n_test  = X_test.shape[0]
 
-  # reduce the size of the data set for testing
-
   # transform y to array of dimension 10 and in 4 dimension
-  y_train = to_categorical(y_train).reshape(X_train.shape[0], 1, 1, -1)
-  y_test  = to_categorical(y_test).reshape(X_test.shape[0], 1, 1, -1)
+  y_train = to_categorical(y_train).reshape(n_train, 1, 1, -1)
+  y_test  = to_categorical(y_test).reshape(n_test, 1, 1, -1)
 
 
   # Create the modeland training
@@ -67,11 +78,11 @@ if __name__ == '__main__':
                                 size=3, filters=32, stride=1, pad=True,
                                 activation='Relu'))
   model.add(Convolutional_layer(input_shape=(batch, 8, 8, 32),
-                                size=3, filters=32, stride=1, pad=True,
+                                size=3, filters=64, stride=1, pad=True,
                                 activation='Relu'))
   model.add(Maxpool_layer(size=2, stride=1, padding=True))
   model.add(Dropout_layer(prob=0.25))
-  model.add(Connected_layer(input_shape=(batch, 8, 8, 32),
+  model.add(Connected_layer(input_shape=(batch, 8, 8, 64),
                             outputs=128, activation='Relu'))
   model.add(Dropout_layer(prob=0.5))
   model.add(Connected_layer(input_shape=(batch, 1, 1, 128),
@@ -82,13 +93,14 @@ if __name__ == '__main__':
   print('\n Total input dimension: {}'.format(X_train.shape), '\n')
   print('*************************************')
 
+  model.compile(optimizer=Adam)
   model.summary()
 
   print('\n***********START TRAINING***********\n')
 
   # Fit the model on the training set
 
-  model.fit(X=X_train, y=y_train, max_iter=12, optimizer=SGD(decay=1e-2))
+  model.fit(X=X_train, y=y_train, max_iter=5)
 
   print('\n***********END TRAINING**************\n')
 

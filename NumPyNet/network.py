@@ -7,8 +7,8 @@ from __future__ import print_function
 
 import os
 import re
-import sys
 import pickle
+import numpy as np
 from time import time as now
 
 from NumPyNet.layers.activation_layer import Activation_layer
@@ -248,50 +248,60 @@ class Network(object):
 
     return self
 
+  def compile(self, optimizer=Optimizer):
+    '''
+    '''
 
-  def fit(self, X, y, max_iter=100, optimizer=Optimizer, shuffle=True):
+    for layer in self:
+
+      if hasattr(layer, 'optimizer'):
+        layer.optimizer = optimizer()
+
+  def fit(self, X, y, max_iter=100, shuffle=True):
     '''
     '''
 
     num_data = len(X)
-    batches  = num_data // self.batch
+
+    batches = np.array_split(range(num_data), indices_or_sections=num_data // self.batch)
 
     for _ in range(max_iter):
 
       start = now()
 
-      sys.stdout.write('Iter {:d}/{:d}\n'.format(_ + 1, max_iter))
-      sys.stdout.flush()
+      print('Epoch {:d}/{:d}'.format(_ + 1, max_iter), flush=True)
 
       loss = 0.
 
-      for i in range(batches):
+      if shuffle:
+        np.random.shuffle(batches)
 
-        current_batch = i * self.batch
-        input = X[current_batch : current_batch + self.batch]
-        truth = y[current_batch : current_batch + self.batch]
+      for i, idx in enumerate(batches):
 
-        out = self._forward(input, truth)
-        self._backward(input, optimizer)
+        input = X[idx, ...]
+        truth = y[idx, ...]
 
-        loss += self._get_loss() / batches
+        out = self._forward(X=input, truth=truth)
+        self._backward(X=input)
 
-        done = int(50 * (i + 1) / batches)
-        sys.stdout.write('\r%3d/%3d |%s%s| (%1.1f iter/sec) loss=%3.3f' % ( i + 1, batches,
-                                                                          r'█' * done,
-                                                                           '-' * (50 - done),
-                                                                           (now() - start),
-                                                                           loss
-                                                                          ))
-        sys.stdout.flush()
+        loss += self._get_loss() / len(idx)
+
+        done = int(50 * (i + 1) / len(batches))
+        print('\r{:>3d}/{:<3d} |{}{}| ({:1.1f} sec/iter) loss: {:3.3f}'.format( len(idx) * (i + 1),
+                                                                                num_data,
+                                                                               r'█' * done,
+                                                                                '-' * (50 - done),
+                                                                                now() - start,
+                                                                                loss
+                                                                              ), flush=True, end='')
         start = now()
 
-      sys.stdout.write('\n')
+      print('\n', end='', flush=True)
 
     self._fitted = True
 
 
-  def fit_generator(self, Xy_generator, max_iter=100, optimizer=Optimizer):
+  def fit_generator(self, Xy_generator, max_iter=100):
     '''
     Fit function using a train generator (ref. DataGenerator in data.py)
     '''
@@ -314,15 +324,24 @@ class Network(object):
     self._fitted = True
 
 
-  def predict(self, X):
+  def predict(self, X, truth=None):
     '''
     Predict the given input
     '''
     if not self._fitted:
       raise NetworkError('This Network model instance is not fitted yet. Please use the "fit" function before the predict')
 
-    output = self._forward(X)
+    output = self._forward(X, truth)
     return output
+
+  def evaluate(self, X, truth):
+    '''
+    Return output and loss of the model
+    '''
+    output = self.predict(X, truth)
+    loss = self._get_loss() / len(X)
+
+    return (loss, output)
 
 
   def _forward(self, X, truth=None):
@@ -347,28 +366,28 @@ class Network(object):
 
     return y
 
-  def _backward(self, X, optimizer):
+  def _backward(self, X):
     '''
     BackPropagate the error
     '''
 
     for i in reversed(range(1, self.num_layers)):
 
-      input = self._net[i - 1].output
-      delta = self._net[i - 1].delta
+      input = self._net[i - 1].output[:]
+      delta = self._net[i - 1].delta[:]
 
       backward_args = self._net[i].backward.__code__.co_varnames
 
       if 'inpt' in backward_args:
-        self._net[i].backward(inpt=input, delta=delta)
+        self._net[i].backward(inpt=input, delta=delta[:])
 
       else:
-        self._net[i].backward(delta=delta)
+        self._net[i].backward(delta=delta[:])
 
       if hasattr(self._net[i], 'update'):
-        self._net[i].update(optimizer)
+        self._net[i].update()
 
-    self._net[0].backward(delta)
+    self._net[0].backward(delta[:])
 
 
   def _get_loss(self):

@@ -36,6 +36,7 @@ class BatchNorm_layer(object):
     #Updates
     self.scales_updates, self.bias_updates = (None, None)
     self._out_shape = None
+    self.optimizer = None
 
 
   def __str__(self):
@@ -158,28 +159,16 @@ class BatchNorm_layer(object):
     if delta is not None:
       delta[:] = self.delta
 
-    def update(self, momentum=0., decay=0., lr=1e-2, lr_scale=1.):
-      '''
-      Update function of the BatchNormalization layer
+  def update(self):
+    '''
+    update function for the convolution layer
 
-      Parameters:
-        momentum : float, default = 0, momentum of the optimizer
-        decay    : float, default = 0, decay parameter
-        lr       : float, default = 1e-2, learning rate parameter
-        lr_scale : float, default = 1 , learning rate scale
-
-      '''
-
-      lr *= lr_scale
-      lr /= self.batch
-
-      # bias updates
-      self.bias += self.bias_updates * lr
-
-      # Scales updates
-      self.scales_updates += (-decay) * self.batch * self.weights
-      self.scales         += lr * self.scales_updates
-      self.scale_updates  *= momentum
+    Parameters:
+      optimizer : Optimizer object
+    '''
+    self.bias, self.scales = self.optimizer.update(params=[self.bias, self.scales],
+                                                   gradients=[self.bias_updates, self.scales_updates]
+                                                  )
 
 
 

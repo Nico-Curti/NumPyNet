@@ -132,4 +132,5 @@ def test_batchnorm_layer():
 
 
 if __name__ == '__main__':
+
     test_batchnorm_layer()

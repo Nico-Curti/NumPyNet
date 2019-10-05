@@ -111,18 +111,17 @@ class Softmax_layer():
       delta : array of shape (batch, w, h, c), default is None. If an array is passed,
         it's the global delta to be backpropagated
     '''
-    # softmax gradient formula
-    #s = self.output.reshape(-1, 1)
-    #delta[:] += np.diagflat(s) - np.dot(s, s.T)
-
-    # darknet issue version
-    #dot = (self.output * self.delta).sum(axis=(1, 2, 3), keepdims=True)
-
-    #delta[:] += self.temperature * self.output * (self.delta - dot) # maybe output normalized
-
     # This is an approximation
     if delta is not None:
       delta[:] += self.delta
+
+      ## darknet issue version
+      # dot = (self.output * self.delta).sum(axis=(1, 2, 3), keepdims=True)
+      # delta[:] += self.temperature * self.output * (self.delta - dot) # maybe output normalized
+
+      ## softmax gradient formula
+      # s = self.output.reshape(-1, 1)
+      # delta[:] += np.diagflat(s) - np.dot(s, s.T)
 
 
 if __name__ == '__main__':
