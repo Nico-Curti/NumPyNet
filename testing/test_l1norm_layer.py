@@ -24,7 +24,7 @@ __package__ = 'L1Norm Layer testing'
        h     = st.integers(min_value=1, max_value=100),
        c     = st.integers(min_value=1, max_value=10 ))
 @settings(max_examples=10,
-          deadline=1000)
+          deadline=None)
 def test_l2norm_layer(batch, w, h, c):
   '''
   TTests:

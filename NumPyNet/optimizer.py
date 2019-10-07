@@ -40,6 +40,7 @@ class SGD (Optimizer):
   '''
 
   def __init__ (self, *args, **kwargs):
+
     super(SGD, self).__init__(*args, **kwargs)
 
   def update (self, params, gradients):
@@ -136,6 +137,7 @@ class RMSprop (Optimizer):
   '''
 
   def __init__ (self, rho=.9, epsilon=1e-6, *args, **kwargs):
+
     super(RMSprop, self).__init__(*args, **kwargs)
 
     self.rho = rho
@@ -165,6 +167,7 @@ class Adadelta (Optimizer):
   '''
 
   def __init__ (self, rho=0.9, epsilon=1e-6, *args, **kwargs):
+
     super(Adadelta, self).__init__(*args, **kwargs)
 
     self.rho = rho
@@ -201,6 +204,7 @@ class Adam (Optimizer):
   '''
 
   def __init__ (self, beta1=0.9, beta2=0.999, epsilon=1e-8, *args, **kwargs):
+
     super(Adam, self).__init__(*args, **kwargs)
 
     self.beta1 = beta1
@@ -216,7 +220,7 @@ class Adam (Optimizer):
     a_t = self.lr * np.sqrt(1 - np.power(self.beta2, self.iterations)) / \
           (1 - np.power(self.beta1, self.iterations))
 
-    if self.ms is None: # WRONG
+    if self.ms is None:
       self.ms = [np.zeros(shape=p.shape, dtype=float) for p in params]
 
     if self.vs is None:
@@ -241,6 +245,7 @@ class Adamax (Optimizer):
   '''
 
   def __init__ (self, beta1=0.9, beta2=0.999, epsilon=1e-8, *args, **kwargs):
+
     super(Adamax, self).__init__(*args, **kwargs)
 
     self.beta1 = beta1
@@ -261,7 +266,6 @@ class Adamax (Optimizer):
     if self.vs is None:
       self.vs = [np.zeros(shape=p.shape, dtype=float) for p in params]
 
-    # update parameters
     for i, (m, v, p, g) in enumerate(zip(self.ms, self.vs, params, gradients)):
       m = self.beta1 * m + (1 - self.beta1) * g
       v = np.maximum(self.beta2 * v, np.abs(g))
