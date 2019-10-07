@@ -68,8 +68,8 @@ def test_cost_layer():
       raise ValuError()
 
     numpynet_layer = Cost_layer(input_shape=inpt.shape, cost_type=cost,
-                             scale=1., ratio=0., noobject_scale=1.,
-                             threshold=0., smoothing=0.)
+                                scale=1., ratio=0., noobject_scale=1.,
+                                threshold=0., smoothing=0.)
 
     keras_loss = K.eval(keras_loss_type(truth_tf, inpt))
     numpynet_layer.forward(inpt, truth)
@@ -77,7 +77,7 @@ def test_cost_layer():
 
     assert np.isclose(keras_loss, numpynet_loss, atol=1e-7)
 
-    #BACKWARD
+    # BACKWARD
 
     # compute loss based on model's output and true labels
     if   keras_loss_type is mean_squared_error:
@@ -105,4 +105,5 @@ def test_cost_layer():
     # all passed
 
 if __name__ == '__main__':
-    test_cost_layer()
+
+  test_cost_layer()

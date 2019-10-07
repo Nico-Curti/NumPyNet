@@ -24,13 +24,13 @@ def test_shuffle_layer():
   '''
   np.random.seed(123)
 
-  couples = [(2,12),(4,32),(4,48),(6,108)]
+  couples = [(2, 12), (4, 32), (4, 48), (6, 108)]
 
   for scale, channels in couples:
 
     # input initialization
     batch = 2
-    inpt = np.random.uniform(0.,1., size=(batch, 100, 101, channels))
+    inpt = np.random.uniform(low=0., high=1., size=(batch, 100, 101, channels))
 
     # numpynet model
     numpynet = Shuffler_layer(scale)
@@ -48,9 +48,9 @@ def test_shuffle_layer():
 
     # BACKWARD
 
-    delta = np.random.uniform(0.,1., size=forward_out_keras.shape)
+    delta = np.random.uniform(low=0., high=1., size=forward_out_keras.shape)
 
-    delta_keras = K.eval(tf.space_to_depth(delta, block_size = scale))
+    delta_keras = K.eval(tf.space_to_depth(delta, block_size=scale))
 
     numpynet.delta = delta
     delta = delta.reshape(inpt.shape)
@@ -62,4 +62,5 @@ def test_shuffle_layer():
 
 
 if __name__ == '__main__':
+
   test_shuffle_layer()

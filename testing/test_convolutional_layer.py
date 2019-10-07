@@ -54,36 +54,36 @@ def test_convolutional_layer():
         else :
           keras_pad = 'valid'
 
-        inpt       = np.random.uniform(-1., 1., size = (batch, 100, 100, c_in))
+        inpt       = np.random.uniform(low=-1., high=1., size=(batch, 100, 100, c_in))
         b, w, h, c = inpt.shape
         # Shape (size1,size2,c_in, c_out), reshape inside numpynet.forward.
-        filters    = np.random.uniform(-1., 1., size = size + (c,c_out))
-        bias       = np.random.uniform(-1., 1., size = (c_out,))
+        filters    = np.random.uniform(low=-1., high=1., size=size + (c,c_out))
+        bias       = np.random.uniform(low=-1., high=1., size=(c_out,))
 
 
         # Numpy_net model
         numpynet = Convolutional_layer(filters=c_out, input_shape=inpt.shape,
-                                    weights=filters, bias=bias,
-                                    activation=numpynet_activ,
-                                    size=size, stride=stride,
-                                    pad=pad)
+                                       weights=filters, bias=bias,
+                                       activation=numpynet_activ,
+                                       size=size, stride=stride,
+                                       pad=pad)
 
         # Keras model
-        inp  = Input(shape = inpt.shape[1:], batch_shape = inpt.shape)
+        inp  = Input(shape=inpt.shape[1:], batch_shape=inpt.shape)
         Conv2d = Conv2D(filters=c_out,
-                          kernel_size=size, strides=stride,
-                          padding=keras_pad,
-                          activation=keras_activ,
-                          data_format='channels_last',
-                          use_bias=True , bias_initializer='zeros',
-                          dilation_rate=1)(inp)     # dilation rate = 1 is no dilation (I think)
+                        kernel_size=size, strides=stride,
+                        padding=keras_pad,
+                        activation=keras_activ,
+                        data_format='channels_last',
+                        use_bias=True, bias_initializer='zeros',
+                        dilation_rate=1)(inp)     # dilation rate = 1 is no dilation (I think)
         model = Model(inputs=[inp], outputs=[Conv2d])
 
         model.set_weights([filters, bias])
 
         # FORWARD
 
-        print(c_in, c_out, keras_activ, size, stride, pad, keras_pad, '\n', sep = '\n')
+        print(c_in, c_out, keras_activ, size, stride, pad, keras_pad, '\n', sep='\n')
 
         forward_out_keras = model.predict(inpt)
 
@@ -91,7 +91,7 @@ def test_convolutional_layer():
         forward_out_numpynet = numpynet.output
 
         assert forward_out_keras.shape == forward_out_numpynet.shape
-        assert np.allclose(forward_out_keras, forward_out_numpynet,         atol=1e-04, rtol=1e-3)
+        assert np.allclose(forward_out_keras, forward_out_numpynet, atol=1e-04, rtol=1e-3)
 
         # BACKWARD
 
@@ -107,7 +107,7 @@ def test_convolutional_layer():
         weights_updates_keras = updates[0]
         bias_updates_keras    = updates[1]
 
-        delta_numpynet = np.zeros(shape=inpt.shape)
+        delta_numpynet = np.zeros(shape=inpt.shape, dtype=float)
         numpynet.delta = np.ones(shape=numpynet.out_shape, dtype=float)
         numpynet.backward(delta_numpynet, copy=False)
 

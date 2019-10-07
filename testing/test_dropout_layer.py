@@ -45,7 +45,7 @@ def test_dropout_layer(batch, w, h, c):
     numpynet = Dropout_layer(prob)
 
     # Tensor Flow dropout, just to see if it works
-    # forward_out_keras = K.eval(tf.nn.dropout(inpt, seed = None, keep_prob=prob))
+    # forward_out_keras = K.eval(tf.nn.dropout(inpt, seed=None, keep_prob=prob))
 
     numpynet.forward(inpt)
     forward_out_numpynet = numpynet.output

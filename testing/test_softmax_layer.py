@@ -34,17 +34,17 @@ def test_softmax_layer():
     batch, w, h, c = (1, 3, 3, 3)
 
     np.random.seed(123)
-    inpt = np.random.uniform(low = 0., high = 1., size = (batch, w, h, c))
+    inpt = np.random.uniform(low=0., high=1., size=(batch, w, h, c))
 
     batch, w, h, c = inpt.shape
 
-    truth = np.random.choice([0., 1.], p = [.5,.5], size=(batch,w,h,c))
+    truth = np.random.choice([0., 1.], p=[.5,.5], size=(batch,w,h,c))
     truth = np.ones(shape=(batch, w, h, c))
 
-    numpynet = Softmax_layer(groups = 1, temperature = 1., spatial = spatial)
+    numpynet = Softmax_layer(groups=1, temperature=1., spatial=spatial)
 
-    inp = Input(shape=(w,h,c), batch_shape = inpt.shape)
-    x = Softmax(axis = axis)(inp)
+    inp = Input(shape=(w,h,c), batch_shape=inpt.shape)
+    x = Softmax(axis=axis)(inp)
     model = Model(inputs=[inp], outputs=x)
     model.compile(optimizer='sgd', loss='categorical_crossentropy')
 
@@ -86,4 +86,5 @@ def test_softmax_layer():
 
 
 if __name__ == '__main__':
+
   test_softmax_layer()

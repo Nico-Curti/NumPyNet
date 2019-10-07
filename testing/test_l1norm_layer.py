@@ -12,13 +12,20 @@ from keras.layers import Activation
 from NumPyNet.layers.l1norm_layer import L1Norm_layer
 
 import numpy as np
+from hypothesis import strategies as st
+from hypothesis import given, settings
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 __package__ = 'L1Norm Layer testing'
 
-
-def test_l2norm_layer():
+@given(batch = st.integers(min_value=1, max_value=15 ),
+       w     = st.integers(min_value=1, max_value=100),
+       h     = st.integers(min_value=1, max_value=100),
+       c     = st.integers(min_value=1, max_value=10 ))
+@settings(max_examples=10,
+          deadline=1000)
+def test_l2norm_layer(batch, w, h, c):
   '''
   TTests:
     if the l1norm layer forwards and backward are consistent with keras
@@ -29,9 +36,6 @@ def test_l2norm_layer():
   np.random.seed(123)
 
   for axis in [None, 1, 2, 3]:
-
-    batch = 1
-    w, h, c = (11, 13, 7)
 
     inpt = np.random.uniform(low=0., high=1., size=(batch, w, h, c))
 

@@ -42,7 +42,7 @@ def test_input_layer(batch, w, h, c):
   numpynet = Input_layer(input_shape=inpt.shape)
 
   # Keras Model init
-  inp   = Input(shape = (w, h, c), batch_shape = (batch, w, h, c))
+  inp   = Input(shape=(w, h, c), batch_shape=(batch, w, h, c))
   x     = Activation(activation='linear')(inp)
   model = Model(inputs=[inp], outputs=x)
 
@@ -71,10 +71,10 @@ def test_input_layer(batch, w, h, c):
   keras_delta = func([inpt])[0] # It returns a list with one array inside.
 
   # numpynet delta init.
-  numpynet.delta = np.ones(shape=inpt.shape)
+  numpynet.delta = np.ones(shape=inpt.shape, dtype=float)
 
   # Global delta init.
-  delta = np.empty(shape=inpt.shape)
+  delta = np.empty(shape=inpt.shape, dtype=float)
 
   # numpynet Backward
   numpynet.backward(delta)
@@ -82,8 +82,8 @@ def test_input_layer(batch, w, h, c):
   # Check dimension and delta
   assert keras_delta.shape == delta.shape
   assert np.allclose(keras_delta, delta)
-  # all passed
 
 if __name__ == '__main__':
+
   test_input_layer()
 

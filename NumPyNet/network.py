@@ -358,10 +358,10 @@ class Network(object):
 
       if 'truth' in forward_args and truth is not None:
         layer.forward(inpt=y, truth=truth)
-      
+
       elif 'network' in forward_args:
         layer.forward(inpt=y, net=self)
-        
+
       else :
         layer.forward(inpt=y)
 
@@ -383,10 +383,10 @@ class Network(object):
 
       if 'inpt' in backward_args:
         self._net[i].backward(inpt=input, delta=delta[:])
-      
+
       elif 'network' in backward_args:
         self._net[i].backward(delta=delta[:], network=self)
-         
+
       else:
         self._net[i].backward(delta=delta[:])
 
@@ -425,7 +425,20 @@ class Network(object):
 
   @property
   def num_layers(self):
+    '''
+    Return the number of layers in the model
+    '''
     return len(self._net)
+
+  def __getitem__(self, pos):
+    '''
+    Get the layer element
+    '''
+
+    if pos < 0 or pos >= self.num_layers:
+      raise ValueError('Network model : layer out of range. The model has {:d} layers'.format(self.num_layers))
+
+    return self._net[pos]
 
 
 if __name__ == '__main__':

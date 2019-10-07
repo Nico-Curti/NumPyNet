@@ -125,7 +125,7 @@ def backward(self, delta, prev_delta):
 	# derivatives of the activation funtion w.r.t. to input
 	self.delta *= self.gradient(self.output)
 
-	delta      += self.delta * self.alpha
+	delta[:]   += self.delta * self.alpha
 
 	if (self.ix, self.iy, self.kx) is (None, None, None): # same shapes
 		prev_delta[:] += self.delta[:] * self.beta

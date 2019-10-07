@@ -68,7 +68,7 @@ def test_shortcut_layer():
           forward_out_numpynet = numpynet.output
 
           assert forward_out_keras.shape == forward_out_numpynet.shape
-          assert np.allclose(forward_out_keras, forward_out_numpynet, atol = 1e-7)
+          assert np.allclose(forward_out_keras, forward_out_numpynet, atol=1e-7)
 
           # BACKWARD
 
@@ -80,14 +80,15 @@ def test_shortcut_layer():
           delta1 *= alpha
           delta2 *= beta
 
-          delta      = np.zeros(inpt1.shape)
-          prev_delta = np.zeros(inpt2.shape)
+          delta      = np.zeros(shape=inpt1.shape, dtype=float)
+          prev_delta = np.zeros(shape=inpt2.shape, dtype=float)
 
-          numpynet.delta = np.ones(shape=(batch, w, h, c))
+          numpynet.delta = np.ones(shape=(batch, w, h, c), dtype=float)
           numpynet.backward(delta, prev_delta)
 
           assert np.allclose(delta1, delta)
-          assert np.allclose(delta2, prev_delta, atol = 1e-8)
+          assert np.allclose(delta2, prev_delta, atol=1e-8)
 
 if __name__ == '__main__':
+
   test_shortcut_layer()

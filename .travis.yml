@@ -3,7 +3,6 @@ language: python
 dist: trusty
 
 matrix:
-  fast_finish: true
   include:
 
 # linux + python

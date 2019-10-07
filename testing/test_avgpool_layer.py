@@ -19,10 +19,10 @@ __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 __package__ = 'AvgPool Layer testing'
 
-@given(batch  = st.integers(min_value=1, max_value=15 ),
+@given(batch  = st.integers(min_value=1, max_value=15),
        w      = st.integers(min_value=15, max_value=100),
        h      = st.integers(min_value=15, max_value=100),
-       c      = st.integers(min_value=1, max_value=10 ),
+       c      = st.integers(min_value=1, max_value=10),
        size   = st.integers(min_value=1, max_value=10),
        stride = st.integers(min_value=1, max_value=10),
        pad    = st.booleans())
@@ -36,7 +36,7 @@ def test_avgpool_layer(batch, w, h, c, size, stride, pad):
   to be:
   '''
 
-  inpt = np.random.uniform(0.,1., size=(batch, w, h, c))
+  inpt = np.random.uniform(low=0., high=1., size=(batch, w, h, c))
 
   # Numpy_net model
   numpynet = Avgpool_layer(size=size, stride=stride, padding=pad)

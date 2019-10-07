@@ -32,6 +32,22 @@ Implementation in **pure** numpy of neural networks models. This library is usef
 
 **TODO:** Insert here introduction about neural network models starting from the Simple Perceptron model provided [here](https://gist.github.com/Nico-Curti/358b7a2ffed1abbb57ee87a5338ca073)
 
+Layers are the main core of a Neural Network model: every one of them performs, on its respective input, a different operation.
+The concatenation of multiple Layer form a CNN, where for concatenation we mean that the output of a layer become the input of the next one.
+
+In the NumPyNet framework a Layer is a python `class`, this allow the users to instantiate an object of the chosen type and call one of its methods.
+
+Main Method:
+
+* **forward** : this function is defined for every Layer and perform the so-called *forward pass*, that is the implementation of the transformation the Layer performs on the Input.
+It usually receives as argument just the output of the previous Layer
+
+* **backward** : this function is defined for every Layer and perform the so-called *backward pass*, that is an implementation of the BackPropagation algorithm for the error.
+It computes the delta to be back-propagated during *training* and, eventually, the updates to trainable weights
+It usually receives as input only the global delta of the network, on which it performs a transformation, depending on the layer.
+
+* **update** : this function is defined only for layers with trainable weights.
+
 ### Layers
 
 Some text for introduction
