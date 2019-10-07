@@ -49,6 +49,7 @@ Some text for introduction
 * [Logistic Layer](./NumPyNet/layers/logistic_layer.md)
 * [MaxPool Layer](./NumPyNet/layers/maxpool_layer.md)
 * [PixelShuffle Layer](./NumPyNet/layers/pixelshuffle_layer.md)
+* [Shortcut Layer](./NumPyNet/layers/shortcut_layer.md)
 
 ### Installation
 
