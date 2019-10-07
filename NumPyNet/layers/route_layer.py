@@ -14,18 +14,26 @@ __package__ = 'Route layer'
 
 class Route_layer():
 
-  def __init__(self, **kwargs):
+  def __init__(self, axis=0,**kwargs):
     '''
     Route layer
-      For Now the idea is : it takes the seleted layers output, concatenate them, and
-      then performs a linear combination with the output of the previous layer.
+      For Now the idea is : it takes the seleted layers output and concatenate them
 
     Parameters:
-      input_layers : list of previous layer for which concatenate outputs
+      axis : int, default 0. Accepted values are 0 or 3. It determines along 
+        which dimension the concatenation is performed. for examples if two 
+        input with size (b1, w, h , c) and (b2, w, h, c) are concatenated along axis=0,
+        then the final output shape will be (b1 + b2, w, h, c). Otherwise, if the
+        shapes are (b, w, h, c1) and (b, w, h, c2) and axis=3, the final output size 
+        will be (b, w, h, c1 + c2)
     '''
-
+    
+    if axis > 1 or axis < 0 :
+      raise LayerError('Incorrect value of axis: accepted values are 0 or 3')
+    
+    self.axis = axis 
     self.input_layers = kwargs.pop('layers', [])
-    self.outputs = np.array([], dtype=float)
+    self.outputs = np.array([], dtype=float)  
     self._out_shape = None
 
   def __str__(self):
@@ -51,20 +59,20 @@ class Route_layer():
   def out_shape(self):
     self._out_shape
 
-  def forward(self, inpt, net):
+  def forward(self, inpt, network):
 
     for layer_idx in self.input_layers:
-      self.output = np.concatenate(self.output, net.layers[layer_idx].output, axis=1)
+      self.output = np.concatenate(self.output, network._net[layer_idx].output, axis=self.axis)
     self.delta = np.zeros(shape=self.output.shape, dtype=float)
 
-  def backward(self, delta, net):
+  def backward(self, delta, network):
 
     for layer_idx in self.input_layers:
-      delta[:] += net.layers[layer_idx].delta
+      delta[:] += network._net[layer_idx].delta # not really sure here
 
 
 if __name__ == '__main__':
 
-  layer = Route_layer()
+  layer = Route_layer() 
 #  print(layer)
   print('Insert test visualization here')

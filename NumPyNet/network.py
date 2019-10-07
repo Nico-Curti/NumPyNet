@@ -358,7 +358,10 @@ class Network(object):
 
       if 'truth' in forward_args and truth is not None:
         layer.forward(inpt=y, truth=truth)
-
+      
+      elif 'network' in forward_args:
+        layer.forward(inpt=y, net=self)
+        
       else :
         layer.forward(inpt=y)
 
@@ -380,7 +383,10 @@ class Network(object):
 
       if 'inpt' in backward_args:
         self._net[i].backward(inpt=input, delta=delta[:])
-
+      
+      elif 'network' in backward_args:
+        self._net[i].backward(delta=delta[:], network=self)
+         
       else:
         self._net[i].backward(delta=delta[:])
 
