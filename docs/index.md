@@ -66,6 +66,8 @@ Some text for introduction
 * [MaxPool Layer](./NumPyNet/layers/maxpool_layer.md)
 * [PixelShuffle Layer](./NumPyNet/layers/pixelshuffle_layer.md)
 * [Shortcut Layer](./NumPyNet/layers/shortcut_layer.md)
+* [UpSample Layer](./NumPyNet/layers/upsample-layer.md)
+* [YOLO Layer](./NumPyNet/layers/yolo_layer.md)
 
 ### Installation
 

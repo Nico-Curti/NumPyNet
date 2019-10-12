@@ -72,17 +72,17 @@ def test_softmax_layer():
       func = K.function((model._feed_inputs + model._feed_targets + model._feed_sample_weights), grad_ce)
       return func(x + y + sample_weight)
 
-    ### compute gradient of loss with respect to inputs
-    #grad_loss = K.gradients(loss, [model.input])
-
-    ## create a function to be able to run this computation graph
-    #func = K.function(model.inputs + [truth_tf], grad_loss)
-    #keras_delta = func([np.expand_dims(inpt, axis=0), truth])
-    keras_delta = get_loss_grad(model, inpt, truth)
-
-    numpynet_delta = numpynet.delta
-
-    #assert np.allclose(keras_delta[0], numpynet_delta) # BROKEN
+#    ## compute gradient of loss with respect to inputs
+#    grad_loss = K.gradients(loss, [model.input])
+#
+#    # create a function to be able to run this computation graph
+#    func = K.function(model.inputs + [truth_tf], grad_loss)
+#    keras_delta = func([np.expand_dims(inpt, axis=0), truth])
+#    keras_delta = get_loss_grad(model, inpt, truth)
+#
+#    numpynet_delta = numpynet.delta
+#
+#    assert np.allclose(keras_delta[0], numpynet_delta) # BROKEN
 
 
 if __name__ == '__main__':

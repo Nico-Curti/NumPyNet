@@ -145,6 +145,8 @@ if __name__ == '__main__':
 
   # add batch = 1
   inpt = np.expand_dims(inpt, axis=0)
+  # cut the image so that h % stride = 0 and w % stride = 0; temporary solution
+  inpt = inpt[:,:573,:765,:]
 
   stride = -3
   scale = 1.5

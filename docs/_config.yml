@@ -40,5 +40,7 @@ include:
   - NumPyNet/layers/maxpool_layer.md
   - NumPyNet/layers/pixelshuffle_layer.md
   - NumPyNet/layers/shortcut_layer.md
+  - NumPyNet/layers/upsample_layer.md
+  - NumPyNet/layers/yolo_layer.md
 
 theme:              jekyll-theme-slate

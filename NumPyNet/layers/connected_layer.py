@@ -110,7 +110,7 @@ class Connected_layer(object):
             input or not.
     '''
 
-    inpt = inpt.reshape(-1, self.inputs)                  # shape (batch, w*h*c)
+    inpt = inpt.reshape(self._out_shape[0], self.inputs)                  # shape (batch, w*h*c)
 
     # z = (inpt @ self.weights) + self.bias                # shape (batch, outputs)
     z = np.einsum('ij, jk -> ik', inpt, self.weights, optimize=True) + self.bias
