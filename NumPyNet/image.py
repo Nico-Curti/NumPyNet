@@ -129,7 +129,7 @@ class Image (object):
     '''
     if process is normalization.normalize:
       inv_vars = 1. / var
-      self._data *= var
+      self._data *= inv_vars
 
     elif process is normalization.denormalize:
       self._data *= var
@@ -272,7 +272,7 @@ class Image (object):
 
     resized._data = cv2.copyMakeBorder(resized_image, top, bottom, left, right,
                                 cv2.BORDER_CONSTANT,
-                                value=(0, 0, 0))
+                                value=(0.5, 0.5, 0.5))
 
     return resized
 
@@ -338,14 +338,9 @@ class Image (object):
   def channels(self):
     return self._data.shape[2]
 
-  @property
-  def shape(self):
-    return (self.width, self.height, self.channels)
-
 
 if __name__ == '__main__':
 
-  import os
 
   filename = os.path.join(os.path.dirname(__file__), '..', 'data', 'dog.jpg')
 

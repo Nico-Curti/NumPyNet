@@ -41,7 +41,7 @@ class Box (object):
 
 
   def __eq__ (self, other):
-    return isinstance(other, box) and tuple(self) == tuple(other)
+    return isinstance(other, Box) and tuple(self) == tuple(other)
 
   def __ne__ (self, other):
     return not (self == other)
@@ -64,7 +64,7 @@ class Box (object):
     Common area between boxes
     '''
 
-    if not isinstance(other, box):
+    if not isinstance(other, Box):
       raise ValueError('intersection requires a Box object')
 
     w = self._overlap(self.x, self.w, other.x, other.w)
@@ -81,7 +81,7 @@ class Box (object):
     Full area without intersection
     '''
 
-    if not isinstance(other, box):
+    if not isinstance(other, Box):
       raise ValueError('union requires a Box object')
 
     return self.area + other.area - self.intersection(other)
@@ -93,7 +93,7 @@ class Box (object):
     Intersection over union
     '''
 
-    if not isinstance(other, box):
+    if not isinstance(other, Box):
       raise ValueError('iou requires a Box object')
 
     return self.intersection(other) / self.union(other)
@@ -105,10 +105,10 @@ class Box (object):
     Root mean square error of the boxes
     '''
 
-    if not isinstance(other, box):
+    if not isinstance(other, Box):
       raise ValueError('rmse requires a Box object')
 
-    diffs = tuple(map(operator.sub, a, b))
+    diffs = tuple(map(operator.sub, self, other))
     dot = sum(map(operator.mul, diffs, diffs))
     return dot**(.5)
 
