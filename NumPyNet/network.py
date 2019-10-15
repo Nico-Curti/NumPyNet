@@ -360,7 +360,7 @@ class Network(object):
         layer.forward(inpt=y, truth=truth)
 
       elif 'network' in forward_args:
-        layer.forward(inpt=y, net=self)
+        layer.forward(net=self)
 
       else :
         layer.forward(inpt=y)
