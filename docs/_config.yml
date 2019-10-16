@@ -39,6 +39,7 @@ include:
   - NumPyNet/layers/logistic_layer.md
   - NumPyNet/layers/maxpool_layer.md
   - NumPyNet/layers/pixelshuffle_layer.md
+  - NumPyNet/layers/route_layer.md
   - NumPyNet/layers/shortcut_layer.md
   - NumPyNet/layers/upsample_layer.md
   - NumPyNet/layers/yolo_layer.md

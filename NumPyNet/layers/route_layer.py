@@ -69,13 +69,14 @@ class Route_layer():
   def forward(self, network):
     '''
     Concatenate along chosen axis the outputs of selected network layers
+    In main CNN applications, like YOLOv3, the concatenation happens long channels axis
 
     Parameters:
       network : Network object type.
     '''
 
-    self.output = np.concatenate([network[layer_idx] for layer_idx in input_layers], axis=self.axis)
-    self.delta  = np.zeros(shape=self.output.shape, dtype=float)
+    self.output = np.concatenate([network[layer_idx] for layer_idx in self.input_layers], axis=self.axis)
+    # self.delta  = np.zeros(shape=self.output.shape, dtype=float)  # i don't think this is necessary
 
   def backward(self, delta, network):
     '''
