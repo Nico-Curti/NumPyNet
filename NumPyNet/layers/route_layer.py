@@ -48,7 +48,7 @@ class Route_layer():
 
   def __call__(self, *previous_layer):
 
-    self.input_layers = []
+#    self.input_layers = []
     self._out_shape = []
 
     for prev in previous_layer:
@@ -58,7 +58,7 @@ class Route_layer():
         raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
 
       self._out_shape.append(prev.out_shape)
-      self.input_layers.append(prev)
+#      self.input_layers.append(prev)
 
     return self
 
@@ -74,8 +74,9 @@ class Route_layer():
     Parameters:
       network : Network object type.
     '''
-
-    self.output = np.concatenate([network[layer_idx] for layer_idx in self.input_layers], axis=self.axis)
+    
+    print(list(x for x in self.input_layers))
+    self.output = np.concatenate([network[layer_idx].output for layer_idx in self.input_layers], axis=self.axis)
     # self.delta  = np.zeros(shape=self.output.shape, dtype=float)  # i don't think this is necessary
 
   def backward(self, delta, network):
