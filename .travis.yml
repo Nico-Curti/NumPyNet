@@ -86,7 +86,8 @@ before_install:
   # testing libraries
   - pip install keras==2.2.5
   - pip install tensorflow==1.14.0
-  - pip install hypothesis==4.36.0
+  - if [[ $TRAVIS_PYTHON_VERSION == 3.4]]; then pip install hypothesis==4.13.0
+  - if [[ $TRAVIS_PYTHON_VERSION != 3.4]]; then pip install hypothesis==4.36.0
 
 install:
   - python setup.py install
