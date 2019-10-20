@@ -103,7 +103,7 @@ class Network(object):
 
     if type_layer == 'input':
       self._net.append(layer)
-      
+
     elif type_layer == 'route':
       prev_layers = []
       for idx in layer.input_layers:
@@ -127,6 +127,9 @@ class Network(object):
 
     else:
       raise StopIteration
+
+  def next(self): # this should fix python2* problems with __iter__ and __next__
+    return self.__next__()
 
 
   def summary(self):
