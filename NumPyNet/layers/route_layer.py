@@ -32,39 +32,54 @@ class Route_layer():
         Otherwise, if the shapes are (b, w, h, c1) and (b, w, h, c2) and axis=3, the final output size
         will be (b, w, h, c1 + c2) (YOLOv3 model)
     '''
+    
     if by_channels :
       self.axis = 3  # axis for the concatenation
     else:
       self.axis = 0
 
     self.input_layers = input_layers
-    # self.input_layers  = kwargs.pop('layers', [])
     self.outputs = np.array([], dtype=float)
     self._out_shape = None
 
   def __str__(self):
-    # return 'route   [{}]'.format(' '.join(map(str(self._out_shape)))) # WRONG
     return 'route   {}'.format([idx for idx in self.input_layers]).translate({ord(i) : None for i in '[],'})
 
-  def __call__(self, *previous_layer):
+  def __call__(self, previous_layer):
 
-#    self.input_layers = []
-    self._out_shape = []
+    self._out_shape = [0,0,0,0]
+    
+    if self.axis:  # by channels 
+      for prev in previous_layer:
+        
+        if prev.out_shape is None:
+          class_name = self.__class__.__name__
+          prev_name  = previous_layer.__class__.__name__
+          raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))        
+        
+        c = prev.out_shape[3]
+        self._out_shape[3] += c
+        self._out_shape[0:3] = prev.out_shape[0:3]
+        
+    else : # by batch
+      for prev in previous_layer:
+        
+        if prev.out_shape is None:
+          class_name = self.__class__.__name__
+          prev_name  = previous_layer.__class__.__name__
+          raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))        
 
-    for prev in previous_layer:
-      if prev.out_shape is None:
-        class_name = self.__class__.__name__
-        prev_name  = previous_layer.__class__.__name__
-        raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
-
-      self._out_shape.append(prev.out_shape)
-#      self.input_layers.append(prev)
-
+        b = prev.out_shape[0]
+        self._out_shape[0] += b
+        self._out_shape[1:4] = prev.out_shape[1:4]
+        
+    
+    self._out_shape = tuple(self._out_shape)
     return self
 
   @property
   def out_shape(self):
-    self._out_shape
+    return self._out_shape 
 
   def forward(self, network):
     '''
@@ -75,9 +90,8 @@ class Route_layer():
       network : Network object type.
     '''
     
-    print(list(x for x in self.input_layers))
     self.output = np.concatenate([network[layer_idx].output for layer_idx in self.input_layers], axis=self.axis)
-    # self.delta  = np.zeros(shape=self.output.shape, dtype=float)  # i don't think this is necessary
+    self.delta  = np.zeros(shape=self.out_shape, dtype=float)
 
   def backward(self, delta, network):
     '''
@@ -87,33 +101,20 @@ class Route_layer():
       delta  : 4-d numpy array, network delta to be backpropagated
       network: Network object type.
     '''
-
-    # # darknet:
-    # delta = delta.ravel()
-    # offset = 0
-    # n = len(self.input_layers)
-    # for i in range(n):
-    #   index      = self.input_layers[i]
-    #   delta      = network[index].delta.ravel()
-    #   input_size = np.prod(network[index]._out_shape[1:])
-    #   for j in range(_out_shape[0]):  # range(batch)
-    #     for k in range(input_size):
-    #       delta[j*input_size + k] += self.delta[offeset + j*out_shape + k]
-    #   offeset += input_size
-
+    
     # NumPyNet implementation
     if self.axis == 3:            # this works for concatenation by channels axis
       channels_sum = 0
       for idx in self.input_layers:
         channels = network[idx].out_shape[3]
-        network[idx].delta += delta[:,:,:, channels_sum : channels_sum + channels]
+        network[idx].delta += self.delta[:,:,:, channels_sum : channels_sum + channels]
         channels_sum += channels
 
     elif self.axis == 0:          # this works for concatenation by batch axis
       batch_sum = 0
       for idx in self.self.input_layers:
         batches = network[idx].out_shape[0]
-        network[idx].delta += delta[batch_sum : batch_sum + batches,:,:,:]
+        network[idx].delta += self.delta[batch_sum : batch_sum + batches,:,:,:]
         batch_sum += batches
 
 

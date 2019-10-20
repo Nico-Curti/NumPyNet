@@ -103,6 +103,13 @@ class Network(object):
 
     if type_layer == 'input':
       self._net.append(layer)
+      
+    elif type_layer == 'route':
+      prev_layers = []
+      for idx in layer.input_layers:
+        prev_layers.append(self._net[idx]) # i need layers' info to init route
+
+      self._net.append(layer(prev_layers))
 
     else:
       self._net.append(layer(self._net[-1]))

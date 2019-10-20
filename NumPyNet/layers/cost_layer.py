@@ -56,13 +56,13 @@ class Cost_layer(object):
     self.delta = np.empty(shape=self._out_shape)
 
   def __str__(self):
-    return 'cost                                            ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}'.format(*self.out_shape)
+    return 'cost                  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(*self.out_shape)
 
   def __call__(self, previous_layer):
 
     if previous_layer.out_shape is None or self.out_shape != previous_layer.out_shape:
       class_name = self.__class__.__name__
-      prev_name  = layer.__class__.__name__
+      prev_name  = previous_layer.__class__.__name__
       raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
 
     return self
@@ -166,7 +166,8 @@ class Cost_layer(object):
       inpt  : array output of the network
       truth : array, truth values for comparisons
     '''
-
+    
+    print('in mae')
     diff = truth - inpt
 
     self.output = np.abs(diff)

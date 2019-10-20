@@ -36,8 +36,8 @@ class Activation_layer(object):
 
   def __str__(self):
     batch, out_width, out_height, out_channels = self.out_shape
-    return 'activation            {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(
-           batch, out_width, out_height, out_channels)
+    return 'activ                 {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(
+          batch, out_width, out_height, out_channels)
 
   def __call__(self, previous_layer):
 
