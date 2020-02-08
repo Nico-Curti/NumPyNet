@@ -375,7 +375,7 @@ class Network(object):
       else :
         layer.forward(inpt=y)
 
-      y = layer.output
+      y = layer.output.copy() # added a copy
 
     return y
 

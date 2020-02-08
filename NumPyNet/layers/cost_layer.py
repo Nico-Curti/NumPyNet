@@ -53,10 +53,10 @@ class Cost_layer(object):
     self._out_shape = input_shape
     # Need an empty initialization to work out _smooth_l1 and _wgan
     self.output = np.empty(shape=self._out_shape)
-    self.delta = np.empty(shape=self._out_shape)
+    self.delta  = np.empty(shape=self._out_shape)
 
   def __str__(self):
-    return 'cost                  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(*self.out_shape)
+    return 'cost                   {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(*self.out_shape)
 
   def __call__(self, previous_layer):
 
@@ -110,9 +110,12 @@ class Cost_layer(object):
 
       norm = 1. / self.delta.size                                            # normalization of delta!
       self.delta *= norm
-      
+
       self.cost = np.mean(self.output)                                       # compute the cost
-      
+
+    else :
+      self.output = inpt
+
   def backward(self, delta):
     '''
     Backward function of the cost_layer, it updates the delta
@@ -166,8 +169,7 @@ class Cost_layer(object):
       inpt  : array output of the network
       truth : array, truth values for comparisons
     '''
-    
-    print('in mae')
+
     diff = truth - inpt
 
     self.output = np.abs(diff)
@@ -205,7 +207,7 @@ class Cost_layer(object):
     diff = truth - inpt
 
     self.output = diff * diff
-    self.delta = -2. * diff
+    self.delta  = -2. * diff
 
   def _hinge(self, inpt, truth):
     '''

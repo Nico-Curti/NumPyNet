@@ -238,7 +238,7 @@ class Convolutional_layer(object):
 
 
     # Create the view of the array with shape (batch, out_w ,out_h, kx, ky, in_c)
-    self.view = self._asStride(mat_pad, self.size, self.stride) #self, is used also in backward. Better way?
+    self.view = self._asStride(mat_pad, self.size, self.stride) # self, is used also in backward. Better way?
 
     # the choice of numpy.einsum is due to reshape of self.view is a copy and not a view
     # it seems to be slower though
@@ -390,4 +390,3 @@ if __name__ == '__main__':
   ax3.axis('off')
 
   plt.show()
-
