@@ -102,7 +102,6 @@ class Softmax_layer():
       self.cost = - np.sum(truth * np.log(out))
       # Update of delta given truth
       self.delta = np.clip(self.output, 1e-8, 1. - 1e-8) - truth
-      print(f'\n{self.cost:.3}')
 
   def backward(self, delta=None):
     '''

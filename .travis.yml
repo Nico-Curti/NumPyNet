@@ -84,7 +84,7 @@ before_install:
   - pip install enum34
   - pip install configparser
   # testing libraries
-  - pip install keras==2.2.5
+  - pip install keras # ==2.2.5
   - pip install tensorflow==1.14.0
   - pip install hypothesis==4.13.0
 
