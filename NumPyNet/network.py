@@ -265,7 +265,7 @@ class Network(object):
     for layer in self:
 
       if hasattr(layer, 'optimizer'):
-        layer.optimizer = optimizer()
+        layer.optimizer = optimizer
 
   def fit(self, X, y, max_iter=100, shuffle=True):
     '''

@@ -96,7 +96,7 @@ if __name__ == '__main__':
   print('\n Total input dimension: {}'.format(X_train.shape), '\n')
   print('*************************************')
 
-  model.compile(optimizer=SGD)
+  model.compile(optimizer=SGD(lr=0.1, decay=0., lr_min=0., lr_max=np.inf))
   model.summary()
 
   truth = y_test.argmax(axis=3).ravel()
@@ -121,8 +121,6 @@ if __name__ == '__main__':
 
   print('\n***********END TRAINING**************\n')
 
-  after_weight = model._net[1].weights.copy()
-
   # Test the prediction with timing
   tic = time()
   out2 = model.predict(X=X_test)
@@ -132,8 +130,6 @@ if __name__ == '__main__':
   predicted2 = out2.argmax(axis=3).ravel()
   accuracy2  = accuracy_score(truth, predicted2)
 
-  # FANCY PRINTS #
-
   print('Accuracy Score      : {:.3f}'.format(accuracy2))
-  print('And it tooks {:.1f}s for training and {:.1f}s for predict'.format(train_time, test_time))
-  # best score I could obtain was 81 %
+  print('And it tooks {:.1f}s for training and {:.1f}s for predict\n'.format(train_time, test_time))
+  # best score I could obtain was 83 with 10 epochs, lr = 0.1 %
