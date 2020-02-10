@@ -40,7 +40,7 @@ class BatchNorm_layer(object):
 
 
   def __str__(self):
-    return 'BatchNorm                    {:4d} x{:4d} x{:4d} image'.format(*self._out_shape[1:])
+    return 'batchnorm                    {:4d} x{:4d} x{:4d} image'.format(*self._out_shape[1:])
 
   def __call__(self, previous_layer):
 
@@ -113,12 +113,15 @@ class BatchNorm_layer(object):
     self.x_norm = (self.x - self.mean) * self.var # shape (batch, w, h, c)
     self.output = self.x_norm.copy() # made a copy to store x_norm, used in Backward
 
-    # Output = scale * x_norm + bias
-    if self.scales is not None:
-      self.output *= self.scales  # Multiplication for scales
+    # Init scales and bias if they are not initialized (ones and zeros)
+    if self.scales is None:
+      self.scales = np.ones(shape=self.out_shape[1:])
 
-    if self.bias is not None:
-      self.output += self.bias # Add bias
+    if self.bias is None:
+      self.bias = np.zeros(shape=self.out_shape[1:])
+
+    # Output = scale * x_norm + bias
+    self.output = self.output * self.scales + self.bias
 
     # output_shape = (batch, w, h, c)
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
@@ -166,6 +169,7 @@ class BatchNorm_layer(object):
     Parameters:
       optimizer : Optimizer object
     '''
+    print('\n', self.bias.shape, '\n')
     self.bias, self.scales = self.optimizer.update(params=[self.bias, self.scales],
                                                    gradients=[self.bias_updates, self.scales_updates]
                                                   )
@@ -183,7 +187,7 @@ if __name__ == '__main__':
   float_2_img = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 255.)).astype(np.uint8)
 
   # I need to load at least to images, or made a copy of it
-  filename = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'dog.jpg')
+  filename = os.path.join(os.path.dirname('__file__'), '..', '..', 'data', 'dog.jpg')
   inpt = np.asarray(Image.open(filename), dtype=float)
   inpt.setflags(write=1)
   w, h, c = inpt.shape

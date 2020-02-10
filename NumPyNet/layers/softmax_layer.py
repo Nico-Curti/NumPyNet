@@ -94,14 +94,15 @@ class Softmax_layer():
       # s = self.output.sum(axis=(1,2,3), keepdims=True)
 
     # value of delta if truth is None
-    self.delta = np.zeros(shape=self.out_shape, dtype=float)
+    # self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
     if truth is not None:
       out = self.output * (1. / self.output.sum())
       out = np.clip(out, 1e-8, 1. - 1e-8)
       self.cost = - np.sum(truth * np.log(out))
       # Update of delta given truth
-      self.delta = np.clip(self.output, 1e-8, 1. - 1e-8) - truth
+      self.delta = np.clip(self.output, 1e-8, 1. - 1e-8) - truth 
+      # print('In FORWARD','\n', self.delta[0,0,0,:], '\n')
 
   def backward(self, delta=None):
     '''
@@ -113,7 +114,9 @@ class Softmax_layer():
     '''
     # This is an approximation
     if delta is not None:
+      # print('In BACKWARD','\n', self.delta[0,0,0,:], '\n')
       delta[:] += self.delta
+      # print('\nDELTA is', delta[0,0,0,:],'\n')
 
       ## darknet issue version
       # dot = (self.output * self.delta).sum(axis=(1, 2, 3), keepdims=True)

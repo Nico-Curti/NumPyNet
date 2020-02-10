@@ -16,8 +16,9 @@ from NumPyNet.layers.softmax_layer import Softmax_layer
 from NumPyNet.layers.dropout_layer import Dropout_layer
 from NumPyNet.layers.cost_layer import Cost_layer
 from NumPyNet.layers.cost_layer import cost_type
+from NumPyNet.layers.batchnorm_layer import BatchNorm_layer
 from NumPyNet.network import Network
-from NumPyNet.optimizer import Adam, SGD
+from NumPyNet.optimizer import Adam, SGD, Momentum
 from NumPyNet.utils import to_categorical
 from NumPyNet.metrics import accuracy_score
 
@@ -84,19 +85,26 @@ if __name__ == '__main__':
                                 size=3, filters=32, stride=1, pad=True,
                                 activation='Relu'))
 
+  model.add(BatchNorm_layer())
+
   model.add(Maxpool_layer(size=2, stride=1, padding=True))
 
   model.add(Connected_layer(input_shape=(batch, 8, 8, 32),
+                            outputs=100, activation='Relu'))
+
+  model.add(BatchNorm_layer())
+
+  model.add(Connected_layer(input_shape=(batch, 1, 1, 100),
                             outputs=num_classes, activation='Linear'))
 
-  # model.add(Softmax_layer(spatial=True, groups=1, temperature=1.))
-  model.add(Cost_layer(input_shape=(batch, 1, 1, 10), cost_type=cost_type.mse))
+  model.add(Softmax_layer(spatial=True, groups=1, temperature=1.))
+  # model.add(Cost_layer(input_shape=(batch, 1, 1, 10), cost_type=cost_type.mse))
 
   print('*************************************')
   print('\n Total input dimension: {}'.format(X_train.shape), '\n')
   print('*************************************')
 
-  model.compile(optimizer=SGD(lr=0.1, decay=0., lr_min=0., lr_max=np.inf))
+  model.compile(optimizer=SGD(lr=0.01, decay=0., lr_min=0., lr_max=np.inf))
   model.summary()
 
   truth = y_test.argmax(axis=3).ravel()
@@ -115,7 +123,7 @@ if __name__ == '__main__':
   # Fit the model on the training set with timing
 
   tic = time()
-  model.fit(X=X_train, y=y_train, max_iter=5)
+  model.fit(X=X_train, y=y_train, max_iter=10)
   toc = time()
   train_time = toc-tic
 
@@ -132,4 +140,4 @@ if __name__ == '__main__':
 
   print('Accuracy Score      : {:.3f}'.format(accuracy2))
   print('And it tooks {:.1f}s for training and {:.1f}s for predict\n'.format(train_time, test_time))
-  # best score I could obtain was 83 with 10 epochs, lr = 0.1 %
+  # best score I could obtain was 94% with 10 epochs, lr = 0.01 %
