@@ -29,7 +29,7 @@ class cost_type(Enum):
 
 class Cost_layer(object):
 
-  def __init__(self, input_shape, cost_type, scale=1., ratio=0., noobject_scale=1., threshold=0., smoothing=0., **kwargs):
+  def __init__(self, cost_type, input_shape=None, scale=1., ratio=0., noobject_scale=1., threshold=0., smoothing=0., **kwargs):
     '''
     Cost layer, compute the cost of the output based on the selected cost function
 
@@ -59,6 +59,8 @@ class Cost_layer(object):
     return 'cost                   {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(*self.out_shape)
 
   def __call__(self, previous_layer):
+
+    self._out_shape = previous_layer.out_shape
 
     if previous_layer.out_shape is None or self.out_shape != previous_layer.out_shape:
       class_name = self.__class__.__name__
@@ -342,7 +344,6 @@ if __name__ == '__main__':
   forward_out = layer.output
 
   print('Cost: {:.3f}'.format(layer.cost))
-  print(layer.cost)
 
   delta = np.zeros(shape=input.shape, dtype=float)
   layer.backward(delta)

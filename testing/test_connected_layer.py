@@ -46,7 +46,7 @@ def test_connected_layer():
   for keras_act, numpynet_act in zip(keras_activ, numpynet_activ):
 
     # Numpy_net model
-    numpynet_layer = Connected_layer(inpt.shape, outputs,
+    numpynet_layer = Connected_layer(outputs, input_shape=inpt.shape,
                                      activation=numpynet_act,
                                      weights=weights, bias=bias)
     # Keras Model

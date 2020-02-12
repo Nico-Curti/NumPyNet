@@ -20,7 +20,7 @@ __package__ = 'Convolutional layer'
 
 class Convolutional_layer(object):
 
-  def __init__(self, input_shape, filters, size, stride=None,
+  def __init__(self, filters, size, input_shape=None, stride=None,
                weights=None, bias=None,
                pad=False,
                activation=Activations,
@@ -41,8 +41,9 @@ class Convolutional_layer(object):
       activation  : activation function of the layer
     '''
 
-    self.batch, self.w, self.h, self.c = input_shape
     self.channels_out = filters
+    self.weights = weights
+    self.bias = bias
 
     self.size = size
     if not hasattr(self.size, '__iter__'):
@@ -69,17 +70,17 @@ class Convolutional_layer(object):
 
     self.delta, self.output = (None, None)
 
-    # Weights and bias
-    if weights is None:
-      scale = np.sqrt(2 / (self.size[0] * self.size[1] * self.c))
-      self.weights = np.random.normal(loc=scale, scale=1., size=(self.size[0], self.size[1], self.c, self.channels_out))
-    else :
-      self.weights = weights
+    # Weights and bias with input shape (single layer)
+    if input_shape is not None:
 
-    if bias is None:
-      self.bias = np.zeros(shape=(self.channels_out, ), dtype=float)
-    else :
-      self.bias = bias
+      self.batch, self.w, self.h, self.c = input_shape
+
+      if weights is None:
+        scale = np.sqrt(2 / (self.size[0] * self.size[1] * self.c))
+        self.weights = np.random.normal(loc=scale, scale=1., size=(self.size[0], self.size[1], self.c, self.channels_out))
+
+      if bias is None:
+        self.bias = np.zeros(shape=(self.channels_out, ), dtype=float)
 
     # Updates
     self.weights_update = None
@@ -103,6 +104,13 @@ class Convolutional_layer(object):
       raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
 
     self.batch, self.w, self.h, self.c = previous_layer.out_shape
+
+    if self.weights is None:
+      scale = np.sqrt(2 / (self.size[0] * self.size[1] * self.c))
+      self.weights = np.random.normal(loc=scale, scale=1., size=(self.size[0], self.size[1], self.c, self.channels_out))
+
+    if self.bias is None:
+      self.bias = np.zeros(shape=(self.channels_out, ), dtype=float)
 
     if self.pad:
       self._evaluate_padding()
@@ -281,7 +289,6 @@ class Convolutional_layer(object):
     combo = itertools.product(range(w), range(h))
 
     # Actual operation to be performed, it's basically the convolution of self.delta with weights.transpose
-    # operator = np.einsum('ijkl, mnol -> ijkmno', self.delta, self.weights) # original
     operator = np.einsum('ijkl, mnol -> ijkmno', self.delta, self.weights)
 
     # Atomically modify, really slow as for maxpool and avgpool

@@ -177,7 +177,7 @@ class Avgpool_layer(object):
 
     # Mean of every sub matrix, computed without considering the padd(np.nan)
     self.output = np.nanmean(view, axis=(4, 5))
-    self.delta = np.zeros(shape=self.out_shape, dtype=float)
+    self.delta  = np.zeros(shape=self.out_shape, dtype=float)
 
   def backward(self, delta):
     '''

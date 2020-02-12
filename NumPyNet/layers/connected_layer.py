@@ -18,7 +18,7 @@ __package__ = 'Connected Layer'
 
 class Connected_layer(object):
 
-  def __init__(self, input_shape, outputs, activation=Activations, weights=None, bias=None, **kwargs):
+  def __init__(self, outputs, activation=Activations, input_shape=None, weights=None, bias=None, **kwargs):
     '''
     Connected layer:
 
@@ -29,26 +29,31 @@ class Connected_layer(object):
       weights     : array of shape (w * h * c, outputs), weights of the dense layer
       bias        : array of shape (outputs, ), bias of the dense layer
     '''
-    self._out_shape = input_shape
-    self.inputs = np.prod(input_shape[1:])
+
     self.outputs = outputs
+    self.weights = weights
+    self.bias = bias
 
     activation = _check_activation(self, activation)
 
     self.activation = activation.activate
     self.gradient = activation.gradient
 
-    if weights is not None:
-      self.weights = np.asarray(weights)
-    else:
-      # initialize weights with shape (w*h*c, outputs)
-      scale = np.sqrt(2. / self.inputs)
-      self.weights = np.random.uniform(low=-scale, high=scale, size=(self.inputs, self.outputs))
+    # if input shape is passed, init of weights, else done in  __call__
+    if input_shape is not None:
+      self.input_shape = input_shape
+      self.inputs = np.prod(input_shape[1:])
 
-    if bias is not None:
-      self.bias = np.asarray(bias)
-    else:
-      self.bias = np.zeros(shape=(self.outputs,), dtype=float)
+      if weights is None:
+        scale = np.sqrt(2. / self.inputs)
+        self.weights = np.random.uniform(low=-scale, high=scale, size=(self.inputs, self.outputs))
+      else:
+        self.weights = np.asarray(weights)
+
+      if bias is None:
+        self.bias = np.zeros(shape=(self.outputs,), dtype=float)
+      else:
+        self.bias = np.asarray(bias)
 
     self.output, self.delta = (None, None)
     self.weights_update = None
@@ -56,7 +61,7 @@ class Connected_layer(object):
     self.optimizer      = None
 
   def __str__(self):
-    b, w, h, c = self._out_shape
+    b, w, h, c = self.input_shape
     return 'connected              {:4d} x{:4d} x{:4d} x{:4d}   ->  {:4d} x{:4d}'.format(
             b, w, h, c, b, self.outputs)
 
@@ -67,12 +72,22 @@ class Connected_layer(object):
       prev_name  = layer.__class__.__name__
       raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
 
-    self._out_shape = previous_layer.out_shape
+    self.input_shape = previous_layer.out_shape
+    self.inputs = np.prod(self.input_shape[1:])
+    self._out_shape = (self.inputs, self.outputs)
+
+    if self.weights is None:
+      scale = np.sqrt(2. / self.inputs)
+      self.weights = np.random.uniform(low=-scale, high=scale, size=(self.inputs, self.outputs))
+
+    if self.bias is None:
+      self.bias = np.zeros(shape=(self.outputs,), dtype=float)
+
     return self
 
   @property
   def out_shape(self):
-    return (self._out_shape[0], 1, 1, self.outputs)
+    return (self.input_shape[0], 1, 1, self.outputs)
 
   def load_weights(self, chunck_weights, pos=0):
     '''
@@ -133,7 +148,7 @@ class Connected_layer(object):
     '''
 
     # reshape to (batch , w * h * c)
-    inpt = inpt.reshape(self._out_shape[0], -1)
+    inpt = inpt.reshape(inpt.shape[0], -1)
     # out  = self.output.reshape(-1, self.outputs)
 
     self.delta *= self.gradient(self.output, copy=copy)
@@ -145,7 +160,7 @@ class Connected_layer(object):
     self.weights_update = np.dot(inpt.transpose(), self.delta)
 
     if delta is not None:
-      delta_shaped = delta.reshape(self._out_shape[0], -1)  # it's a reshaped VIEW
+      delta_shaped = delta.reshape(inpt.shape[0], -1)  # it's a reshaped VIEW
 
       # shapes : (batch , w * h * c) = (batch , w * h * c) + (batch, outputs) @ (outputs, w * h * c)
 

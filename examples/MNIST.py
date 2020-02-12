@@ -81,24 +81,20 @@ if __name__ == '__main__':
   # Create the model and training
   model = Network(batch=batch, input_shape=X_train.shape[1:])
 
-  model.add(Convolutional_layer(input_shape=(batch, 8, 8, 3),
-                                size=3, filters=32, stride=1, pad=True,
-                                activation='Relu'))
+  model.add(Convolutional_layer(size=3, filters=32, stride=1, pad=True, activation='Relu'))
 
   model.add(BatchNorm_layer())
 
   model.add(Maxpool_layer(size=2, stride=1, padding=True))
 
-  model.add(Connected_layer(input_shape=(batch, 8, 8, 32),
-                            outputs=100, activation='Relu'))
+  model.add(Connected_layer(outputs=100, activation='Relu'))
 
   model.add(BatchNorm_layer())
 
-  model.add(Connected_layer(input_shape=(batch, 1, 1, 100),
-                            outputs=num_classes, activation='Linear'))
+  model.add(Connected_layer(outputs=num_classes, activation='Linear'))
 
   model.add(Softmax_layer(spatial=True, groups=1, temperature=1.))
-  # model.add(Cost_layer(input_shape=(batch, 1, 1, 10), cost_type=cost_type.mse))
+  # model.add(Cost_layer(cost_type=cost_type.mse))
 
   print('*************************************')
   print('\n Total input dimension: {}'.format(X_train.shape), '\n')

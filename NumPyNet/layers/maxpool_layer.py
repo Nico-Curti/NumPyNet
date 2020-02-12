@@ -177,7 +177,9 @@ class Maxpool_layer(object):
     # Return a strided view of the input array, shape: (batch, 1+(w-kx)//st1,1+(h-ky)//st2 ,c, kx, ky)
     view = self._asStride(mat_pad, self.size, self.stride)
 
-    self.output = np.nanmax(view, axis=(4,5)) # final shape (batch, out_w, out_h, c)
+    # final shape (batch, out_w, out_h, c)
+
+    self.output = np.nanmax(view, axis=(4,5))
 
     # New shape for view, to retrieve indexes
     new_shape = view.shape[:4] + (kx*ky, )
@@ -214,13 +216,14 @@ class Maxpool_layer(object):
     b, w, h, c = self.output.shape
     combo = itertools.product(range(b), range(w), range(h), range(c))
     combo = np.asarray(list(combo)).T
+    combo = zip(combo[0], combo[1], combo[2], combo[3], self.indexes[0], self.indexes[1])
     # here I left the transposition, because of self.
 
     # those indexes are usefull to access 'Atomically'(one at a time) every element in net_delta_view
     # that needs to be modified
     # Here, I can't do anything for now, since every image has its own indexes
-    for i, j, k, l, m, o in zip(combo[0], combo[1], combo[2], combo[3], self.indexes[0], self.indexes[1]):
-      net_delta_view[i, j, k, l, m, o] += self.delta[i, j, k, l]
+    for i, j, k, l, m, n in combo:
+      net_delta_view[i, j, k, l, m, n] += self.delta[i, j, k, l]
 
     # Here delta is correctly modified
     if self.pad:
