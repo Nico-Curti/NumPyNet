@@ -196,7 +196,7 @@ class Image (object):
     '''
     Add alpha channel to the original image
     '''
-    cv2.cvtColor(self._data, cv2.COLOR_RGB2RGBA)
+    self._data = cv2.cvtColor(self._data, cv2.COLOR_RGB2RGBA)
     return self
 
 

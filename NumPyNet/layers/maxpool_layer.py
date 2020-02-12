@@ -214,16 +214,15 @@ class Maxpool_layer(object):
     # Create every possibile combination of index for the first four dimensions of
     # a six dimensional array
     b, w, h, c = self.output.shape
+
     combo = itertools.product(range(b), range(w), range(h), range(c))
-    combo = np.asarray(list(combo)).T
-    combo = zip(combo[0], combo[1], combo[2], combo[3], self.indexes[0], self.indexes[1])
     # here I left the transposition, because of self.
 
     # those indexes are usefull to access 'Atomically'(one at a time) every element in net_delta_view
     # that needs to be modified
     # Here, I can't do anything for now, since every image has its own indexes
-    for i, j, k, l, m, n in combo:
-      net_delta_view[i, j, k, l, m, n] += self.delta[i, j, k, l]
+    for (i, j, k, l), m, o in zip(combo, self.indexes[0], self.indexes[1]):
+      net_delta_view[i, j, k, l, m, o] += self.delta[i, j, k, l]
 
     # Here delta is correctly modified
     if self.pad:

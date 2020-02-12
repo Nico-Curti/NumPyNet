@@ -42,7 +42,7 @@ class DataGenerator (object):
       if not os.path.exists(source_path):
         raise ValueError('Source path does not exist')
 
-      source_files = glob(source_path + '/*{}'.format(source_extension))
+      source_files = sorted(glob(source_path + '/*{}'.format(source_extension)))
 
     else:
 
@@ -56,7 +56,7 @@ class DataGenerator (object):
       if not os.path.exists(label_path):
         raise ValueError('Labels path does not exist')
 
-      label_files = glob(label_path  + '/*{}'.format(label_extension))
+      label_files = sorted(glob(label_path  + '/*{}'.format(label_extension)))
       label_files = np.asarray(label_files)
 
     elif label_file is not None:
@@ -87,6 +87,9 @@ class DataGenerator (object):
     self._stopped = False
     self._data, self._label = (None, None)
 
+  @property
+  def num_data(self):
+    return self._num_data
 
   def _randomize (self, source, label=None):
     '''

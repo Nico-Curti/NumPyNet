@@ -208,10 +208,10 @@ class Avgpool_layer(object):
     # modifing the same memory address more times at once doesn't produce the correct result
 
 #    norm = 1. / (kx*ky)
-
+    norm = self.delta * (1. / np.count_nonzero(~np.isnan(net_delta_view), axis=(4, 5)))
     for b, i, j, k in combo:
-      norm = 1./ np.count_nonzero(~np.isnan(net_delta_view[b, i, j, k, :])) # this only counts non nan values for norm
-      net_delta_view[b, i, j, k, :] += self.delta[b, i, j, k] * norm
+      #norm = np.count_nonzero(~np.isnan(net_delta_view[b, i, j, k, :])) # this only counts non nan values for norm
+      net_delta_view[b, i, j, k, :] += norm[b, i, j, k]
 
 #    net_delta_view *= norm
 

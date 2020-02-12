@@ -4,12 +4,8 @@
 from __future__ import print_function
 
 __package__ = "build_numpynet"
-
-__author__  = ['Mattia Ceccarelli',
-               'Nico Curti']
-
-__email__ = [ 'mattia.ceccarelli3@studio.unibo.it'
-              'nico.curit2@unibo.it']
+__author__  = ['Mattia Ceccarelli', 'Nico Curti']
+__email__ = [ 'mattia.ceccarelli3@studio.unibo.it', 'nico.curit2@unibo.it']
 
 def get_requires (requirements_filename):
   """
