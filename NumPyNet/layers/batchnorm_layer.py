@@ -169,7 +169,7 @@ class BatchNorm_layer(object):
     Parameters:
       optimizer : Optimizer object
     '''
-    print('\n', self.bias.shape, '\n')
+
     self.bias, self.scales = self.optimizer.update(params=[self.bias, self.scales],
                                                    gradients=[self.bias_updates, self.scales_updates]
                                                   )

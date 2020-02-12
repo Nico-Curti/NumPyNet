@@ -278,14 +278,15 @@ class Convolutional_layer(object):
 
     # to access every pixel one at a time I need to create every combinations of indexes
     b, w, h, kx, ky, c = delta_view.shape
-    combo = itertools.product(range(b), range(w), range(h) , range(kx), range(ky), range(c))
+    combo = itertools.product(range(w), range(h))
 
     # Actual operation to be performed, it's basically the convolution of self.delta with weights.transpose
+    # operator = np.einsum('ijkl, mnol -> ijkmno', self.delta, self.weights) # original
     operator = np.einsum('ijkl, mnol -> ijkmno', self.delta, self.weights)
 
-    # Atomically modify , really slow as for maxpool and avgpool
-    for i, j, k, l, m, n in combo:
-      delta_view[i, j, k, l, m, n] += operator[i, j, k, l, m, n]
+    # Atomically modify, really slow as for maxpool and avgpool
+    for j, k in combo:
+      delta_view[:, j, k, :] += operator[:, j, k, :]
 
     # Here delta is updated correctly
     if self.pad :

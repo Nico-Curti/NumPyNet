@@ -125,14 +125,14 @@ if __name__ == '__main__':
   tic = time()
   model.fit(X=X_train, y=y_train, max_iter=10)
   toc = time()
-  train_time = toc-tic
+  train_time = toc - tic
 
   print('\n***********END TRAINING**************\n')
 
   # Test the prediction with timing
-  tic = time()
+  tic  = time()
   out2 = model.predict(X=X_test)
-  toc = time()
+  toc  = time()
   test_time = toc - tic
 
   predicted2 = out2.argmax(axis=3).ravel()

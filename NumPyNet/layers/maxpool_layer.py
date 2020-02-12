@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import itertools
+from time import time as now
 
 import numpy as np
 from NumPyNet.exception import LayerError
@@ -96,21 +97,21 @@ class Maxpool_layer(object):
       size  : a tuple indicating the horizontal and vertical size of the kernel
       stride: a tuple indicating the horizontal and vertical steps of the kernel
     '''
-    batch_stride, s0, s1 = inpt.strides[:3]
-    batch,        w,  h  = inpt.shape[:3]
-    kx, ky     = size
-    st1, st2   = stride
+    batch_stride, s0, s1, s3 = inpt.strides
+    batch, w, h, c = inpt.shape
+    kx, ky   = size
+    st1, st2 = stride
 
     out_w = 1 + (w - kx)//st1
     out_h = 1 + (h - ky)//st2
 
     # Shape of the final view
-    view_shape = (batch, out_w , out_h) + inpt.shape[3:] + (kx, ky)
+    view_shape = (batch, out_w , out_h, c) + (kx, ky)
 
     # strides of the final view
-    strides = (batch_stride, st1 * s0, st2 * s1) + inpt.strides[3:] + (s0, s1)
+    strides = (batch_stride, s0*st1, s1*st2, s3) + (s0, s1)
 
-    subs = np.lib.stride_tricks.as_strided(inpt, view_shape, strides = strides)
+    subs = np.lib.stride_tricks.as_strided(inpt, view_shape, strides=strides)
     return subs
 
   def _evaluate_padding(self):
@@ -176,18 +177,16 @@ class Maxpool_layer(object):
     # Return a strided view of the input array, shape: (batch, 1+(w-kx)//st1,1+(h-ky)//st2 ,c, kx, ky)
     view = self._asStride(mat_pad, self.size, self.stride)
 
-    self.output = np.nanmax(view, axis=(4, 5)) # final shape (batch, out_w, out_h, c)
+    self.output = np.nanmax(view, axis=(4,5)) # final shape (batch, out_w, out_h, c)
 
-    # New shape for view, to access the single sub matrix and retrieve couples of indexes
-    new_shape = (np.prod(view.shape[:-2]), view.shape[-2], view.shape[-1])
+    # New shape for view, to retrieve indexes
+    new_shape = view.shape[:4] + (kx*ky, )
 
-    # Retrives a tuple of indexes (x,y) for every sub-matrix of the view array, that indicates
-    # where the maximum value is.
-    # In the loop I change the shape of view in order to have access to its last 2 dimension with r.
-    # r take the values of every sub matrix
-    self.indexes = [np.unravel_index(np.nanargmax(r), r.shape) for r in view.reshape(new_shape)]
-    self.indexes = np.asarray(self.indexes).T
-    self.delta = np.zeros(shape=self.out_shape, dtype=float)
+    self.indexes = np.nanargmax(view.reshape(new_shape), axis=4)
+    self.indexes = np.unravel_index(self.indexes.ravel(), shape=(kx, ky))
+
+    # self.indexes = np.asarray(self.indexes).T
+    self.delta   = np.zeros(shape=self.out_shape, dtype=float)
 
 
   def backward(self, delta):
@@ -208,19 +207,20 @@ class Maxpool_layer(object):
       mat_pad = delta
 
     # Create a view of net delta, following the padding true or false
-    net_delta_view = self._asStride(mat_pad, self.size, self.stride) #that is a view on mat_pad
+    net_delta_view = self._asStride(mat_pad, self.size, self.stride) # that is a view on mat_pad
 
     # Create every possibile combination of index for the first four dimensions of
     # a six dimensional array
     b, w, h, c = self.output.shape
     combo = itertools.product(range(b), range(w), range(h), range(c))
     combo = np.asarray(list(combo)).T
-    # here I left the transposition, because of self.indexes
+    # here I left the transposition, because of self.
 
-    # those indexes are usefull to acces 'Atomically'(one at a time) every element in net_delta_view
+    # those indexes are usefull to access 'Atomically'(one at a time) every element in net_delta_view
     # that needs to be modified
-    for b, i, j, k, x, y in zip(combo[0], combo[1], combo[2], combo[3], self.indexes[0], self.indexes[1]):
-      net_delta_view[b, i, j, k, x, y] += self.delta[b, i, j, k]
+    # Here, I can't do anything for now, since every image has its own indexes
+    for i, j, k, l, m, o in zip(combo[0], combo[1], combo[2], combo[3], self.indexes[0], self.indexes[1]):
+      net_delta_view[i, j, k, l, m, o] += self.delta[i, j, k, l]
 
     # Here delta is correctly modified
     if self.pad:
@@ -239,7 +239,7 @@ if __name__ == '__main__':
   img_2_float = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 1.)).astype(float)
   float_2_img = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 255.)).astype(np.uint8)
 
-  filename = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'dog.jpg')
+  filename = os.path.join(os.path.dirname('__file__'), '..', '..', 'data', 'dog.jpg')
   inpt = np.asarray(Image.open(filename), dtype=float)
   inpt.setflags(write=1)
   inpt = img_2_float(inpt)
@@ -256,9 +256,8 @@ if __name__ == '__main__':
   # FORWARD
 
   layer.forward(inpt)
-  forward_out = layer.output
 
-  print(layer) # after the forward, to load all the variable
+  forward_out = layer.output
 
   # BACKWARD
 

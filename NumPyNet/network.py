@@ -8,6 +8,8 @@ from __future__ import print_function
 import os
 import re
 import pickle
+from copy import copy
+
 import numpy as np
 from time import time as now
 
@@ -265,7 +267,7 @@ class Network(object):
     for layer in self:
 
       if hasattr(layer, 'optimizer'):
-        layer.optimizer = optimizer
+        layer.optimizer = copy(optimizer)
 
   def fit(self, X, y, max_iter=100, shuffle=True):
     '''
