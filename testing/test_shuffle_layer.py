@@ -4,8 +4,8 @@
 from __future__ import division
 from __future__ import print_function
 
-import keras.backend as K
 import tensorflow as tf
+import tensorflow.keras.backend as K
 
 from NumPyNet.layers.shuffler_layer import Shuffler_layer
 

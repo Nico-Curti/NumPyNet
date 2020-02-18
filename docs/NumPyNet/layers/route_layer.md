@@ -1,4 +1,4 @@
-### Route Layer
+# Route Layer
 
 In the YOLOv3 model, the Route layer is usefull to bring finer grained features in from earlier in the network.
 This mean that its main function is to recover output from previous layer in the network and bring them forward, avoiding all the in-between processes.
@@ -39,7 +39,8 @@ layer.backward(delta=delta, network=model)
 Of course, there are smarter ways of using this layer, as demostrated by YOLOv3.
 The parameter `by_channels` determines `self.axis` (if True is 3, else is 0), to perfmorm the correct concatenation.
 
-In particular, those are the definitions of the `forward` and `backward` functions in NumPyNet:
+In particular, those are the definitions of the `forward` and `backward` functions in `NumPyNet`:
+
 ```python
 def forward(self, network):
 	'''
@@ -55,8 +56,8 @@ def forward(self, network):
 
 Where `self.input_layers` is the list of indexes at which the chosen layers are located in the network (starting at 1, since 0 is always an [Input Layer](./input_layer.md)). As you can see, is a simple concatenation by the correct axis.
 
-
 And this is the definition of `backward`:
+
 ```python
 def backward(self, delta, network):
 	'''

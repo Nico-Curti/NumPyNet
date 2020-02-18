@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from __future__ import division
 from __future__ import print_function
 
 import numpy as np
 from NumPyNet.exception import LayerError
+from NumPyNet.utils import check_is_fitted
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'L2Normalization Layer'
 
 
 class L2Norm_layer(object):
@@ -60,6 +59,8 @@ class L2Norm_layer(object):
     self.scales = (1. - self.output) * norm
     self.delta  = np.zeros(shape=self.out_shape, dtype=float)
 
+    return self
+
   def backward(self, delta, copy=False):
     '''
     Compute the backward of the l2norm layer
@@ -68,8 +69,12 @@ class L2Norm_layer(object):
       delta : global error to be backpropagated
     '''
 
+    check_is_fitted(self, 'delta')
+
     self.delta += self.scales
     delta[:]   += self.delta
+
+    return self
 
 
 if __name__ == '__main__':

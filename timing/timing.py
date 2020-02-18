@@ -10,10 +10,8 @@ import numpy as np
 import pandas as pd
 from time import time as now
 
-
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Timing layer functions'
 
 NUM_REPEATS = 10
 NUMBER = 100

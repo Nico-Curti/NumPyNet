@@ -1,19 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from __future__ import division
 from __future__ import print_function
 
 from NumPyNet.activations import Activations
 from NumPyNet.utils import _check_activation
+from NumPyNet.utils import check_is_fitted
 
 import numpy as np
 from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Connected Layer'
 
 
 class Connected_layer(object):
@@ -135,6 +134,8 @@ class Connected_layer(object):
     self.output = self.activation(z, copy=copy).reshape(-1, 1, 1, self.outputs)
     self.delta  = np.zeros(shape=self.out_shape, dtype=float)
 
+    return self
+
   def backward(self, inpt, delta=None, copy=False):
     '''
     Backward function of the connected layer, updates the global delta of the
@@ -146,6 +147,8 @@ class Connected_layer(object):
       copy  : boolean, states if the activation function have to return a copy of the
             input or not.
     '''
+
+    check_is_fitted(self, 'delta')
 
     # reshape to (batch , w * h * c)
     inpt = inpt.reshape(inpt.shape[0], -1)
@@ -167,6 +170,8 @@ class Connected_layer(object):
       # delta_shaped[:] += self.delta @ self.weights.transpose()')  # I can modify delta using its view
       delta_shaped[:] += np.dot(self.delta, self.weights.transpose())
 
+    return self
+
   def update(self):
     '''
     update function for the convolution layer
@@ -174,10 +179,13 @@ class Connected_layer(object):
     Parameters:
       optimizer : Optimizer object
     '''
+    check_is_fitted(self, 'delta')
+
     self.bias, self.weights = self.optimizer.update(params=[self.bias, self.weights],
                                                     gradients=[self.bias_update, self.weights_update]
                                                    )
 
+    return self
 
 if __name__ == '__main__':
 

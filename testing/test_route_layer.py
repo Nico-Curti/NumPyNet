@@ -4,12 +4,12 @@
 from __future__ import division
 from __future__ import print_function
 
-from keras.models import Model
-from keras.layers import Concatenate
-from keras.layers import Activation
-from keras.layers import Input
-from keras.optimizers import SGD as K_SGD
-import keras.backend as K
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Concatenate
+from tensorflow.keras.layers import Activation
+from tensorflow.keras.layers import Input
+from tensorflow.keras.optimizers import SGD as K_SGD
+import tensorflow.keras.backend as K
 
 from NumPyNet.layers.route_layer import Route_layer
 from NumPyNet.layers.activation_layer import Activation_layer
@@ -41,7 +41,7 @@ def test_route_layer():
   input = np.random.uniform(low=-10, high=10. ,size=(batch, w, h, c)) # from -10 to 10 to see both the effect of Relu and TanH activation
 
   # init keras model
-  inp    = Input(shape=(w, h, c), batch_shape=(batch, w, h, c))
+  inp    = Input(batch_shape=(batch, w, h, c))
   x      = Activation(activation='relu')(inp)
   y      = Activation(activation='tanh')(x)
   Concat = Concatenate( axis=-1)([x, y]) # concatenate of x and y

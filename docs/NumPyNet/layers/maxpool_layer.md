@@ -1,19 +1,18 @@
-### Max Pooling Layer
+# Max Pooling Layer
 
 In general, Pooling layers execute some kind of down-sample operations. The algorithm is the same as for average pool layer: a kernel of size *k* is slided over the images of the batch, and for every window a certain function is computed.
 In this case the output will be the maximum value between the pixel of the same window.
 In the animation below an example of the output
 
-![](../images/maxpool.gif)
-*Fig: maxpooling example of a 4 x 4 x 1 image, with kernel size k = 2, orizontal and vertical stride s = 2*
+![Maxpooling example of a 4 x 4 x 1 image, with kernel size k = 2, orizontal and vertical stride s = 2](../images/maxpool.gif)
 
 In case the combination of kernel size, stride and image dimension doesn't allow all rows and columns to be in a window, the picture can be padded: this means that a certain number of rows/columns are added to every images in the batch. (nan values)
 
 The output dimensions depend from the original image, kernel, stride and pad values, in particular:
 
-<a href="https://www.codecogs.com/eqnedit.php?latex=out\_width&space;=&space;\lfloor&space;\frac{width&space;&plus;&space;pad\_w&space;-&space;k}{stride}&space;\rfloor&space;&plus;&space;1" target="_blank"><img src="https://latex.codecogs.com/gif.latex?out\_width&space;=&space;\lfloor&space;\frac{width&space;&plus;&space;pad\_w&space;-&space;k}{stride}&space;\rfloor&space;&plus;&space;1" title="out\_width = \lfloor \frac{width + pad\_w - k}{stride} \rfloor + 1" /></a>
+![](https://latex.codecogs.com/gif.latex?out\_width&space;=&space;\lfloor&space;\frac{width&space;&plus;&space;pad\_w&space;-&space;k}{stride}&space;\rfloor&space;&plus;&space;1)
 
-<a href="https://www.codecogs.com/eqnedit.php?latex=out\_height&space;=&space;\lfloor&space;\frac{height&space;&plus;&space;pad\_h&space;-&space;k}{stride}&space;\rfloor&space;&plus;&space;1" target="_blank"><img src="https://latex.codecogs.com/gif.latex?out\_height&space;=&space;\lfloor&space;\frac{height&space;&plus;&space;pad\_h&space;-&space;k}{stride}&space;\rfloor&space;&plus;&space;1" title="out\_height = \lfloor \frac{height + pad\_h - k}{stride} \rfloor + 1" /></a>
+![](https://latex.codecogs.com/gif.latex?out\_height&space;=&space;\lfloor&space;\frac{height&space;&plus;&space;pad\_h&space;-&space;k}{stride}&space;\rfloor&space;&plus;&space;1)
 
 And the output shape will be `(batch, out_width, out_height, c )`.
 
@@ -22,8 +21,7 @@ Usually, Pooling layers are used to avoid the problem of sensitiveness to featur
 In the image below, we show some examples of the effect of differnet kernel (size, stride) on the input image.
 
 ![](../images/maxpool_3_2.png)
-![](../images/maxpool_30_20.png)
-*Fig. : Effects of maxpooling the same image with differents size/stride. From above: kernel size = 3, stride = 2, and size = 30, stride = 20*
+![Effects of maxpooling the same image with differents size/stride. From above: kernel size = 3, stride = 2, and size = 30, stride = 20](../images/maxpool_30_20.png)
 
 In the example code below we show how to use the single layer:
 

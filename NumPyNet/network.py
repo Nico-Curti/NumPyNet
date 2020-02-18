@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from __future__ import division
 from __future__ import print_function
 
@@ -41,7 +40,6 @@ from NumPyNet.exception import NetworkError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Network model'
 
 
 class Network(object):
@@ -293,7 +291,7 @@ class Network(object):
         input = X[idx, ...]
         truth = y[idx, ...]
 
-        out = self._forward(X=input, truth=truth)
+        _ = self._forward(X=input, truth=truth)
         self._backward(X=input)
 
         loss += self._get_loss() / len(idx)
@@ -454,8 +452,6 @@ class Network(object):
 
 
 if __name__ == '__main__':
-
-  import os
 
   batch = 32
   w, h, c = (512, 512, 3)

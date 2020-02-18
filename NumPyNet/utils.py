@@ -7,10 +7,11 @@ from __future__ import print_function
 from NumPyNet import activations
 from inspect import isclass
 import numpy as np
+from NumPyNet.exception import NotFittedError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Utilities'
+
 
 def _check_activation (layer, activation_func):
   '''
@@ -70,6 +71,33 @@ def _check_activation (layer, activation_func):
     raise ValueError('{0}: incorrect value of Activation Function given'.format(class_name))
 
   return activation
+
+
+def check_is_fitted (obj, variable='delta'):
+  '''
+  Check if for the current layer is available the backward function.
+
+  Parameters
+  ----------
+    obj : layer type
+      The object used as self
+
+    variable : str
+      The variable name which allows the backward status if it is not None
+
+  Note
+  ----
+    The backward function can be used ONLY after the forward procedure.
+    This function allows to check if the forward function has been already applied.
+  '''
+
+  fitted_var = getattr(obj, variable)
+
+  if fitted_var is None:
+    raise NotFittedError('This layer instance is not fitted yet. Call "forward" with appropriate arguments before using its backward function.')
+
+  else:
+    return True
 
 
 def print_statistics (arr):

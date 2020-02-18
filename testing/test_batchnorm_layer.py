@@ -4,13 +4,13 @@
 from __future__ import division
 from __future__ import print_function
 
-from keras.models import Model
-from keras.layers import Input
-import keras.backend as K
 import tensorflow as tf
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input
+import tensorflow.keras.backend as K
 
 from NumPyNet.layers.batchnorm_layer import BatchNorm_layer
-from keras.layers import BatchNormalization
+from tensorflow.keras.layers import BatchNormalization
 
 import numpy as np
 from hypothesis import strategies as st
@@ -41,8 +41,8 @@ def test_batchnorm_layer(b, w, h, c):
 
   inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
 
-  bias   = np.random.uniform(low=0., high=1., size=(w,h,c)) # random biases
-  scales = np.random.uniform(low=0., high=1., size=(w,h,c)) # random scales
+  bias   = np.random.uniform(low=0., high=1., size=(w, h, c)) # random biases
+  scales = np.random.uniform(low=0., high=1., size=(w, h, c)) # random scales
 
   # Numpy_net model
   numpynet = BatchNorm_layer(scales=scales, bias=bias)
@@ -61,7 +61,7 @@ def test_batchnorm_layer(b, w, h, c):
     return inpt.var(axis=0)
 
   # Keras Model
-  inp = Input(shape = (b,w,h,c))
+  inp = Input(batch_shape=inpt.shape)
   x = BatchNormalization(momentum=1., epsilon=1e-8, center=True, scale=True,
                          axis=-1,
                          beta_initializer=bias_init,
@@ -71,7 +71,7 @@ def test_batchnorm_layer(b, w, h, c):
   model = Model(inputs=[inp], outputs=x)
 
   # Keras forward
-  forward_out_keras = model.predict(np.expand_dims(inpt,axis=0))[0, :, :, :, :]
+  forward_out_keras = model.predict(inpt)[0, ...]
 
   numpynet.forward(inpt)
   forward_out_numpynet = numpynet.output

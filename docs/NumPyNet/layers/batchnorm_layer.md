@@ -1,4 +1,4 @@
-### Batch Normalization Layer
+# Batch Normalization Layer
 
 Batch Normalization is the operation that involves the normalization of every feature (pixel) along the batch axis.
 
@@ -6,21 +6,10 @@ The layer has been implemented following the original paper [Batch Normalization
 
 According to the paper, if x<sub>i</sub> is the value of the x pixel in the i-th image of the batch, where i range from 1 to `batch_size`, then the forward pass look as follow:
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=\bar&space;x&space;=\frac{1}{batch\_size}&space;\sum_{i=0}^{batch\_size}x_i" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\bar&space;x&space;=\frac{1}{batch\_size}&space;\sum_{i=0}^{batch\_size}x_i" title="\bar x =\frac{1}{batch\_size} \sum_{i=0}^{batch\_size}x_i" /></a>
-</p>
-
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=\sigma^2&space;=&space;\frac{1}{batch\_size}\sum_{i=1}^{batch\_size}(x_i-\bar&space;x)^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\sigma^2&space;=&space;\frac{1}{batch\_size}\sum_{i=1}^{batch\_size}(x_i-\bar&space;x)^2" title="\sigma^2 = \frac{1}{batch\_size}\sum_{i=1}^{batch\_size}(x_i-\bar x)^2" /></a>
-</p>
-
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=\hat&space;x_i&space;=&space;\frac{(x_i&space;-\bar&space;x)^2}{\sqrt{\sigma^2&space;&plus;&space;\epsilon}}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\hat&space;x_i&space;=&space;\frac{(x_i&space;-\bar&space;x)^2}{\sqrt{\sigma^2&space;&plus;&space;\epsilon}}" title="\hat x_i = \frac{(x_i -\bar x)^2}{\sqrt{\sigma^2 + \epsilon}}" /></a>
-</p>
-
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=y_i&space;=&space;\gamma&space;\hat&space;x_i&space;&plus;&space;\beta" target="_blank"><img src="https://latex.codecogs.com/gif.latex?y_i&space;=&space;\gamma&space;\hat&space;x_i&space;&plus;&space;\beta" title="y_i = \gamma \hat x_i + \beta" /></a>
-</p>
+![](https://latex.codecogs.com/gif.latex?\bar&space;x&space;=\frac{1}{batch\_size}&space;\sum_{i=0}^{batch\_size}x_i)
+![](https://latex.codecogs.com/gif.latex?\sigma^2&space;=&space;\frac{1}{batch\_size}\sum_{i=1}^{batch\_size}(x_i-\bar&space;x)^2)
+![](https://latex.codecogs.com/gif.latex?\hat&space;x_i&space;=&space;\frac{(x_i&space;-\bar&space;x)^2}{\sqrt{\sigma^2&space;&plus;&space;\epsilon}})
+![](https://latex.codecogs.com/gif.latex?y_i&space;=&space;\gamma&space;\hat&space;x_i&space;&plus;&space;\beta)
 
 Where y_i is the x pixel normalized, rescaled and shifted of the i-th image in the batch, and &epsilon; is a (very small) constant, to avoid division by zero.
 
@@ -28,21 +17,13 @@ On the other hand, the backward is slightly more complicated, since we have to d
 
 The two updates are computed as:
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=\delta&space;\beta&space;=&space;\sum_{i=0}^{batch\_size}&space;\delta_i^l" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\delta&space;\beta&space;=&space;\sum_{i=0}^{batch\_size}&space;\delta_i^l" title="\delta \beta = \sum_{i=0}^{batch\_size} \delta_i^l" /></a>
-</p>
-
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=\delta&space;\gamma&space;=&space;\sum_{i=0}^{batch\_size}&space;\delta_i^l&space;\cdot&space;\hat&space;x_i" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\delta&space;\gamma&space;=&space;\sum_{i=0}^{batch\_size}&space;\delta_i^l&space;\cdot&space;\hat&space;x_i" title="\delta \gamma = \sum_{i=0}^{batch\_size} \delta_i^l \cdot \hat x_i" /></a>
-<p>
+![](https://latex.codecogs.com/gif.latex?\delta&space;\beta&space;=&space;\sum_{i=0}^{batch\_size}&space;\delta_i^l)
+![](https://latex.codecogs.com/gif.latex?\delta&space;\gamma&space;=&space;\sum_{i=0}^{batch\_size}&space;\delta_i^l&space;\cdot&space;\hat&space;x_i)
 
 Where &delta;<sup>l</sup> is the error passed from the next layer.
 And the formula for the error to be back-propagated &delta;<sup>l-1</sup> is :
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=\delta^{l-1}_i&space;=&space;\frac{batch\_size&space;\cdot&space;\delta&space;\hat&space;x_i&space;-&space;\sum_{j=0}^{batch\_size}\delta&space;\hat&space;x_j&space;-&space;\hat&space;x_i&space;\cdot&space;\sum_{j=0}^{batch\_size}\delta&space;\hat&space;x_j&space;\cdot&space;\hat&space;x_j}{batch\_size&space;\cdot&space;\sqrt{\sigma^2&space;&plus;&space;\epsilon}}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\delta^{l-1}_i&space;=&space;\frac{batch\_size&space;\cdot&space;\delta&space;\hat&space;x_i&space;-&space;\sum_{j=0}^{batch\_size}\delta&space;\hat&space;x_j&space;-&space;\hat&space;x_i&space;\cdot&space;\sum_{j=0}^{batch\_size}\delta&space;\hat&space;x_j&space;\cdot&space;\hat&space;x_j}{batch\_size&space;\cdot&space;\sqrt{\sigma^2&space;&plus;&space;\epsilon}}" title="\delta^{l-1}_i = \frac{batch\_size \cdot \delta \hat x_i - \sum_{j=0}^{batch\_size}\delta \hat x_j - \hat x_i \cdot \sum_{j=0}^{batch\_size}\delta \hat x_j \cdot \hat x_j}{batch\_size \cdot \sqrt{\sigma^2 + \epsilon}}" />
-</a>
-</p>
+![](https://latex.codecogs.com/gif.latex?\delta^{l-1}_i&space;=&space;\frac{batch\_size&space;\cdot&space;\delta&space;\hat&space;x_i&space;-&space;\sum_{j=0}^{batch\_size}\delta&space;\hat&space;x_j&space;-&space;\hat&space;x_i&space;\cdot&space;\sum_{j=0}^{batch\_size}\delta&space;\hat&space;x_j&space;\cdot&space;\hat&space;x_j}{batch\_size&space;\cdot&space;\sqrt{\sigma^2&space;&plus;&space;\epsilon}})
 
 Where &delta;&gamma;, &delta;&beta; etc are the derivatives of `y` with the correspondent variable.
 For an in details derivation, check the paper we linked above or [this very clear blog](https://kevinzakka.github.io/2016/09/14/batch_normalization).
@@ -171,5 +152,5 @@ def backward(self, delta=None):
 Here every single step of the derivation is computed singularly:
 
   * compute bias and scales updates as described above
-  * <a href="https://www.codecogs.com/eqnedit.php?latex=\delta&space;\hat&space;x" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\delta&space;\hat&space;x" title="\delta \hat x" /></a> is computed modifying directly the variable &delta;
+  * ![](https://latex.codecogs.com/gif.latex?\delta&space;\hat&space;x) is computed modifying directly the variable &delta;
   * then with the derivatives w. r. t. the mean and to the variance are used to compute the delta to be backpropagated

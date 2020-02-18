@@ -4,12 +4,12 @@
 from __future__ import division
 from __future__ import print_function
 
-from keras.models import Model
-from keras.layers import Input
-import keras.backend as K
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input
+import tensorflow.keras.backend as K
 
 from NumPyNet.layers.avgpool_layer import Avgpool_layer
-from keras.layers import AvgPool2D
+from tensorflow.keras.layers import AvgPool2D
 
 import numpy as np
 from hypothesis import strategies as st
@@ -47,7 +47,7 @@ def test_avgpool_layer(batch, w, h, c, size, stride, pad):
     keras_pad = 'valid'
 
   # Keras model initialization.
-  inp = Input(shape=(w, h, c), batch_shape=inpt.shape)
+  inp = Input(batch_shape=inpt.shape)
   x = AvgPool2D(pool_size=size, strides=stride, padding=keras_pad)(inp)
   model = Model(inputs=[inp], outputs=x)
 

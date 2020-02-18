@@ -4,19 +4,19 @@
 from __future__ import division
 from __future__ import print_function
 
-from keras.models import Model
-from keras.layers import Input
-from keras.layers import Activation
-import keras.backend as K
 import tensorflow as tf
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input
+from tensorflow.keras.layers import Activation
+import tensorflow.keras.backend as K
 
 from NumPyNet.layers import cost_layer as cl
 from NumPyNet.layers.cost_layer import Cost_layer
 
-from keras.losses import mean_squared_error
-from keras.losses import mean_absolute_error
-from keras.losses import logcosh
-from keras.losses import hinge
+from tensorflow.keras.losses import mean_squared_error
+from tensorflow.keras.losses import mean_absolute_error
+from tensorflow.keras.losses import logcosh
+from tensorflow.keras.losses import hinge
 
 import numpy as np
 

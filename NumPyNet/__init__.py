@@ -20,12 +20,14 @@ from . import rnn_utils
 from .utils import print_statistics
 from .video import VideoCapture
 
-__all__ = ['NumPyNet']
+from .__version__ import __version__
 
-__package__ = 'NumPyNet'
 __author__  = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 # aliases
 
 Model = Network
+
+# define FMATH
+ENABLE_FMATH = False

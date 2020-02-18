@@ -1,18 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from __future__ import division
 from __future__ import print_function
 
-import itertools
-
 import numpy as np
 from NumPyNet.exception import LayerError
+from NumPyNet.utils import check_is_fitted
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Yolo Layer'
 
 # Reference: https://github.com/experiencor/keras-yolo3/blob/master/yolo.py
 
@@ -89,7 +86,7 @@ class Yolo_layer(object):
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
     if not self.trainable:
-      return
+      return self
 
 
 
@@ -217,10 +214,16 @@ class Yolo_layer(object):
 
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
+    return self
+
   def backward(self, delta):
     '''
     '''
+    check_is_fitted(self, 'delta')
+
     delta[:] += self.delta
+
+    return self
 
   def num_detections(self, thresh):
     '''

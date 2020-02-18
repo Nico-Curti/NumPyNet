@@ -1,35 +1,25 @@
-#### Connected Layer
+# Connected Layer
 
 The connected layer, or dense layer, is the single matrix operation performed by a layer of a Fully Connected Neural Network.
 Given a batch of images arranged in a matrix *X* of shape (batch, image_size) and given the set of trainable weights *W* of shape (image_size, output_size) and the bias vector *b* of shape (output_size), the connected layer computes the linear operation:
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=z&space;=&space;XW&space;&plus;&space;b" target="_blank"><img src="https://latex.codecogs.com/gif.latex?z&space;=&space;XW&space;&plus;&space;b" title="z = XW + b" /></a>
-</p>
+![](https://latex.codecogs.com/gif.latex?z&space;=&space;XW&space;&plus;&space;b)
 
 To develop non-linearity and improve the learning capabilities of the layer, `z` is "activated" by an activation function, so that the final output of the layer will be:
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=y&space;=&space;f(z)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?y&space;=&space;f(z)" title="y = f(z)" /></a>
-</p>
+![](https://latex.codecogs.com/gif.latex?y&space;=&space;f(z))
 
 Tha backward function computes the updates for weights and bias and the error to be backpropagated, following the rules descripted in the backpropation algorithm, if `f` is the activation function:
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=\delta&space;\beta&space;=&space;\sum_{i=0}^{batch\_size}\frac{\partial&space;f(y)}{\partial&space;y_i}&space;\odot&space;\delta_i^l" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\delta&space;\beta&space;=&space;\sum_{i=0}^{batch\_size}\frac{\partial&space;f(y)}{\partial&space;y_i}&space;\odot&space;\delta_i^l" title="\delta \beta = \sum_{i=0}^{batch\_size}\frac{\partial f(y)}{\partial y_i} \odot \delta_i^l" /></a>
-</p>
+![](https://latex.codecogs.com/gif.latex?\delta&space;\beta&space;=&space;\sum_{i=0}^{batch\_size}\frac{\partial&space;f(y)}{\partial&space;y_i}&space;\odot&space;\delta_i^l)
 
 of dimension `(outputs,)`
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=\delta&space;W&space;=&space;\delta&space;W&space;&plus;&space;X^T&space;\cdot&space;(\frac{\partial&space;f(y)}{\partial&space;y}&space;\odot&space;\delta^l&space;)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\delta&space;W&space;=&space;\delta&space;W&space;&plus;&space;X^T&space;\cdot&space;(\frac{\partial&space;f(y)}{\partial&space;y}&space;\odot&space;\delta^l&space;)" title="\delta W = \delta W + X^T \cdot (\frac{\partial f(y)}{\partial y} \odot \delta^l )" /></a>
-</p>
+![](https://latex.codecogs.com/gif.latex?\delta&space;W&space;=&space;\delta&space;W&space;&plus;&space;X^T&space;\cdot&space;(\frac{\partial&space;f(y)}{\partial&space;y}&space;\odot&space;\delta^l&space;))
 
 of dimension `(inputs, outputs)`.
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=\delta^{l-1}&space;=&space;(\frac{\partial&space;f(y)}{\partial&space;y}\odot&space;\delta^l)&space;\cdot&space;W^T" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\delta^{l-1}&space;=&space;(\frac{\partial&space;f(y)}{\partial&space;y}\odot&space;\delta^l)&space;\cdot&space;W^T" title="\delta^{l-1} = (\frac{\partial f(y)}{\partial y}\odot \delta^l) \cdot W^T" /></a>
-</p>
+![](https://latex.codecogs.com/gif.latex?\delta^{l-1}&space;=&space;(\frac{\partial&space;f(y)}{\partial&space;y}\odot&space;\delta^l)&space;\cdot&space;W^T)
 
 of dimension `(batch, width, height, channels)`
 
@@ -75,7 +65,7 @@ layer.backward(inpt=input, delta=delta, copy=False)
 # now net_delta is modified and ready to be passed to the previous layer.delta
 # and also the updates for weights and bias are computed in the backward
 
-# update of the trainable weights 
+# update of the trainable weights
 layer.update(momentum=0., decay=0., lr=1e-2, lr_decay=1.)
 
 ```

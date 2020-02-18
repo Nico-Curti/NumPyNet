@@ -8,14 +8,13 @@ import itertools
 
 from NumPyNet.activations import Activations
 from NumPyNet.utils import _check_activation
+from NumPyNet.utils import check_is_fitted
 
 import numpy as np
 from NumPyNet.exception import LayerError
 
-
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Convolutional layer'
 
 
 class Convolutional_layer(object):
@@ -256,6 +255,8 @@ class Convolutional_layer(object):
     self.output = self.activation(z, copy=copy) # (batch, out_w, out_h, out_c)
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
+    return self
+
   def backward(self, delta, copy=False):
     '''
     Backward function of the Convolutional layer
@@ -266,6 +267,7 @@ class Convolutional_layer(object):
       copy : bool, specifies if the gradient of the activation functions needs to
         return a copy of its input
     '''
+    check_is_fitted(self, 'delta')
 
     # delta padding to match dimension with padded input when computing the view
     if self.pad:
@@ -302,6 +304,8 @@ class Convolutional_layer(object):
     else  :
       delta[:] = mat_pad
 
+    return self
+
 
   def update(self):
     '''
@@ -310,10 +314,13 @@ class Convolutional_layer(object):
     Parameters:
       optimizer : Optimizer object
     '''
+    check_is_fitted(self, 'delta')
+
     self.bias, self.weights = self.optimizer.update(params=[self.bias, self.weights],
                                                     gradients=[self.bias_update, self.weights_update]
                                                    )
 
+    return self
 
 
 if __name__ == '__main__':

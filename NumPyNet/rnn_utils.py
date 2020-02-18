@@ -5,9 +5,9 @@ from __future__ import division
 from __future__ import print_function
 
 import struct
+import itertools
 import numpy as np
 
-__package__ = 'rnn utilities'
 __author__  = ['Nico Curti']
 __email__   = ['nico.curti2@unibo.it']
 

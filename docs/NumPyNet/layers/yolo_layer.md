@@ -1,4 +1,4 @@
-### YOLO Layer
+# YOLO Layer
 
 The YOLO Neural Network architecture was firstly published in the 2015 but from the first version many improvements were made and now we have the third version of it.
 

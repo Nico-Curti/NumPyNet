@@ -14,8 +14,53 @@ except ImportError:
   from distutils.core import find_packages
 
 
-from NumPyNet.build import get_requires
-from NumPyNet.build import read_description
+def get_requires (requirements_filename):
+  """
+  What packages are required for this module to be executed?
+
+  Parameters
+  ----------
+    requirements_filename : str
+      filename of requirements (e.g requirements.txt)
+
+  Returns
+  -------
+    requirements : list
+      list of required packages
+  """
+  with open(requirements_filename, 'r') as fp:
+    requirements = fp.read()
+
+  return list(filter(lambda x: x != '', requirements.split()))
+
+
+def read_description (readme_filename):
+  """
+  Description package from filename
+
+  Parameters
+  ----------
+    readme_filename : str
+      filename with readme information (e.g README.md)
+
+  Returns
+  -------
+    description : str
+      str with description
+  """
+
+  try:
+
+    with open(readme_filename, 'r') as fp:
+      description = '\n'
+      description += fp.read()
+
+    return description
+
+  except IOError:
+    return ''
+
+
 
 here = os.path.abspath(os.path.dirname(__file__))
 

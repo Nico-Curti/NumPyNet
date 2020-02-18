@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from __future__ import division
 from __future__ import print_function
 
@@ -11,7 +10,6 @@ from NumPyNet.box import Box
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Detection object'
 
 
 class Detection(object):
@@ -51,7 +49,7 @@ class Detection(object):
     '''
 
     # filter 0 objectness
-    detections = filter(lambda x : x.objectness != 0, dets)
+    detections = filter(lambda x : x.objectness != 0, detections)
 
     # sort the objectness
     detections = sorted(detections, key=lambda x : x.objectness, reverse=True)
@@ -65,7 +63,7 @@ class Detection(object):
     '''
 
     # filter 0 objectness
-    detections = filter(lambda x : x.objectness != 0, dets)
+    detections = filter(lambda x : x.objectness != 0, detections)
 
     # sort the objectness
     detections = sorted(detections, key=lambda x : x.objectness, reverse=True)

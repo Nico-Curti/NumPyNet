@@ -1,4 +1,4 @@
-### Input Layer
+# Input Layer
 
 This layer is more of an utility: it's the first layer for every `network` object and all it does is passing the exact same input that it receives, checking that `input_shape` is consistent with the effective input shape.
 Even the backward just pass back the delta it receive from the next layer.
@@ -49,7 +49,7 @@ def forward(self, inpt):
   self.delta = np.zeros(shape=self.out_shape, dtype=float)
 ```
 
-As stated above, all it does is check that the input shape is consistent with `self.out_shape`, that is the same as `input_shape`
+As stated above, all it does is check that the input shape is consistent with `self.out_shape`, that is the same as `input_shape`.
 And here's the backward:
 
 ```python
@@ -64,4 +64,5 @@ def backward(self, delta):
 
   delta[:] = self.delta
 ```
+
 That does nothing more than updating `delta` with `layer.delta` exactly as it is.

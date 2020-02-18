@@ -9,7 +9,6 @@ import numpy as np
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Optimizers'
 
 
 class Optimizer (object):
@@ -151,7 +150,7 @@ class RMSprop (Optimizer):
     if self.cache is None:
       self.cache = [np.zeros(shape=p.shape, dtype=float) for p in params]
 
-    for i, (c, p, g) in enumerate(zip(self.cache, params, grads)):
+    for i, (c, p, g) in enumerate(zip(self.cache, params, gradients)):
 
       c = self.rho * c + (1 - self.rho) * g * g
       p -= (self.lr * g / np.sqrt(c + self.epsilon))
@@ -255,7 +254,7 @@ class Adamax (Optimizer):
     self.ms = None
     self.vs = None
 
-  def update (self, params, grads):
+  def update (self, params, gradients):
     self.iterations += 1
 
     a_t = self.lr / (1 - np.power(self.beta1, self.iterations))

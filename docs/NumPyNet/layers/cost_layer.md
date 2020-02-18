@@ -1,20 +1,17 @@
-### Cost layer
+# Cost layer
 
 In order to understand and quantify how well our model makes prediction on data, we define a *cost function*, which is a measure of the error committed by the network during training, and, for this purpose, the *cost layer* is often the last one in a CNN.
 An easy example of cost function is the *mean squared error* (or L2 norm):
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=C&space;=\frac{1}{N}&space;\sum_{i=0}^{N}&space;(y_i&space;-&space;t_i)^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?C&space;=\frac{1}{N}&space;\sum_{i=0}^{N}&space;(y_i&space;-&space;t_i)^2" title="C =\frac{1}{N} \sum_{i=0}^{N} (y_i - t_i)^2" /></a>
-</p>
+![](https://latex.codecogs.com/gif.latex?C&space;=\frac{1}{N}&space;\sum_{i=0}^{N}&space;(y_i&space;-&space;t_i)^2)
 
 where `y` is the predicted vector, while `t` is the array of true labels.
 It's clear that an higher difference between prediction and truth, produces an higher cost.
 The minimization of this function is the objective of the backpropagation algorithm.
 Of course, a labeled dataset is needed to compute the cost (and, as a consequence, to train the Network).
 
-#explain which cost functions we implemented
+**TODO**: explain which cost functions we implemented
 The definition of the differents cost function is inside the `Cost_layer` class in [this repository](https://github.com/Nico-Curti/NumPyNet/blob/master/NumPyNet/layers/cost_layer.py)
-
 
 Here an example on how to use the cost layer as a single layer:
 
@@ -53,7 +50,6 @@ layer.backward(delta, copy=False)
 ```
 
 To have a look more in details on what's happening, the definitions of `forward` and `backward` functions:
-
 
 ```python
 def forward(self, inpt, truth=None):
@@ -104,8 +100,8 @@ The code proceeds as follow, if the truth array is given:
   * In the second part a series of method is applied to input, output or the truth array, if the respective variable has the correct value.
   * In the last part, `layer.delta` is normalized and `layer.cost` is computed as the mean of the output.
 
-
 And here's the backward function:
+
 ```python
 def backward(self, delta):
   '''

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from __future__ import division
 from __future__ import print_function
 
@@ -9,10 +8,10 @@ import itertools
 
 import numpy as np
 from NumPyNet.exception import LayerError
+from NumPyNet.utils import check_is_fitted
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Avgpool Layer'
 
 
 class Avgpool_layer(object):
@@ -179,6 +178,8 @@ class Avgpool_layer(object):
     self.output = np.nanmean(view, axis=(4, 5))
     self.delta  = np.zeros(shape=self.out_shape, dtype=float)
 
+    return self
+
   def backward(self, delta):
     '''
     backward function of the average_pool layer: the function modifies the net delta
@@ -187,6 +188,8 @@ class Avgpool_layer(object):
     Parameters:
       delta : global delta to be backpropagated with shape (batch, out_w, out_h, out_c)
     '''
+
+    check_is_fitted(self, 'delta')
 
     kx, ky = self.size
 
@@ -209,9 +212,10 @@ class Avgpool_layer(object):
 
 #    norm = 1. / (kx*ky)
     norm = self.delta * (1. / np.count_nonzero(~np.isnan(net_delta_view), axis=(4, 5)))
-    for b, i, j, k in combo:
+
+    for (b, i, j, k), n in zip(combo, np.nditer(norm)):
       #norm = np.count_nonzero(~np.isnan(net_delta_view[b, i, j, k, :])) # this only counts non nan values for norm
-      net_delta_view[b, i, j, k, :] += norm[b, i, j, k]
+      net_delta_view[b, i, j, k, :] += n
 
 #    net_delta_view *= norm
 
@@ -222,6 +226,8 @@ class Avgpool_layer(object):
       delta[:] = mat_pad[:, self.pad_top : w_pad - self.pad_bottom, self.pad_left : h_pad - self.pad_right, :]
     else:
       delta[:] = mat_pad
+
+    return self
 
 if __name__ == '__main__':
 
@@ -279,4 +285,5 @@ if __name__ == '__main__':
   ax3.set_title('Backward')
   ax3.axis('off')
 
+  fig.tight_layout()
   plt.show()

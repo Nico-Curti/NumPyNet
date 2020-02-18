@@ -4,10 +4,10 @@
 from __future__ import division
 from __future__ import print_function
 
-import keras.backend as K
-from keras.models import Model
-from keras.layers import Input
-from keras.layers import Activation
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input
+from tensorflow.keras.layers import Activation
+import tensorflow.keras.backend as K
 
 from NumPyNet.layers.l2norm_layer import L2Norm_layer
 
@@ -41,7 +41,7 @@ def test_l2norm_layer(batch, w, h, c):
     inpt = np.ones(shape=(batch, w, h, c))
 
     # Keras Model
-    inp = Input(shape=inpt.shape[1:])
+    inp = Input(batch_shape=inpt.shape)
     x = Activation(activation='linear')(inp)
     model = Model(inputs=[inp], outputs=x)
 

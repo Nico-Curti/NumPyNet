@@ -1,29 +1,22 @@
-### L2 normalization layer
+# L2 normalization layer
 
 The l2 normalizatioon layer normalizes the data with respect to the selected axis, using the l2  norm, computed as such:
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=||x||_2&space;=&space;\sqrt{\sum_{i=0}^N&space;x_i^2}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?||x||_2&space;=&space;\sqrt{\sum_{i=0}^N&space;x_i^2}" title="||x||_2 = \sqrt{\sum_{i=0}^N x_i^2}" /></a>
-</p>
+![](https://latex.codecogs.com/gif.latex?||x||_2&space;=&space;\sqrt{\sum_{i=0}^N&space;x_i^2})
 
-Where N is the dimension fo the selected axis. The normalization is computed as:
+Where `N` is the dimension fo the selected axis. The normalization is computed as:
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=\hat&space;x&space;=&space;\frac{1}{\sqrt{\sum&space;x_i^2&space;&plus;&space;\epsilon}}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\hat&space;x&space;=&space;\frac{1}{\sqrt{\sum&space;x_i^2&space;&plus;&space;\epsilon}}" title="\hat x = \frac{1}{\sqrt{\sum x_i^2 + \epsilon}}" /></a>
-</p>
-
+![](https://latex.codecogs.com/gif.latex?\hat&space;x&space;=&space;\frac{1}{\sqrt{\sum&space;x_i^2&space;&plus;&space;\epsilon}})
 
 Where &epsilon; is a small (order of 10<sup>-8</sup>) constant used to avoid division by zero.
 
 The backward, in this case, is computed as:
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=\delta^l&space;=&space;\delta^l&space;&plus;&space;\delta_{l-1}&space;&plus;&space;\frac{(1&space;-&space;\hat&space;x)}{\sqrt{\sum_i&space;x_i&space;&plus;&space;\epsilon}}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\delta^l&space;=&space;\delta^l&space;&plus;&space;\delta_{l-1}&space;&plus;&space;\frac{(1&space;-&space;\hat&space;x)}{\sqrt{\sum_i&space;x_i&space;&plus;&space;\epsilon}}" title="\delta^l = \delta^l + \delta_{l-1} + \frac{(1 - \hat x)}{\sqrt{\sum_i x_i + \epsilon}}" /></a>
-</p>
+![](https://latex.codecogs.com/gif.latex?\delta^l&space;=&space;\delta^l&space;&plus;&space;\delta_{l-1}&space;&plus;&space;\frac{(1&space;-&space;\hat&space;x)}{\sqrt{\sum_i&space;x_i&space;&plus;&space;\epsilon}})
 
 Where &delta;<sup>l</sup> is the delta to be backpropagated, while &delta;<sup>l-1</sup> is the delta coming from the next layer
 
-This code is an example of how to use the single l2norm_layer object:
+This code is an example of how to use the single `l2norm_layer` object:
 
 ```python
 
@@ -59,7 +52,6 @@ delta = np.zeros(shape=inpt.shape, dtype=float)
 layer.backward(delta, copy=False)
 ```
 
-
 To have a look more in details on what's happening, those are the definitions of `forward` and `backward` for the l2norm_layer:
 
 ```python
@@ -78,12 +70,14 @@ def forward(self, inpt):
   self.scales = (1. - self.output) * norm
   self.delta  = np.zeros(shape=self.out_shape, dtype=float)
 ```
+
 That's just a simple implementation of the formualas described above:
   * sum of the input squared over the selected axis. If `self.axis` is `None` then the sum is computed considering every pixel.
   * `self.output` is `inpt` normalized
   * define `self.scale` and initialize `self.delta`
 
 The `backward` is:
+
 ```python
 def backward(self, delta, copy=False):
   '''
@@ -95,4 +89,5 @@ def backward(self, delta, copy=False):
   self.delta += self.scales
   delta[:]   += self.delta
 ```
+
 which updates `self.delta` with the value of `self.scales` computed in `forward`, and then update the value of `delta`, received as argument from the function.

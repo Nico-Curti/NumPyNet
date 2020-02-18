@@ -1,28 +1,21 @@
-### Logistic Layer
+# Logistic Layer
 
 The logistic layer is a particular implementation of what has already been describe for the [Cost Layer](./cost_layer.md).
 It perfmors a logitic tranformation of the output as:
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=y&space;=&space;\frac{1}{1&space;&plus;&space;e^{-x}}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?y&space;=&space;\frac{1}{1&space;&plus;&space;e^{-x}}" title="y = \frac{1}{1 + e^{-x}}" /></a>
-</p>
+![](https://latex.codecogs.com/gif.latex?y&space;=&space;\frac{1}{1&space;&plus;&space;e^{-x}})
 
 and then, if its `forward` function recevives `truth` values, it computes the binary cross entropy loss as:
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=L&space;=&space;-t&space;\cdot&space;log(y)&space;-&space;(1&space;-&space;t)&space;\cdot&space;log(1&space;-&space;y)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?L&space;=&space;-t&space;\cdot&space;log(y)&space;-&space;(1&space;-&space;t)&space;\cdot&space;log(1&space;-&space;y)" title="L = -t \cdot log(y) - (1 - t) \cdot log(1 - y)" /></a>
-</p>
+![](https://latex.codecogs.com/gif.latex?L&space;=&space;-t&space;\cdot&space;log(y)&space;-&space;(1&space;-&space;t)&space;\cdot&space;log(1&space;-&space;y))
 
 and the `cost`:
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=C&space;=&space;\sum_{i=0}^{N}&space;L_i" target="_blank"><img src="https://latex.codecogs.com/gif.latex?C&space;=&space;\sum_{i=0}^{N}&space;L_i" title="C = \sum_{i=0}^{N} L_i" /></a>
-</p>
+![](https://latex.codecogs.com/gif.latex?C&space;=&space;\sum_{i=0}^{N}&space;L_i)
 
 where `N` is the toal number of features in the input `x`.
 
 This is an example code on how to use the single `Logistic_layer` object:
-
 
 ```python
 # first, the essential import for the layer.
@@ -81,14 +74,12 @@ def forward(self, inpt, truth=None) :
 
 The code proceeds as follow:
 
-  * self.output` is computed as the element-wise sigmoid tranformation of the input.
+  * `self.output` is computed as the element-wise sigmoid tranformation of the input.
   * If `truth` is given (same shape as `inpt`), then the function clip `self.output` in the range [&epsilon;, 1-&epsilon;], this is due to the singularity of the logarithm.
   * `self.loss` is computed as described above.
   * `self.delta` is updated as:
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=\delta&space;=&space;(t&space;-&space;y)&space;\cdot&space;y(1&space;-&space;y)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\delta&space;=&space;(t&space;-&space;y)&space;\cdot&space;y(1&space;-&space;y)" title="\delta = (t - y) \cdot y(1 - y)" /></a>
-<p>
+![](https://latex.codecogs.com/gif.latex?\delta&space;=&space;(t&space;-&space;y)&space;\cdot&space;y(1&space;-&space;y))
 
   * and `self.cost` is the sum of all `self.loss` elements
 

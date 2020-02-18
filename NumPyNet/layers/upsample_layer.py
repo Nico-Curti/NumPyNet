@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from __future__ import division
 from __future__ import print_function
 
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
 from NumPyNet.exception import LayerError
+from NumPyNet.utils import check_is_fitted
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Upsample Layer'
 
 
 class Upsample_layer(object):
@@ -109,6 +108,8 @@ class Upsample_layer(object):
 
     self.delta = np.zeros(shape=inpt.shape, dtype=float)
 
+    return self
+
   def backward(self, delta):
     '''
     Compute the inverse transformation of the forward function
@@ -118,12 +119,15 @@ class Upsample_layer(object):
       delta : global error to be backpropagated
     '''
 
+    check_is_fitted(self, 'delta')
+
     if self.reverse: # Upsample
       delta[:] = self._upsample(self.delta) * (1. / self.scale)
 
     else:            # Downsample
       delta[:] = self._downsample(self.delta) * (1. / self.scale)
 
+    return self
 
 
 if __name__ == '__main__':

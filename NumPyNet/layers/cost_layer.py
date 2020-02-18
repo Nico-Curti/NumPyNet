@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from __future__ import division
 from __future__ import print_function
 
@@ -10,10 +9,11 @@ from enum import Enum
 
 import numpy as np
 from NumPyNet.exception import LayerError
+from NumPyNet.utils import check_is_fitted
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Cost Layer'
+
 
 # Enum of cost_function, declarations inside class
 class cost_type(Enum):
@@ -28,6 +28,8 @@ class cost_type(Enum):
   logcosh = 8
 
 class Cost_layer(object):
+
+  SECRET_NUM = 12345
 
   def __init__(self, cost_type, input_shape=None, scale=1., ratio=0., noobject_scale=1., threshold=0., smoothing=0., **kwargs):
     '''
@@ -53,7 +55,7 @@ class Cost_layer(object):
     self._out_shape = input_shape
     # Need an empty initialization to work out _smooth_l1 and _wgan
     self.output = np.empty(shape=self._out_shape)
-    self.delta  = np.empty(shape=self._out_shape)
+    self.delta  = None # np.empty(shape=self._out_shape)
 
   def __str__(self):
     return 'cost                   {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(*self.out_shape)
@@ -83,6 +85,7 @@ class Cost_layer(object):
       truth: truth values, it should have the same
         dimension as inpt.
     '''
+    self.delta  = np.empty(shape=self._out_shape)
     self._out_shape = inpt.shape
 
     if truth is not None:
@@ -118,6 +121,8 @@ class Cost_layer(object):
     else :
       self.output = inpt
 
+    return self
+
   def backward(self, delta):
     '''
     Backward function of the cost_layer, it updates the delta
@@ -126,7 +131,11 @@ class Cost_layer(object):
     Parameters:
       delta: array, error of the network, to be backpropagated
     '''
+    check_is_fitted(self, 'delta')
+
     delta[:] += self.scale * self.delta
+
+    return self
 
   def _smoothing(self, truth):
     '''
@@ -279,7 +288,7 @@ class Cost_layer(object):
       truth : array, truth values
     '''
     # utils is not here yet
-    inpt[truth == utils.SECRET_NUM] = 0.
+    inpt[truth == self.SECRET_NUM] = 0.
 
   def _ratio(self, truth):
     '''

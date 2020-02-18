@@ -6,7 +6,6 @@ from __future__ import print_function
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Exceptions'
 
 
 class CfgfmtError (Exception):
@@ -51,6 +50,14 @@ class NetworkError (Exception):
     self.errors = errors
 
 class VideoError (Exception):
+
+  def __init__ (self, message, errors=1):
+
+    super().__init__(message)
+
+    self.errors = errors
+
+class NotFittedError (Exception):
 
   def __init__ (self, message, errors=1):
 

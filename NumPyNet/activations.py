@@ -8,7 +8,6 @@ import numpy as np
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'activations_function_wrap'
 
 
 class Activations (object):
@@ -356,15 +355,15 @@ class Elliot (Activations):
     if copy: y = x.copy()
     else:    y = x
 
-    return .5 * STEEPNESS * y / (1. + np.abs(y + STEEPNESS)) + .5
+    return .5 * Elliot.STEEPNESS * y / (1. + np.abs(y + Elliot.STEEPNESS)) + .5
 
   @staticmethod
   def gradient (x, copy=False):
     if copy: y = x.copy()
     else:    y = x
 
-    last_fwd = 1. + np.abs(y * STEEPNESS)
-    return .5 * STEEPNESS / (last_fwd * last_fwd)
+    last_fwd = 1. + np.abs(y * Elliot.STEEPNESS)
+    return .5 * Elliot.STEEPNESS / (last_fwd * last_fwd)
 
 
 class SymmElliot (Activations):
@@ -380,15 +379,15 @@ class SymmElliot (Activations):
     if copy: y = x.copy()
     else:    y = x
 
-    return y * STEEPNESS / (1. + np.abs(y * STEEPNESS))
+    return y * SymmElliot.STEEPNESS / (1. + np.abs(y * SymmElliot.STEEPNESS))
 
   @staticmethod
   def gradient (x, copy=False):
     if copy: y = x.copy()
     else:    y = x
 
-    last_fwd = 1. + np.abs(y * STEEPNESS)
-    return STEEPNESS / (last_fwd * last_fwd)
+    last_fwd = 1. + np.abs(y * SymmElliot.STEEPNESS)
+    return SymmElliot.STEEPNESS / (last_fwd * last_fwd)
 
 
 class SoftPlus (Activations):

@@ -37,7 +37,6 @@ Add = Shortcut_layer
 SoftMax = Softmax_layer
 UpSampling2D = Upsample_layer
 
-__package__ = 'NumPyNet layers'
 __author__  = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 

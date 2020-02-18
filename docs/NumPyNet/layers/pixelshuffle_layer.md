@@ -1,4 +1,4 @@
-### Pixel Shuffle Layer
+# Pixel Shuffle Layer
 
 Pixel Shuffle layer is one of the most recent layer type introduced in modern deep learning Neural Network.
 Its application is closely related to the single-image super-resolution (SISR) research, i.e the techniques ensemble which aim is to produce a high-resolution image from a single low-resolution one.
@@ -116,5 +116,6 @@ def backward(self, delta):
 
 	delta[:] = X[:, :, :, idx]
 ```
+
 The function `_reverse` is the inverse of `_phase_shift`.
 The last few lines of code sorts the output channels in the correct way and updates delta.

@@ -4,16 +4,16 @@
 from __future__ import division
 from __future__ import print_function
 
-from keras.models import Model
-from keras.layers import Input
-import keras.backend as K
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input
+import tensorflow.keras.backend as K
 
 from NumPyNet.activations import Relu
 from NumPyNet.activations import Logistic
 from NumPyNet.activations import Linear
 from NumPyNet.activations import Tanh
 from NumPyNet.layers.convolutional_layer import Convolutional_layer
-from keras.layers import Conv2D
+from tensorflow.keras.layers import Conv2D
 
 import numpy as np
 
@@ -69,7 +69,7 @@ def test_convolutional_layer():
                                        pad=pad)
 
         # Keras model
-        inp  = Input(shape=inpt.shape[1:], batch_shape=inpt.shape)
+        inp  = Input(batch_shape=inpt.shape)
         Conv2d = Conv2D(filters=c_out,
                         kernel_size=size, strides=stride,
                         padding=keras_pad,
@@ -83,7 +83,7 @@ def test_convolutional_layer():
 
         # FORWARD
 
-        print(c_in, c_out, keras_activ, size, stride, pad, keras_pad, '\n', sep='\n')
+        #print(c_in, c_out, keras_activ, size, stride, pad, keras_pad, '\n', sep='\n')
 
         forward_out_keras = model.predict(inpt)
 
@@ -113,7 +113,7 @@ def test_convolutional_layer():
 
         assert np.allclose(delta_numpynet,          delta_keras,           atol=1e-3, rtol=1e-3)
         assert np.allclose(numpynet.weights_update, weights_updates_keras, atol=1e-3, rtol=1e-3) # for a lot of operations, atol is lower
-        assert np.allclose(numpynet.bias_update,    bias_updates_keras,    atol=1e-8, rtol=1e-3)
+        assert np.allclose(numpynet.bias_update,    bias_updates_keras,    atol=1e-5, rtol=1e-3)
 
 if __name__ == '__main__':
 

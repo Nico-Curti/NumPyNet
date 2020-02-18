@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from __future__ import division
 from __future__ import print_function
 
 import numpy as np
 from NumPyNet.exception import LayerError
+from NumPyNet.utils import check_is_fitted
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'PixelShuffle Layer'
 
 
 class Shuffler_layer(object):
@@ -108,11 +107,13 @@ class Shuffler_layer(object):
     # The function phase shift receives only in_c // out_c channels at a time
     # the concatenate stitches together every output of the function.
 
-    self.output = np.concatenate([self._phase_shift(inpt[:, :, :, range(i, self.c, channel_output)], self.scale)
+    self.output = np.concatenate([self._phase_shift(inpt[..., range(i, self.c, channel_output)], self.scale)
                                   for i in range(channel_output)], axis=3)
 
     # output shape = (batch, in_w * scale, in_h * scale, in_c // scale**2)
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
+
+    return self
 
   def backward(self, delta):
     '''
@@ -123,10 +124,12 @@ class Shuffler_layer(object):
       delta : global delta to be backpropagated with shape (batch, out_w, out_h, out_c)
     '''
 
+    check_is_fitted(self, 'delta')
+
     channel_out = self.c // self.scale_step # out_c
 
     # I apply the reverse function only for a single channel
-    X = np.concatenate([self._reverse(self.delta[:, :, :, i], self.scale)
+    X = np.concatenate([self._reverse(self.delta[..., i], self.scale)
                                       for i in range(channel_out)], axis=3)
 
 
@@ -135,7 +138,9 @@ class Shuffler_layer(object):
     idx = sum([list(range(i, self.c, channel_out)) for i in range(channel_out)], [])
     idx = np.argsort(idx)
 
-    delta[:] = X[:, :, :, idx]
+    delta[:] = X[..., idx]
+
+    return self
 
 
 if __name__ == '__main__':

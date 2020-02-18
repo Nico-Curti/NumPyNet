@@ -5,14 +5,13 @@ from __future__ import division
 from __future__ import print_function
 
 import itertools
-from time import time as now
 
 import numpy as np
 from NumPyNet.exception import LayerError
+from NumPyNet.utils import check_is_fitted
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Maxpool Layer'
 
 
 class Maxpool_layer(object):
@@ -185,11 +184,15 @@ class Maxpool_layer(object):
     new_shape = view.shape[:4] + (kx*ky, )
 
     self.indexes = np.nanargmax(view.reshape(new_shape), axis=4)
-    self.indexes = np.unravel_index(self.indexes.ravel(), shape=(kx, ky))
+    try:
+      self.indexes = np.unravel_index(self.indexes.ravel(), shape=(kx, ky))
+    except TypeError: # retro-compatibility for Numpy version older than 1.16
+      self.indexes = np.unravel_index(self.indexes.ravel(), dims=(kx, ky))
 
     # self.indexes = np.asarray(self.indexes).T
-    self.delta   = np.zeros(shape=self.out_shape, dtype=float)
+    self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
+    return self
 
   def backward(self, delta):
     '''
@@ -201,6 +204,8 @@ class Maxpool_layer(object):
     Parameters:
       delta : the global delta to be backpropagated with shape (batch, w, h, c)
     '''
+
+    check_is_fitted(self, 'delta')
 
     # Padding delta in order to create another view
     if self.pad:
@@ -221,8 +226,8 @@ class Maxpool_layer(object):
     # those indexes are usefull to access 'Atomically'(one at a time) every element in net_delta_view
     # that needs to be modified
     # Here, I can't do anything for now, since every image has its own indexes
-    for (i, j, k, l), m, o in zip(combo, self.indexes[0], self.indexes[1]):
-      net_delta_view[i, j, k, l, m, o] += self.delta[i, j, k, l]
+    for (i, j, k, l), m, o, D in zip(combo, self.indexes[0], self.indexes[1], np.nditer(self.delta)):
+      net_delta_view[i, j, k, l, m, o] += D
 
     # Here delta is correctly modified
     if self.pad:
@@ -230,6 +235,8 @@ class Maxpool_layer(object):
       delta[:] = mat_pad[:, self.pad_top : w_pad-self.pad_bottom, self.pad_left : h_pad - self.pad_right, :]
     else:
       delta[:] = mat_pad
+
+    return self
 
 if __name__ == '__main__':
 

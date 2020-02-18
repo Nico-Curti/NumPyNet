@@ -1,19 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from __future__ import division
 from __future__ import print_function
 
 from NumPyNet.activations import Activations
 from NumPyNet.utils import _check_activation
+from NumPyNet.utils import check_is_fitted
 
 import numpy as np
 from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Activation Layer'
 
 
 class Activation_layer(object):
@@ -37,7 +36,7 @@ class Activation_layer(object):
   def __str__(self):
     batch, out_width, out_height, out_channels = self.out_shape
     return 'activ                 {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(
-          batch, out_width, out_height, out_channels)
+           batch, out_width, out_height, out_channels)
 
   def __call__(self, previous_layer):
 
@@ -67,6 +66,8 @@ class Activation_layer(object):
     self.output = self.activation(inpt, copy=copy)
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
+    return self
+
   def backward(self, delta, copy=False):
     '''
     Compute the backward of the activation layer
@@ -75,8 +76,12 @@ class Activation_layer(object):
       delta : global error to be backpropagated
     '''
 
+    check_is_fitted(self, 'delta')
+
     self.delta *= self.gradient(self.output, copy=copy)
     delta[:] = self.delta
+
+    return self
 
 
 if __name__ == '__main__':

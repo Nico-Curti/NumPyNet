@@ -15,7 +15,6 @@ from NumPyNet.image import Image
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'loading_data'
 
 
 class DataGenerator (object):

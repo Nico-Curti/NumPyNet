@@ -1,4 +1,4 @@
-### Activation Layer
+# Activation Layer
 
 Activation functions (or transfer functions) are linear or non linear equations which process the output of a Neural Network's neuron and bound it into a limited range of values (usually [-1,1] or [0,1]).
 
@@ -17,18 +17,11 @@ An important feature of any activation function, in fact, is that it should be d
 
 The images below show some examples about the effect of the forward and backward pass of the activation layer on the same input picture:
 
-<p align="center">
-  <img src="../images/activation_relu.png" >
-</p>
-<p align="center">
-  <img src="../images/activation_logistic.png">
-</p>
-<p align="center">
-  <img src="../images/activation_elu.png">
-</p>
-*Fig. 1: examples of activation functions being applied to the same input image. From up to down: Relu, Logistic and Elu, for both forward pass and backward pass*
+![](../images/activation_relu.png)
+![](../images/activation_logistic.png)
+![examples of activation functions being applied to the same input image. From up to down: Relu, Logistic and Elu, for both forward pass and backward pass](../images/activation_elu.png)
 
-The code used to generate those images can be found [in this repository](https://github.com/Nico-Curti/NumPyNet/blob/master/NumPyNet/layers/activation_layer.py "activation_layer.py"), after the activation layer class definition.
+The code used to generate those images can be found [in this repository](https://github.com/Nico-Curti/NumPyNet/blob/master/NumPyNet/layers/activation_layer.py), after the activation layer class definition.
 
 Below is shown an example on how to use the single layer to perform its `forward` and `backward` function:
 
@@ -69,7 +62,7 @@ layer.backward(delta, copy=False)
 
 To have an idea on what the forward and backward function actually do, take a look at the code below:
 
-###### Forward function:
+## Forward function:
 
 ```python
 def forward(self, inpt, copy=True):
@@ -92,7 +85,7 @@ The code is very straight-forward:
 2. apply the selected activation function to the input
 3. initialize layer.delta to all zero.
 
-###### Backward function:
+## Backward function:
 
 ```python
 def backward(self, delta, copy=False):
@@ -106,6 +99,7 @@ def backward(self, delta, copy=False):
   self.delta *= self.gradient(self.output, copy=copy)
   delta[:] = self.delta
 ```
+
 Here instead :
 1. multiply `layer.delta` for the derivative of the activation function (computed on the **activated** output)image
 2. modify delta with the current value of `layer.delta`.

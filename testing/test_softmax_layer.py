@@ -4,11 +4,11 @@
 from __future__ import division
 from __future__ import print_function
 
-from keras.models import Model
-from keras.layers import Input
-from keras.layers import Softmax
-from keras.losses import categorical_crossentropy
-import keras.backend as K
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input
+from tensorflow.keras.layers import Softmax
+from tensorflow.keras.losses import categorical_crossentropy
+import tensorflow.keras.backend as K
 
 from NumPyNet.layers.softmax_layer import Softmax_layer
 
@@ -43,7 +43,7 @@ def test_softmax_layer():
 
     numpynet = Softmax_layer(groups=1, temperature=1., spatial=spatial)
 
-    inp = Input(shape=(w,h,c), batch_shape=inpt.shape)
+    inp = Input(batch_shape=inpt.shape)
     x = Softmax(axis=axis)(inp)
     model = Model(inputs=[inp], outputs=x)
     model.compile(optimizer='sgd', loss='categorical_crossentropy')

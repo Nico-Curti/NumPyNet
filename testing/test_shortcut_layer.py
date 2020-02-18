@@ -4,17 +4,17 @@
 from __future__ import division
 from __future__ import print_function
 
-from keras.models import Model
-from keras.layers import Input
-from keras.layers import Activation
-import keras.backend as K
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input
+from tensorflow.keras.layers import Activation
+import tensorflow.keras.backend as K
 
 from NumPyNet.layers.shortcut_layer import Shortcut_layer
 from NumPyNet.activations import Relu
 from NumPyNet.activations import Logistic
 from NumPyNet.activations import Linear
 from NumPyNet.activations import Tanh
-from keras.layers import Add
+from tensorflow.keras.layers import Add
 
 import numpy as np
 
@@ -53,8 +53,8 @@ def test_shortcut_layer():
                                     alpha=alpha, beta=beta)
 
           # Keras Model, double input
-          inp1  = Input(shape=(w, h, c), batch_shape=inpt1.shape)
-          inp2  = Input(shape=(w, h, c), batch_shape=inpt2.shape)
+          inp1  = Input(batch_shape=inpt1.shape)
+          inp2  = Input(batch_shape=inpt2.shape)
           x     = Add()([inp1,inp2])
           out   = Activation(activation=keras_activ)(x)
           model = Model(inputs=[inp1,inp2], outputs=out)

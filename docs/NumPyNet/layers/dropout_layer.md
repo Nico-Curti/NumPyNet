@@ -1,4 +1,4 @@
-### DropOut Layer
+# DropOut Layer
 
 **Overfitting** is a real problem for Convolutional Neural Network and, in general, for every Machine Learning systems. In general, it's easy to identify an overfitted model since it will perfoms very well on the training dataset while it's accuracy in a completely different set of data will drop a lot.
 To avoid overfitting means to create a generalized model, that can works well in different datasets.
@@ -9,11 +9,7 @@ For a deeper explanation of the drop out operation you can take a look at the [o
 
 In the image below ther's an example output of a single image processed by the DropOut layer:
 
-<p align="center">
-  <img src="../images/dropout_prob10.png" >
-</p>
-
-*Fig.: the image show the input image and the outputs of the forward function and backward function(given a random delta) of a DropOut layer with drops probability of 10%*
+![The image show the input image and the outputs of the forward function and backward function(given a random delta) of a DropOut layer with drops probability of 10%](../images/dropout_prob10.png)
 
 The black dots are the dropped pixel (or neuron), while in the backward the delta is passed only through the remaing pixels.
 
@@ -55,6 +51,7 @@ layer.backward(delta)
 
 # and here delta is correctly updated and ready to pe passed backward
 ```
+
 To have a look more in details on what's happening, the definitons of `forward` and `backward` function are:
 
 ```python
@@ -76,12 +73,10 @@ def forward(self, inpt):
 
 The code proceeds as follow:
   * create a random mask
-  * multiply the mask (element-wise) to inpt and multiply for `self.scale` 
+  * multiply the mask (element-wise) to inpt and multiply for `self.scale`
   * initialize `self.delta`
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=scale&space;=&space;\frac{1}{1-prob}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?scale&space;=&space;\frac{1}{1-prob}" title="scale = \frac{1}{1-prob}" /></a>
-</p>
+![](https://latex.codecogs.com/gif.latex?scale&space;=&space;\frac{1}{1-prob})
 
 while if `prob=1`, `scale` is set to one, but it doesn't really matter, since every pixel is zero at that point, it's just to avoid the division.
 

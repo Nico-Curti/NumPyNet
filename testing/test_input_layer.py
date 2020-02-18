@@ -4,10 +4,10 @@
 from __future__ import division
 from __future__ import print_function
 
-from keras.models import Model
-from keras.layers import Input
-from keras.layers import Activation
-import keras.backend as K
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input
+from tensorflow.keras.layers import Activation
+import tensorflow.keras.backend as K
 
 
 from NumPyNet.layers.input_layer import Input_layer
@@ -42,7 +42,7 @@ def test_input_layer(batch, w, h, c):
   numpynet = Input_layer(input_shape=inpt.shape)
 
   # Keras Model init
-  inp   = Input(shape=(w, h, c), batch_shape=(batch, w, h, c))
+  inp   = Input(batch_shape=(batch, w, h, c))
   x     = Activation(activation='linear')(inp)
   model = Model(inputs=[inp], outputs=x)
 

@@ -4,10 +4,10 @@
 from __future__ import division
 from __future__ import print_function
 
-from keras.models import Model
-from keras.layers import Input, Activation
-import keras.backend as K
 import tensorflow as tf
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, Activation
+import tensorflow.keras.backend as K
 
 import numpy as np
 
@@ -37,8 +37,8 @@ def test_cost_layer():
   from NumPyNet.layers import cost_layer as cl
   from NumPyNet.layers.cost_layer import Cost_layer
 
-  from keras.losses import mean_squared_error
-  from keras.losses import mean_absolute_error
+  from tensorflow.keras.losses import mean_squared_error
+  from tensorflow.keras.losses import mean_absolute_error
 
   from math import isclose
 
@@ -116,7 +116,7 @@ def test_batchnorm_layer():
 
 
   from NumPyNet.layers.batchnorm_layer import BatchNorm_layer
-  from keras.layers import BatchNormalization
+  from tensorflow.keras.layers import BatchNormalization
 
   batch = 5
 
@@ -229,7 +229,7 @@ def test_connected_layer():
 
   from NumPyNet.activations import Relu, Logistic, Linear, Tanh
   from NumPyNet.layers.connected_layer import Connected_layer
-  from keras.layers import Dense
+  from tensorflow.keras.layers import Dense
 
   keras_activ = ['relu', 'sigmoid', 'tanh','linear']
   numpynet_activ = [Relu, Logistic, Tanh, Linear]
@@ -312,7 +312,7 @@ def test_maxpool_layer():
   to be:
   '''
   from NumPyNet.layers.maxpool_layer import Maxpool_layer
-  from keras.layers import MaxPool2D
+  from tensorflow.keras.layers import MaxPool2D
 
   sizes   = [(1,1), (3,3), (30,30)]
   strides = [(1,1), (2,2), (20,20)]
@@ -384,7 +384,7 @@ def test_activation_layer():
 
   from NumPyNet.activations import Relu, Logistic, Linear, Tanh
   from NumPyNet.layers.activation_layer import Activation_layer
-  from keras.layers import Activation
+  from tensorflow.keras.layers import Activation
 
   keras_activ = ['relu', 'sigmoid', 'tanh','linear']
   numpynet_activ = [Relu, Logistic, Tanh, Linear]
@@ -545,7 +545,7 @@ def test_shortcut_layer():
   '''
   from NumPyNet.layers.shortcut_layer import Shortcut_layer
   from NumPyNet.activations import Relu, Logistic, Linear, Tanh
-  from keras.layers import Add
+  from tensorflow.keras.layers import Add
 
   alphas  = np.round(np.linspace(0,1,3), 2)
   betas   = np.round(np.linspace(0,1,3), 2)
@@ -615,7 +615,7 @@ def test_avgpool_layer():
   to be:
   '''
   from NumPyNet.layers.avgpool_layer import Avgpool_layer
-  from keras.layers import AvgPool2D
+  from tensorflow.keras.layers import AvgPool2D
 
   sizes   = [(1,1), (3,3), (30,30)]
   strides = [(1,1), (2,2), (20,20)]
@@ -688,7 +688,7 @@ def test_convolutional_layer():
   from NumPyNet.activations import Relu, Logistic, Linear, Tanh
   from NumPyNet.layers.convolutional_layer import Convolutional_layer
 
-  from keras.layers import Conv2D
+  from tensorflow.keras.layers import Conv2D
 
   keras_activations = ['relu', 'sigmoid', 'tanh','linear']
   numpynet_activations = [Relu, Logistic, Tanh, Linear]
@@ -777,9 +777,9 @@ def test_softmax_layer():
 
   from NumPyNet.layers.softmax_layer import Softmax_layer
 
-  from keras.losses import categorical_crossentropy
-  from keras.layers import Softmax
-  from keras import backend as K
+  from tensorflow.keras.losses import categorical_crossentropy
+  from tensorflow.keras.layers import Softmax
+  from tensorflow.keras import backend as K
 
   spatials = [False, True]
 

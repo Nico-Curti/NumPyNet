@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from __future__ import division
 from __future__ import print_function
 
 import numpy as np
 from NumPyNet.exception import LayerError
+from NumPyNet.utils import check_is_fitted
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Dropout Layer'
+
 
 class Dropout_layer(object):
 
@@ -69,6 +69,8 @@ class Dropout_layer(object):
     self.output = self.rnd * inpt * self.scale
     self.delta = np.zeros(shape=inpt.shape)
 
+    return self
+
   def backward(self, delta=None):
     '''
     Backward function of the Dropout layer: given the same mask as the layer
@@ -80,9 +82,13 @@ class Dropout_layer(object):
             If given, is the global delta to be backpropagated
     '''
 
+    check_is_fitted(self, 'delta')
+
     if delta is not None:
       self.delta = self.rnd * self.delta * self.scale
       delta[:] = self.delta.copy()
+
+    return self
 
 
 if __name__ == '__main__':

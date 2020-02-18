@@ -4,8 +4,8 @@
 from __future__ import division
 from __future__ import print_function
 
-import keras.backend as K
 import tensorflow as tf
+import tensorflow.keras.backend as K
 
 from NumPyNet.layers.maxpool_layer import Maxpool_layer
 
@@ -31,16 +31,16 @@ def test_maxpool_layer(batch, w, h, c, size, stride, pad):
   Tests:
     if the NumPyNet maxpool layer forward is consistent with Keras
     if the NumPyNet maxpool layer backward is the same as Keras
-      
+
     both for different sizes, strides and padding values
-    
+
   TODO:
   '''
 
   inpt = np.random.uniform(low=0., high=1., size=(batch, w, h, c))
 
-  # tensor value of inpt, used to computes gradients 
-  inpt_tf = tf.convert_to_tensor(inpt) 
+  # tensor value of inpt, used to computes gradients
+  inpt_tf = tf.convert_to_tensor(inpt)
 
   # Numpy_net model
   numpynet = Maxpool_layer(size=size, stride=stride, padding=pad)
@@ -50,8 +50,8 @@ def test_maxpool_layer(batch, w, h, c, size, stride, pad):
   else :
     keras_pad = 'VALID'
 
-  out_keras = tf.nn.max_pool2d(input=inpt_tf, 
-                               ksize=size, strides=stride, 
+  out_keras = tf.nn.max_pool2d(input=inpt_tf,
+                               ksize=size, strides=stride,
                                padding=keras_pad,
                                data_format='NHWC')
 
@@ -91,7 +91,7 @@ def test_maxpool_layer(batch, w, h, c, size, stride, pad):
 if __name__ == '__main__':
   test_maxpool_layer()
 
-  
-  
-  
-  
+
+
+
+

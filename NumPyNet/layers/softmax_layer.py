@@ -6,10 +6,10 @@ from __future__ import print_function
 
 import numpy as np
 from NumPyNet.exception import LayerError
+from NumPyNet.utils import check_is_fitted
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Softmax layer'
 
 
 class Softmax_layer():
@@ -101,8 +101,10 @@ class Softmax_layer():
       out = np.clip(out, 1e-8, 1. - 1e-8)
       self.cost = - np.sum(truth * np.log(out))
       # Update of delta given truth
-      self.delta = np.clip(self.output, 1e-8, 1. - 1e-8) - truth 
+      self.delta = np.clip(self.output, 1e-8, 1. - 1e-8) - truth
       # print('In FORWARD','\n', self.delta[0,0,0,:], '\n')
+
+    return self
 
   def backward(self, delta=None):
     '''
@@ -112,6 +114,9 @@ class Softmax_layer():
       delta : array of shape (batch, w, h, c), default is None. If an array is passed,
         it's the global delta to be backpropagated
     '''
+
+    check_is_fitted(self, 'delta')
+
     # This is an approximation
     if delta is not None:
       # print('In BACKWARD','\n', self.delta[0,0,0,:], '\n')
@@ -125,6 +130,8 @@ class Softmax_layer():
       ## softmax gradient formula
       # s = self.output.reshape(-1, 1)
       # delta[:] += np.diagflat(s) - np.dot(s, s.T)
+
+    return self
 
 
 if __name__ == '__main__':

@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from __future__ import division
 from __future__ import print_function
 
 import numpy as np
 from NumPyNet.exception import LayerError
+from NumPyNet.utils import check_is_fitted
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'BatchNorm Layer'
 
 
 class BatchNorm_layer(object):
@@ -126,6 +125,7 @@ class BatchNorm_layer(object):
     # output_shape = (batch, w, h, c)
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
+    return self
 
   def backward(self, delta=None):
     '''
@@ -138,6 +138,7 @@ class BatchNorm_layer(object):
         as the input of the forward function (batch, w, h ,c)
     '''
 
+    check_is_fitted(self, 'delta')
 
     invN = 1. / np.prod(self.mean.shape)
 
@@ -162,6 +163,8 @@ class BatchNorm_layer(object):
     if delta is not None:
       delta[:] = self.delta
 
+    return self
+
   def update(self):
     '''
     update function for the convolution layer
@@ -170,10 +173,13 @@ class BatchNorm_layer(object):
       optimizer : Optimizer object
     '''
 
+    check_is_fitted(self, 'delta')
+
     self.bias, self.scales = self.optimizer.update(params=[self.bias, self.scales],
                                                    gradients=[self.bias_updates, self.scales_updates]
                                                   )
 
+    return self
 
 
 if __name__ == '__main__':

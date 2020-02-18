@@ -4,16 +4,16 @@
 from __future__ import division
 from __future__ import print_function
 
-from keras.models import Model
-from keras.layers import Input
-import keras.backend as K
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input
+import tensorflow.keras.backend as K
 
 from NumPyNet.activations import Relu
 from NumPyNet.activations import Logistic
 from NumPyNet.activations import Linear
 from NumPyNet.activations import Tanh
 from NumPyNet.layers.connected_layer import Connected_layer
-from keras.layers import Dense
+from tensorflow.keras.layers import Dense
 
 import numpy as np
 
@@ -50,7 +50,7 @@ def test_connected_layer():
                                      activation=numpynet_act,
                                      weights=weights, bias=bias)
     # Keras Model
-    inp = Input(shape=(w * h * c), batch_shape=(batch, w * h * c))
+    inp = Input(batch_shape=(batch, w * h * c))
     x = Dense(outputs,activation=keras_act, input_shape=(batch,inpt.size))(inp)
     model = Model(inputs=[inp], outputs=x)
 

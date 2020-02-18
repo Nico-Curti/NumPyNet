@@ -4,10 +4,10 @@
 from __future__ import division
 from __future__ import print_function
 
-from keras.models import Model
-from keras.layers import Input
-from keras.layers import UpSampling2D
-import keras.backend as K
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input
+from tensorflow.keras.layers import UpSampling2D
+import tensorflow.keras.backend as K
 
 from NumPyNet.layers.upsample_layer import Upsample_layer
 
@@ -46,7 +46,7 @@ def test_upsample_layer():
             numpynet_layer = Upsample_layer(stride=stride, scale=scales)
 
             # Keras Model
-            inp = Input(shape=inpt.shape[1:], batch_shape=(batch, w, h, c))
+            inp = Input(batch_shape=(batch, w, h, c))
             x = UpSampling2D(size=(stride, stride), data_format='channels_last', interpolation='nearest')(inp)
             model = Model(inputs=[inp], outputs=x)
 

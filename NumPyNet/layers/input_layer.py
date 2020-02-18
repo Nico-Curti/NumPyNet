@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+from NumPyNet.utils import check_is_fitted
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Input Layer'
 
 
 class Input_layer(object):
@@ -48,6 +47,8 @@ class Input_layer(object):
     self.output[:] = inpt
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
+    return self
+
   def backward(self, delta):
     '''
     Simply pass the gradient
@@ -55,10 +56,15 @@ class Input_layer(object):
     Parameter:
       delta : global error to be backpropagated
     '''
+
+    check_is_fitted(self, 'delta')
+
     if self.out_shape != delta.shape:
       raise ValueError('Forward Input layer. Incorrect delta shape. Expected {} and given {}'.format(self.out_shape, delta.shape))
 
     delta[:] = self.delta
+
+    return self
 
 
 if __name__ == '__main__':

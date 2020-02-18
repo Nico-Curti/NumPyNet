@@ -1,17 +1,12 @@
-### Average Pool Layer
+# Average Pool Layer
 
 The Average Pool layer perfoms a down sampling on the batch of images.
 It slides a 2D kernel of arbitrary size over the image and the output is the mean value of the pixels inside the kernel. The slide of the kernel (how many pixel it moves on the x and the y axis) can be modified.
 
 In the images below are shown some results obtained by performing an average pool (forward and backward) with different kernel sizes and strides:
 
-<p align="center">
-  <img src="../images/average_3-2.png" >
-</p>
-<p align="center">
-  <img src="../images/average_30-20.png">
-</p>
-*Fig.1: in the image are shown the effects of different kernel size-stride couplets. From up to down : size=3 and stride=2, size=30 and stride=20*
+![](../images/average_3-2.png)
+![In the image are shown the effects of different kernel size-stride couplets. From up to down : size=3 and stride=2, size=30 and stride=20](../images/average_30-20.png)
 
 (I'm not showing the backward image, since it looks like a random noise)
 The code used to obtain those images can be found [in this repository](https://github.com/Nico-Curti/NumPyNet/blob/master/NumPyNet/layers/avgpool_layer.py), after the average pool layer class definition.
@@ -52,7 +47,7 @@ layer.backward(delta, copy=False)
 
 To have a look more in details on what's happening:
 
-##### Forward:
+## Forward:
 
 ```python
 def forward(self, inpt):
@@ -94,6 +89,7 @@ In the first place, if required by the user, the image is padded:
 ```python
 numpy.pad(array=inpt, pad_with=((0, 0), (self.pad_top, self.pad_bottom), (self.pad_left, self.pad_right), (0, 0)), mode='constant', constant_values=(np.nan, np.nan))
 ```
+
 that pads the images with a number of rows equal to `pad_top + pad_bottom`, and a number of columns equal to `pad_left + pad_right`. All values are `np.nan`.
 
   3. If no padding is requested, the colums and rows that would be left out from the kernel sliding are cut from every image on the batch.
@@ -105,11 +101,13 @@ basically N = batch * out_width * out_height * c matrices size * size, or every 
 
 The output dimensions of the image are computed as such:
 
-  <a href="https://www.codecogs.com/   eqnedit.php?latex=out\_width&space;=&space;\lfloor\frac{width&space;&plus;&space;pad&space;-&space;size}{stride}\rfloor&space;&plus;&space;1" target="_blank"><img src="https://latex.codecogs.com/gif.latex?out\_width&space;=&space;\lfloor\frac{width&space;&plus;&space;pad&space;-&space;size}{stride}\rfloor&space;&plus;&space;1" title="out\_width = \lfloor\frac{width + pad - size}{stride}\rfloor + 1" /></a>
+![](https://latex.codecogs.com/gif.latex?out\_width&space;=&space;\lfloor\frac{width&space;&plus;&space;pad&space;-&space;size}{stride}\rfloor&space;&plus;&space;1)
 
-  <a href="https://www.codecogs.com/eqnedit.php?latex=out\_height&space;=&space;\lfloor\frac{height&space;&plus;&space;pad&space;-&space;size}{stride}\rfloor&space;&plus;&space;1" target="_blank"><img src="https://latex.codecogs.com/gif.latex?out\_height&space;=&space;\lfloor\frac{height&space;&plus;&space;pad&space;-&space;size}{stride}\rfloor&space;&plus;&space;1" title="out\_height = \lfloor\frac{height + pad - size}{stride}\rfloor + 1" /></a>
+![](https://latex.codecogs.com/gif.latex?out\_height&space;=&space;\lfloor\frac{height&space;&plus;&space;pad&space;-&space;size}{stride}\rfloor&space;&plus;&space;1)
 
 After the view is created, the output is computed by `numpy.nanmean(view, axis=(4,5))`, which returns an array containing all the N average values, excluding nan value from the equations.
+
+## Backward
 
 The next code shows, instead, the backward function definition :
 

@@ -1,4 +1,4 @@
-### Upsample Layer
+# Upsample Layer
 
 To feed a super-resolution model we have to use a series of prior-known LR-HR image association; starting from this considerations we can down-sample our images by a desired scale factor: tipically between 2 and 8.
 On the other hand, thought, we can also consider a set of images as the LR ones, and obtain the
@@ -6,7 +6,6 @@ Thhese feats can be achieved using a Pooling algorithm (in particular an average
 
 The UpSample function is commonly related to GAN (Generative Adversarial Networks) models in which we have to provide a series of artificial images to a given Neural Network, but it's also a function that can be introduced inside a Neural Network model to rescale the number of features.
 The UpSample function inside a Neural Network model has to provide both up- and down- sampling technique since one is used in the `forward` function, while its inverse during the back-propagation.
-
 
 This is an example code on how to use the sngle UpSample layer:
 
@@ -91,9 +90,11 @@ def _upsample (self, inpt):
 	x = as_strided(inpt, (batch, w, self.stride[0], h, self.stride[1], c), (b, ws, 0, hs, 0, cs)) # view a as larger 4D array
 	return x.reshape(batch, w * self.stride[0], h * self.stride[1], c)                            # create new 2D array
 ```
+
 The up-sample function use the stride functionality of the Numpy array to rearrange and replicate the value of each pixel in a mask of size `strides × strides`.
 
 And here's the `_downsample` function:
+
 ```python
 def _downsample (self, inpt):
 	# This function works only if the dimensions are perfectly divisible by strides
@@ -104,6 +105,7 @@ def _downsample (self, inpt):
 
 	return inpt.reshape(batch, scale_w, self.stride[0], scale_h, self.stride[1], c).mean(axis=(2, 4))
 ```
+
 The down-sampling algorithm is obtained reshaping the input array according to two scale factors (`strides` in the code) along the two dimensions and computing the mean along these axes.
 
 Unfortunately, for now it works only if `h % stride` and `w % stride` are zero.

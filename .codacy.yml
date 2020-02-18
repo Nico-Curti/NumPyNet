@@ -1,0 +1,16 @@
+---
+engines:
+ rubocop:
+   enabled: true
+
+pylint:
+  enabled: true
+  python_version: 3
+
+exclude_paths:
+  - '.github/**'
+  - '**.md'
+  - 'docs/**'
+  - NumPyNet/__init__.py
+  - NumPyNet/__version__.py
+  - NumPyNet/layers/__init__.py

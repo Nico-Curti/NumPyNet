@@ -1,4 +1,4 @@
-### Shortcut Layer
+# Shortcut Layer
 
 Deep Neural Networks model suffer from the degradation problem, i.e. the accuracy reduction with increasing depth of the network; Moreover, the accuracy loss happens in the training dataset.
 
@@ -6,19 +6,16 @@ In [the original paper](https://arxiv.org/pdf/1512.03385.pdf), they addres the d
 
 In the original paper, the shortcut connections perform an operation like:
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=H(x)&space;=&space;F(x)&space;&plus;&space;x" target="_blank"><img src="https://latex.codecogs.com/gif.latex?H(x)&space;=&space;F(x)&space;&plus;&space;x" title="H(x) = F(x) + x" /></a>
-</p>
+![](https://latex.codecogs.com/gif.latex?H(x)&space;=&space;F(x)&space;&plus;&space;x)
 
 Where `F(x)` is the ouput of layer l-1, `x` is the output of the layer l-2, and `H(x)` is the output of the layer l, or `Shortcut_layer` (see image below for reference).
 
-![](../images/shortcut_connection.png)
-*Fig.: shortcut connections in a multilayered CNN*
+![Shortcut connections in a multilayered CNN](../images/shortcut_connection.png)
 
 The object `Shortcut_layer` is an implementation of this concept, where is possible to add weights to the linear combination, &alpha; and &beta;, as :
 
 <p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=H(x)&space;=&space;\alpha&space;F(x)&space;&plus;&space;\beta&space;x" target="_blank"><img src="https://latex.codecogs.com/gif.latex?H(x)&space;=&space;\alpha&space;F(x)&space;&plus;&space;\beta&space;x" title="H(x) = \alpha F(x) + \beta x" /></a>
+	<a href="https://www.codecogs.com/eqnedit.php?latex=H(x)&space;=&space;\alpha&space;F(x)&space;&plus;&space;\beta&space;x" target="_blank"><img src="https://latex.codecogs.com/gif.latex?H(x)&space;=&space;\alpha&space;F(x)&space;&plus;&space;\beta&space;x" title="H(x) = \alpha F(x) + \beta x" /></a>
 </p>
 
 And it can actually deal with different sized inputs.
@@ -63,7 +60,6 @@ layer.backward(delta, copy=False)
 ```
 
 To have a look more in details on what's happening, the defintions of `forward` and `backward` are:
-
 
 ```python
 def forward(self, inpt, prev_output):

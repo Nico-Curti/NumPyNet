@@ -1,28 +1,19 @@
-### Convolutional Layer
-
+# Convolutional Layer
 
 Convolutional Neural Network (CNN) are designed in particular for image analysis.
 Convolution is the mathematical integration of two functions in which the second one is translated by a given value:
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=(f&space;*&space;g)(t)&space;=&space;\int_{-\infty}^{&plus;\infty}&space;f(\tau)g(t&space;-&space;\tau)d\tau" target="_blank"><img src="https://latex.codecogs.com/gif.latex?(f&space;*&space;g)(t)&space;=&space;\int_{-\infty}^{&plus;\infty}&space;f(\tau)g(t&space;-&space;\tau)d\tau" title="(f * g)(t) = \int_{-\infty}^{+\infty} f(\tau)g(t - \tau)d\tau" /></a>
-<p>
+![](https://latex.codecogs.com/gif.latex?(f&space;*&space;g)(t)&space;=&space;\int_{-\infty}^{&plus;\infty}&space;f(\tau)g(t&space;-&space;\tau)d\tau)
 
 In signal processing this operation is also called *crossing correlation* and it is equivalent to the *autocorrelation* function computed in a given point.
 In image processing the first function is represented by the image *I* and the second one is a kernel *k* (or filter) which shift along the image.
 In this case we will have a 2D discrete version of the formula given by:
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=C&space;=&space;k&space;*&space;I" target="_blank"><img src="https://latex.codecogs.com/gif.latex?C&space;=&space;k&space;*&space;I" title="C = k * I" /></a>
-</p>
+![](https://latex.codecogs.com/gif.latex?C&space;=&space;k&space;*&space;I)
 
-<p align="center">
-<a href="https://www.codecogs.com/eqnedit.php?latex=C[i,&space;j]&space;=&space;\sum_{u=-N}^{N}&space;\sum_{v=-M}^{M}&space;k[u,&space;v]&space;\cdot&space;I[i&space;-&space;u,&space;j&space;-&space;v]" target="_blank"><img src="https://latex.codecogs.com/gif.latex?C[i,&space;j]&space;=&space;\sum_{u=-N}^{N}&space;\sum_{v=-M}^{M}&space;k[u,&space;v]&space;\cdot&space;I[i&space;-&space;u,&space;j&space;-&space;v]" title="C[i, j] = \sum_{u=-N}^{N} \sum_{v=-M}^{M} k[u, v] \cdot I[i - u, j - v]" /></a>
-</p>
-
+![](https://latex.codecogs.com/gif.latex?C[i,&space;j]&space;=&space;\sum_{u=-N}^{N}&space;\sum_{v=-M}^{M}&space;k[u,&space;v]&space;\cdot&space;I[i&space;-&space;u,&space;j&space;-&space;v])
 
 where `C[i, j]` is the pixel value of the resulting image and `N, M` are kernel dimensions.
-
 
 The use of CNN in modern image analysis applications can be traced back to multiple causes.
 First of all the image dimensions are increasingly bigger and thus the number of variables/features, i.e pixels, is often too big to manage with standard DNN.

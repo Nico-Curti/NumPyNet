@@ -6,6 +6,7 @@ from __future__ import print_function
 
 from NumPyNet.activations import Activations
 from NumPyNet.utils import _check_activation
+from NumPyNet.utils import check_is_fitted
 
 import numpy as np
 from itertools import product
@@ -13,7 +14,6 @@ from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Shortcut Layer'
 
 
 class Shortcut_layer(object):
@@ -125,11 +125,13 @@ class Shortcut_layer(object):
         self._stride_index(inpt.shape, prev_output.shape)
 
       self.output = inpt.copy()
-      self.output[:, ix, jx, kx] = self.alpha * self.outpu[:, ix, jx, kx] + self.beta * prev_output[:, iy, jy, ky]
+      self.output[:, self.ix, self.jx, self.kx] = self.alpha * self.outpu[:, self.ix, self.jx, self.kx] + self.beta * prev_output[:, self.iy, self.jy, self.ky]
 
 
     self.output = self.activation(self.output)
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
+
+    return self
 
   def backward(self, delta, prev_delta):
     '''
@@ -140,6 +142,8 @@ class Shortcut_layer(object):
       delta_prev : array of shape (batch, w, h, c), second delta to be backporpagated
 
     '''
+
+    check_is_fitted(self, 'delta')
 
     # derivatives of the activation funtion w.r.t. to input
     self.delta *= self.gradient(self.output)
@@ -152,7 +156,7 @@ class Shortcut_layer(object):
     else: # different shapes
       prev_delta[:, self.ix, self.jx, self.kx] += self.beta * self.delta[:, self.iy, self.jy, self.ky]
 
-
+    return self
 
 if __name__ == '__main__':
 

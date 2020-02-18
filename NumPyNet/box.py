@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 from __future__ import division
 from __future__ import print_function
 
@@ -9,7 +8,6 @@ import operator
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Boxes'
 
 
 class Box (object):
@@ -24,7 +22,7 @@ class Box (object):
 
       except ValueError:
         class_name = self.__class__.__name__
-      raise ValueError('{0}: inconsistent input shape. Expected a 4D (x, y, w, h) shapes and given {1}'.format(class_name, coords))
+        raise ValueError('{0}: inconsistent input shape. Expected a 4D (x, y, w, h) shapes and given {1}'.format(class_name, coords))
 
     else:
       self.x, self.y, self.w, self.h = (None, None, None, None)

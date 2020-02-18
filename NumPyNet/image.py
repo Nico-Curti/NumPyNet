@@ -7,13 +7,13 @@ from __future__ import print_function
 import os
 import cv2
 import numpy as np
+from matplotlib.cm import jet # colormap
 
-from NumPyNet.image_utils import image_utils
+# from NumPyNet.image_utils import image_utils
 from NumPyNet.image_utils import normalization
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Image object'
 
 
 class Image (object):
@@ -77,16 +77,18 @@ class Image (object):
 
     return img
 
-  def _get_color (self, x, max):
+  def _get_color (self, x):#, max):
 
-    ratio = (x / max) * len(image_utils.num_box_colors - 1)
-    i, j = np.floor(ratio), np.ceil(ratio)
+    # ratio = (x / max) * len(image_utils.num_box_colors - 1)
+    # i, j = np.floor(ratio), np.ceil(ratio)
 
-    ratio -= i
+    # ratio -= i
+    # r, g, b = image_utils.colors[i]
 
-    return ( (1. - ratio) * image_utils.colors[i][2] + ratio * image_utils.colors[j][2],
-             (1. - ratio) * image_utils.colors[i][1] + ratio * image_utils.colors[j][1],
-             (1. - ratio) * image_utils.colors[i][0] + ratio * image_utils.colors[j][0] )
+    # return ( (1. - ratio) * b + ratio * b,
+    #          (1. - ratio) * g + ratio * g,
+    #          (1. - ratio) * r + ratio * r )
+    r, g, b, _ = jet(x)
 
 
   def get (self):
@@ -300,7 +302,7 @@ class Image (object):
         num_obj = labels.count(',') + 1
         offset = num_obj * 123457 % len(names)
 
-        r, g, b = self._get_color(offset, len(names))
+        r, g, b = self._get_color(offset)#, len(names))
 
         left, right, top, bottom = ( (d.bbox.x - d.bbox.w * .5) * self.width,
                                      (d.bbox.x + d.bbox.w * .5) * self.width,

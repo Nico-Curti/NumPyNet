@@ -6,10 +6,10 @@ from __future__ import print_function
 
 import numpy as np
 from NumPyNet.exception import LayerError
+from NumPyNet.utils import check_is_fitted
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Route layer'
 
 
 class Route_layer():
@@ -32,7 +32,7 @@ class Route_layer():
         Otherwise, if the shapes are (b, w, h, c1) and (b, w, h, c2) and axis=3, the final output size
         will be (b, w, h, c1 + c2) (YOLOv3 model)
     '''
-    
+
     if by_channels :
       self.axis = 3  # axis for the concatenation
     else:
@@ -48,38 +48,38 @@ class Route_layer():
   def __call__(self, previous_layer):
 
     self._out_shape = [0,0,0,0]
-    
-    if self.axis:  # by channels 
+
+    if self.axis:  # by channels
       for prev in previous_layer:
-        
+
         if prev.out_shape is None:
           class_name = self.__class__.__name__
           prev_name  = previous_layer.__class__.__name__
-          raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))        
-        
+          raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
+
         c = prev.out_shape[3]
         self._out_shape[3] += c
         self._out_shape[0:3] = prev.out_shape[0:3]
-        
+
     else : # by batch
       for prev in previous_layer:
-        
+
         if prev.out_shape is None:
           class_name = self.__class__.__name__
           prev_name  = previous_layer.__class__.__name__
-          raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))        
+          raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
 
         b = prev.out_shape[0]
         self._out_shape[0] += b
         self._out_shape[1:4] = prev.out_shape[1:4]
-        
-    
+
+
     self._out_shape = tuple(self._out_shape)
     return self
 
   @property
   def out_shape(self):
-    return self._out_shape 
+    return self._out_shape
 
   def forward(self, network):
     '''
@@ -89,9 +89,11 @@ class Route_layer():
     Parameters:
       network : Network object type.
     '''
-    
+
     self.output = np.concatenate([network[layer_idx].output for layer_idx in self.input_layers], axis=self.axis)
     self.delta  = np.zeros(shape=self.out_shape, dtype=float)
+
+    return self
 
   def backward(self, delta, network):
     '''
@@ -101,7 +103,9 @@ class Route_layer():
       delta  : 4-d numpy array, network delta to be backpropagated
       network: Network object type.
     '''
-    
+
+    check_is_fitted(self, 'delta')
+
     # NumPyNet implementation
     if self.axis == 3:            # this works for concatenation by channels axis
       channels_sum = 0
@@ -116,6 +120,8 @@ class Route_layer():
         batches = network[idx].out_shape[0]
         network[idx].delta += self.delta[batch_sum : batch_sum + batches,:,:,:]
         batch_sum += batches
+
+    return self
 
 
 if __name__ == '__main__':
