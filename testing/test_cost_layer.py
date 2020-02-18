@@ -47,18 +47,19 @@ def test_cost_layer():
 
   for loss_function in losses :
 
+    sess = tf.Session()
+
+    losses = [mean_absolute_error, mean_squared_error, logcosh]
+              #, hinge] # derivative is ambigous
+
     keras_loss_type = loss_function
 
     outputs = 100
-    truth = np.random.uniform(low=0., high=1., size=(outputs,))
-    inpt = np.random.uniform(low=0., high=1., size=(outputs,))
+    truth = np.random.uniform(low=0., high=1., size=(outputs,)).astype(np.float32)
+    inpt  = np.random.uniform(low=0., high=1., size=(outputs,)).astype(np.float32)
 
-    inp = Input(shape=(inpt.size, ))
-    x = Activation(activation='linear')(inp)
-    model = Model(inputs=[inp], outputs=x)
-
-    # an input layer to feed labels
-    truth_tf = K.variable(truth)
+    truth_tf = tf.convert_to_tensor(truth)
+    inpt_tf  = tf.convert_to_tensor(inpt)
 
     if   keras_loss_type is mean_squared_error:  cost = cl.cost_type.mse
     elif keras_loss_type is mean_absolute_error: cost = cl.cost_type.mae
@@ -71,7 +72,12 @@ def test_cost_layer():
                                 scale=1., ratio=0., noobject_scale=1.,
                                 threshold=0., smoothing=0.)
 
-    keras_loss = K.eval(keras_loss_type(truth_tf, inpt))
+    keras_loss_tf = keras_loss_type(truth_tf, inpt_tf)
+
+    tf.compat.v1.global_variables_initializer()
+
+    keras_loss = keras_loss_tf.eval(session=sess)
+
     numpynet_layer.forward(inpt, truth)
     numpynet_loss = numpynet_layer.cost
 
@@ -81,28 +87,26 @@ def test_cost_layer():
 
     # compute loss based on model's output and true labels
     if   keras_loss_type is mean_squared_error:
-      loss = K.mean( K.square(truth_tf - model.output) )
+      loss = K.mean( K.square(truth_tf - inpt_tf) )
     elif keras_loss_type is mean_absolute_error:
-      loss = K.mean( K.abs(truth_tf - model.output) )
+      loss = K.mean( K.abs(truth_tf - inpt_tf) )
     elif keras_loss_type is logcosh:
-      loss = K.mean( K.log(tf.math.cosh(truth_tf - model.output)))
+      loss = K.mean( K.log(tf.math.cosh(truth_tf - inpt_tf)))
     elif keras_loss_type is hinge:
-      loss = K.maximum(1. - truth_tf * model.output, 0)
+      loss = K.maximum(1. - truth_tf * inpt_tf, 0)
     else:
       raise ValueError()
 
     # compute gradient of loss with respect to inputs
-    grad_loss = K.gradients(loss, [model.input])
+    grad_loss = K.gradients(loss, [inpt_tf])
 
     # create a function to be able to run this computation graph
-    func = K.function(model.inputs + [truth_tf], grad_loss)
+    func = K.function([inpt_tf] + [truth_tf], grad_loss)
     keras_delta = func([np.expand_dims(inpt, axis=0), truth])
 
     numpynet_delta = numpynet_layer.delta
 
     assert np.allclose(keras_delta, numpynet_delta)
-
-    # all passed
 
 if __name__ == '__main__':
 

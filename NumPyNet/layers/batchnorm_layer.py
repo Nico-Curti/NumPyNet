@@ -161,7 +161,7 @@ class BatchNorm_layer(object):
                   self.mean_delta * invN)
 
     if delta is not None:
-      delta[:] = self.delta
+      delta[:] += self.delta
 
     return self
 
