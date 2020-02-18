@@ -75,11 +75,11 @@ def test_route_layer():
   net._net[3].delta = np.ones(shape=fwd_out_numpynet.shape)
   net._backward(X=input)
 
-  delta_numpynet = net._net[0].delta
+  # delta_numpynet = net._net[0].delta
 
   # i don't know how to test it for now, this is incorrect
 
-#  assert np.allclose(delta_keras, delta_numpynet)
+  # assert np.allclose(delta_keras, delta_numpynet)
 
 
 if __name__ == '__main__':

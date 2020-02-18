@@ -41,7 +41,8 @@ class Maxpool_layer(object):
     if not hasattr(self.stride, '__iter__'):
       self.stride = (int(self.stride), int(self.stride))
 
-    assert len(self.size) == 2 and len(self.stride) == 2
+    if len(self.size) != 2 or len(self.stride) != 2:
+      raise LayerError('Maxpool layer. Incompatible stride/size dimensions. They must be a 1D-2D tuple of values')
 
     self.batch, self.w, self.h, self.c = (0, 0, 0, 0)
 

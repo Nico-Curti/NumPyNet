@@ -41,7 +41,8 @@ class Avgpool_layer(object):
     if not hasattr(self.stride, '__iter__'):
       self.stride = (int(self.stride), int(self.stride))
 
-    assert len(self.size) == 2 and len(self.stride) == 2
+    if len(self.size) != 2 or len(self.stride) != 2:
+      raise LayerError('Avgpool layer. Incompatible stride/size dimensions. They must be a 1D-2D tuple of values')
 
     self.batch, self.w, self.h, self.c = (0, 0, 0, 0)
 
@@ -53,7 +54,7 @@ class Avgpool_layer(object):
 
 
   def __str__(self):
-    batch, out_width, out_height, out_channels = self.out_shape
+    _, out_width, out_height, out_channels = self.out_shape
     return 'avg         {} x {} / {}  {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d}'.format(
            self.size[0], self.size[1], self.stride[0],
            self.batch, self.w, self.h, self.c,
@@ -191,7 +192,7 @@ class Avgpool_layer(object):
 
     check_is_fitted(self, 'delta')
 
-    kx, ky = self.size
+    # kx, ky = self.size
 
     # Padding delta for a coherent _asStrided dimension
     if self.pad:

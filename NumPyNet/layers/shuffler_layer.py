@@ -178,7 +178,8 @@ if __name__ == '__main__':
   delta = np.ones(inpt.shape)
   layer.backward(delta)
 
-  assert np.allclose(delta, inpt)
+  if not np.allclose(delta, inpt):
+    raise LayerError('Shuffler layer. Wrong backward results')
 
   # Visualizations
 

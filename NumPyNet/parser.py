@@ -8,6 +8,7 @@ import os
 import re
 import configparser
 from collections import OrderedDict
+from ast import literal_eval as eval
 
 from NumPyNet.exception import CfgVariableError
 from NumPyNet.exception import DataVariableError

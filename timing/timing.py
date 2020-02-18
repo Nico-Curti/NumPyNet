@@ -13,6 +13,10 @@ from time import time as now
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
+global NUM_REPEATS
+global NUMBER
+global AVAILABLE_LAYERS
+
 NUM_REPEATS = 10
 NUMBER = 100
 AVAILABLE_LAYERS = ['activation', 'avgpool', 'batchnorm', 'connected', 'convolutional', 'cost', 'dropout', 'input', 'logistic', 'maxpool', 'route', 'shortcut', 'shuffler', 'softmax', 'upsample', 'yolo']

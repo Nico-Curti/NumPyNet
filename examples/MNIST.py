@@ -13,20 +13,21 @@ from NumPyNet.layers.connected_layer import Connected_layer
 from NumPyNet.layers.convolutional_layer import Convolutional_layer
 from NumPyNet.layers.maxpool_layer import Maxpool_layer
 from NumPyNet.layers.softmax_layer import Softmax_layer
-from NumPyNet.layers.dropout_layer import Dropout_layer
-from NumPyNet.layers.cost_layer import Cost_layer
-from NumPyNet.layers.cost_layer import cost_type
+# from NumPyNet.layers.dropout_layer import Dropout_layer
+# from NumPyNet.layers.cost_layer import Cost_layer
+# from NumPyNet.layers.cost_layer import cost_type
 from NumPyNet.layers.batchnorm_layer import BatchNorm_layer
 from NumPyNet.network import Network
-from NumPyNet.optimizer import Adam, SGD, Momentum
+from NumPyNet.optimizer import SGD
+# from NumPyNet.optimizer import Adam, SGD, Momentum
 from NumPyNet.utils import to_categorical
 from NumPyNet.metrics import accuracy_score
 
 import numpy as np
 from sklearn import datasets
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score as sk_ac
-import matplotlib.pyplot as plt
+# from sklearn.metrics import accuracy_score as sk_ac
+# import matplotlib.pyplot as plt
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']

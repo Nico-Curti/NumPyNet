@@ -11,6 +11,7 @@ from copy import copy
 
 import numpy as np
 from time import time as now
+from ast import literal_eval as eval
 
 from NumPyNet.layers.activation_layer import Activation_layer
 from NumPyNet.layers.avgpool_layer import Avgpool_layer
@@ -138,7 +139,7 @@ class Network(object):
     '''
     print('layer       filters  size              input                output')
     for i, layer in enumerate(self._net):
-      print('{:>4d} {}'.format(i, self._net[i]), flush=True, end='\n')
+      print('{:>4d} {}'.format(i, layer), flush=True, end='\n')
 
 
   def load(self, cfg_filename, weights=None):
@@ -191,11 +192,10 @@ class Network(object):
       #  self._net.append( BatchNorm_layer()(self._net[-1]) )
       #  print('{:>4d} {}'.format(i, self._net[-1]), flush=True, end='\n')
 
-    return self
-
-
     if weights is not None:
       self.load_weights(weights)
+
+    return self
 
   def load_weights(self, weights_filename):
     '''
@@ -318,7 +318,7 @@ class Network(object):
 
     Xy_generator.start()
 
-    for i in range(max_iter):
+    for _ in range(max_iter):
 
       grabbed = False
 
@@ -424,7 +424,7 @@ class Network(object):
     '''
     Output shape
     '''
-    return self._net[0].out_shape()[1:]
+    return self._net[0].out_shape[1:]
 
   @property
   def input_shape(self):

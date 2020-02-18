@@ -32,7 +32,8 @@ class Upsample_layer(object):
     if not hasattr(self.stride, '__iter__'):
       self.stride = (int(stride), int(stride))
 
-    assert len(self.stride) == 2
+    if len(self.stride) != 2:
+      raise LayerError('Upsample layer. Incompatible stride dimensions. It must be a 1D-2D tuple of values')
 
     if self.stride[0] < 0 and self.stride[1] < 0: # downsample
       self.stride = (-self.stride[0], -self.stride[1])

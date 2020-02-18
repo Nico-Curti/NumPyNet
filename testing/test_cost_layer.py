@@ -89,7 +89,7 @@ def test_cost_layer():
     elif keras_loss_type is hinge:
       loss = K.maximum(1. - truth_tf * model.output, 0)
     else:
-      raise ValuError()
+      raise ValueError()
 
     # compute gradient of loss with respect to inputs
     grad_loss = K.gradients(loss, [model.input])

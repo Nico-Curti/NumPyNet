@@ -89,6 +89,7 @@ class Image (object):
     #          (1. - ratio) * g + ratio * g,
     #          (1. - ratio) * r + ratio * r )
     r, g, b, _ = jet(x)
+    return (r, g, b)
 
 
   def get (self):

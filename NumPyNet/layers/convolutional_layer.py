@@ -56,7 +56,8 @@ class Convolutional_layer(object):
     if not hasattr(self.stride, '__iter__'):
       self.stride = (int(self.stride), int(self.stride))
 
-    assert len(self.size) == 2 and len(self.stride) == 2
+    if len(self.size) != 2 or len(self.stride) != 2:
+      raise LayerError('Convolutional layer. Incompatible stride/size dimensions. They must be a 1D-2D tuple of values')
 
     self.pad = pad
     self.pad_left, self.pad_right, self.pad_bottom, self.pad_top = (0, 0, 0, 0)

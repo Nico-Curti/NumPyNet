@@ -161,6 +161,7 @@ class DataGenerator (object):
                                                label_files[self._current_batch : self._current_batch + self._batch])
 
         else:
+          # TODO: add label loads
           self._data, self._label = self._load(source_files[self._current_batch : self._current_batch + self._batch])
 
         self._current_batch += self._batch
