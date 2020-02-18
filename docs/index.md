@@ -159,7 +159,7 @@ If you have found `NumPyNet` helpful in your research, please consider citing th
 ```tex
 @misc{NumPyNet,
   author = {Curti, Nico and Ceccarelli, Mattia},
-  title = {{N}um{P}y{N}et},
+  title = {NumPyNet},
   year = {2019},
   publisher = {GitHub},
   journal = {GitHub repository},
