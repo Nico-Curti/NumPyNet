@@ -21,17 +21,23 @@ class Avgpool_layer(object):
     '''
     Avgpool layer
 
-    Parameters:
-      size    : tuple with two integers (kx, ky), size of the kernel to be slided over the input image
-      stride  : tuple of two integers, representing the horizontal and vertical stride of the kernel
-      padding : boolean, if False the image is cut to fit the size and stride dimensions, if True the
-        image is padded following keras SAME padding, as indicated here:
-          https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
+    Parameters
+    ----------
+      size    : tuple with two integers (kx, ky) or integer, size of the kernel to be slided over the input image.
+      stride  : tuple of two integers, default None. Represents the horizontal and vertical stride of the kernel.
+                If None or 0, stride is assigned the values of size.
+      padding : boolean, default False. If False the image is cut to fit the size and stride dimensions, if True the
+                image is padded following keras SAME padding, as indicated here:
+                https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
     '''
 
     self.size = size
+
     if not hasattr(self.size, '__iter__'):
       self.size = (int(self.size), int(self.size))
+
+    if self.size[0] <= 0. or self.size[1] <= 0.:
+      raise LayerError('Avgpool layer. Incompatible size dimensions. They must be both > 0')
 
     if not stride:
       self.stride = size
@@ -46,7 +52,7 @@ class Avgpool_layer(object):
 
     self.batch, self.w, self.h, self.c = (0, 0, 0, 0)
 
-    #for padding
+    # for padding
     self.pad = padding
     self.pad_left, self.pad_right, self.pad_bottom, self.pad_top = (0, 0, 0, 0)
 
@@ -81,7 +87,7 @@ class Avgpool_layer(object):
     out_channels = self.c
     return (self.batch, out_width, out_height, out_channels)
 
-  def _asStride(self, inpt, size, stride):
+  def _asStride(self, inpt):
     '''
     _asStride returns a view of the input array such that a kernel of size = (kx,ky)
     is slided over the image with stride = (st1, st2)
@@ -92,16 +98,15 @@ class Avgpool_layer(object):
     see also:
     https://stackoverflow.com/questions/42463172/how-to-perform-max-mean-pooling-on-a-2d-array-using-numpy
 
-    Parameters:
-      inpt  : input batch of images to be stride with shape = ()
-      size  : a tuple indicating the horizontal and vertical size of the kernel
-      stride: a tuple indicating the horizontal and vertical steps of the kernel
+    Parameters
+    ----------
+      inpt  : input batch of images to be stride with shape = (batch, w, h, c)
     '''
 
     batch_stride, s0, s1 = inpt.strides[:3]
     batch,        w,  h  = inpt.shape[:3]
-    kx, ky     = size
-    st1, st2   = stride
+    kx, ky     = self.size
+    st1, st2   = self.stride
 
     # Shape of the final view
     view_shape = (batch, 1 + (w - kx)//st1, 1 + (h - ky)//st2) + inpt.shape[3:] + (kx, ky)
@@ -115,7 +120,8 @@ class Avgpool_layer(object):
 
   def _evaluate_padding(self):
     '''
-    Compute padding dimensions
+    Compute padding dimensions, following keras VALID and SAME criteria. See:
+    https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
     '''
     # Compute how many raws are needed to pad the image in the 'w' axis
     if (self.w % self.stride[0] == 0):
@@ -141,8 +147,13 @@ class Avgpool_layer(object):
     See also:
       https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
 
-    Parameters:
-      inpt    : input images in the format (batch, width, height, channels)
+    Parameters
+    ----------
+      inpt : input images in the format (batch, width, height, channels).
+
+    Returns
+    ----------
+    A padded batch of images, following keras SAME padding.
     '''
 
     # return the nan-padded image, in the same format as inpt (batch, width + pad_w, height + pad_h, channels)
@@ -156,8 +167,13 @@ class Avgpool_layer(object):
     it computes the average value without considering NAN value (padding), and passes it
     to the output.
 
-    Parameters:
-      inpt : input batch of image, with the shape (batch, input_w, input_h, input_c)
+    Parameters.
+    ----------
+      inpt : input batch of image, with the shape (batch, input_w, input_h, input_c).
+
+    Returns.
+    ----------
+    A Avgpool_layer object.
     '''
 
     self.batch, self.w, self.h, self.c = inpt.shape
@@ -173,7 +189,7 @@ class Avgpool_layer(object):
       mat_pad = inpt[:, : (self.w - kx) // sx*sx + kx, : (self.h - ky) // sy*sy + ky, ...]
 
     # 'view' is the strided input image, shape = (batch, out_w, out_h, out_c, kx, ky)
-    view = self._asStride(mat_pad, self.size, self.stride)
+    view = self._asStride(mat_pad)
 
     # Mean of every sub matrix, computed without considering the padd(np.nan)
     self.output = np.nanmean(view, axis=(4, 5))
@@ -186,8 +202,13 @@ class Avgpool_layer(object):
     backward function of the average_pool layer: the function modifies the net delta
     to be backpropagated.
 
-    Parameters:
-      delta : global delta to be backpropagated with shape (batch, out_w, out_h, out_c)
+    Parameters
+    ----------
+      delta : global delta to be backpropagated with shape (batch, out_w, out_h, out_c).
+
+    Returns
+    ----------
+    A Avgpool_layer object.
     '''
 
     check_is_fitted(self, 'delta')
@@ -202,7 +223,7 @@ class Avgpool_layer(object):
 
     # _asStrid of padded delta let me access every pixel of the memory in the order I want.
     # This is used to create a 1-1 correspondence between output and input pixels.
-    net_delta_view = self._asStride(mat_pad, self.size, self.stride)
+    net_delta_view = self._asStride(mat_pad)
 
     # norm = 1./(kx*ky) # needs to count only no nan values for keras
     b, w, h, c = self.output.shape

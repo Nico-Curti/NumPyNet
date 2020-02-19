@@ -21,8 +21,9 @@ class Activation_layer(object):
     '''
     Activation layer
 
-    Parameters :
-      activation : activation function of the layer
+    Parameters
+    ----------
+      activation : activation function of the layer.
     '''
 
     activation = _check_activation(self, activation)
@@ -55,13 +56,19 @@ class Activation_layer(object):
   def forward(self, inpt, copy=True):
     '''
     Forward of the activation layer, apply the selected activation function to
-    the input
+    the input.
 
-    Parameters:
-      inpt: the input to be activated
-      copy: default value is True. If True make a copy of the input before
-            applying the activation
+    Parameters
+    ----------
+      inpt: numpy array. Input images to be activated.
+      copy: bolean, default True. If True make a copy of the input before
+            applying the activation.
+
+    Returns
+    ----------
+      activation layer object.
     '''
+
     self._out_shape = inpt.shape
     self.output = self.activation(inpt, copy=copy)
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
@@ -72,8 +79,13 @@ class Activation_layer(object):
     '''
     Compute the backward of the activation layer
 
-    Parameter:
+    Parameter
+    ----------
       delta : global error to be backpropagated
+
+    Returns
+    ----------
+      activation layer object.
     '''
 
     check_is_fitted(self, 'delta')

@@ -258,6 +258,27 @@ class Stair (Activations):
   def __init__ (self):
     super(Stair, self).__init__('Stair')
 
+  @staticmethod
+  def activate(x, copy=False):
+    if copy: y = x.copy()
+    else:    y = x
+
+    n = np.floor(y)
+    z = np.floor(y/2.)
+    y[n%2 == 0.] = z[n%2 == 0]
+    y[n%2 != 0.] = ((x-n) + z)[n%2 != 0]
+    return y
+
+  @staticmethod
+  def gradient(x, copy=False):
+    if copy: y = x.copy()
+    else:    y = x
+
+    n = np.floor(y)
+    y[n == y] = 0.
+    y[n != y] = 1.
+    return y
+
 
 class Hardtan (Activations):
 

@@ -10,10 +10,24 @@ import tensorflow.keras.backend as K
 
 from NumPyNet.exception import NotFittedError
 from NumPyNet.activations import Activations
-from NumPyNet.activations import Relu
 from NumPyNet.activations import Logistic
+from NumPyNet.activations import Loggy
+from NumPyNet.activations import Relu
+from NumPyNet.activations import Elu
+from NumPyNet.activations import Relie
+from NumPyNet.activations import Ramp
 from NumPyNet.activations import Linear
 from NumPyNet.activations import Tanh
+from NumPyNet.activations import Plse
+from NumPyNet.activations import Leaky
+from NumPyNet.activations import Stair
+from NumPyNet.activations import Hardtan
+from NumPyNet.activations import Lhtan
+from NumPyNet.activations import Selu
+from NumPyNet.activations import Elliot
+from NumPyNet.activations import SymmElliot
+from NumPyNet.activations import SoftPlus
+from NumPyNet.activations import SoftSign
 from NumPyNet.layers.activation_layer import Activation_layer
 from tensorflow.keras.layers import Activation
 
@@ -26,20 +40,25 @@ from hypothesis import settings
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
-np.random.seed(123)
 
 class TestActivationLayer:
   '''
   Tests:
-    - if the forward and the backward of Numpy_net are consistent with keras.
-    - if all the possible activation functions works with different batch_size
+    - costructor of Activation_layer object
+    - print function
+    - forward function against tf.keras for different activations
+    - backward function against tf.keras for different activations
   '''
 
   def test_constructor (self):
 
-    numpynet_activ = [Relu, Logistic, Tanh, Linear]
+    numpynet_activ = [Elliot, Elu, Hardtan,
+                     Leaky, Lhtan, Linear, Loggy, Logistic,
+                     Plse, Ramp, Relie, Relu,
+                     Selu, SoftPlus, SoftSign, Stair,
+                     SymmElliot, Tanh]
 
-    for act_fun in range(0, 4):
+    for act_fun in range(0, len(numpynet_activ)):
 
       layer = Activation_layer(activation=numpynet_activ[act_fun])
 
@@ -54,7 +73,11 @@ class TestActivationLayer:
 
   def test_printer (self):
 
-    numpynet_activ = [Relu, Logistic, Tanh, Linear]
+    numpynet_activ = [Elliot, Elu, Hardtan,
+                     Leaky, Lhtan, Linear, Loggy, Logistic,
+                     Plse, Ramp, Relie, Relu,
+                     Selu, SoftPlus, SoftSign, Stair,
+                     SymmElliot, Tanh]
 
     for act_fun in range(0, 4):
 
@@ -89,13 +112,13 @@ class TestActivationLayer:
             deadline=None)
   def test_forward (self, batch, w, h, c):
 
-    keras_activ = ['relu', 'sigmoid', 'tanh','linear']
-    numpynet_activ = [Relu, Logistic, Tanh, Linear]
+    keras_activ = ['relu', 'sigmoid', 'tanh','linear'] # 'softplus', 'softsign', 'elu', 'selu']
+    numpynet_activ = [Relu, Logistic, Tanh, Linear] # SoftPlus, SoftSign, Elu, Selu]
 
     # negative value for Relu testing
     inpt = np.random.uniform(low=-1., high=1., size=(batch, w, h, c))
 
-    for act_fun in range(0, 4):
+    for act_fun in range(0, len(keras_activ)):
 
       # numpynet model init
       numpynet = Activation_layer(activation=numpynet_activ[act_fun])
@@ -116,7 +139,7 @@ class TestActivationLayer:
 
       # Forward check (Shape and Values)
       assert forward_out_keras.shape == forward_out_numpynet.shape
-      assert np.allclose(forward_out_keras, forward_out_numpynet)
+      assert np.allclose(forward_out_keras, forward_out_numpynet, atol=1e-4)
 
 
   @given(batch = st.integers(min_value=1, max_value=15 ),
@@ -127,13 +150,13 @@ class TestActivationLayer:
             deadline=None)
   def test_backward (self, batch, w, h, c):
 
-    keras_activ = ['relu', 'sigmoid', 'tanh','linear']
-    numpynet_activ = [Relu, Logistic, Tanh, Linear]
+    keras_activ = ['relu', 'sigmoid', 'tanh','linear'] # 'elu', 'selu', 'softsign', 'softplus']
+    numpynet_activ = [Relu, Logistic, Tanh, Linear] # Elu,  Selu, SoftSign, SoftPlus]
 
     # negative value for Relu testing
     inpt = np.random.uniform(low=-1., high=1., size=(batch, w, h, c))
 
-    for act_fun in range(0, 4):
+    for act_fun in range(0, len(keras_activ)):
 
       # numpynet model init
       numpynet = Activation_layer(activation=numpynet_activ[act_fun])
@@ -187,4 +210,11 @@ class TestActivationLayer:
 
       # Check dimension and delta
       assert keras_delta.shape == delta.shape
-      assert np.allclose(keras_delta, delta)
+      assert np.allclose(keras_delta, delta, atol=1e-7)
+
+if __name__ == '__main__':
+
+  test = TestActivationLayer()
+
+  test.test_forward()
+  test.test_backward()
