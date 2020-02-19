@@ -77,5 +77,4 @@ include:
   - NumPyNet/layers/upsample_layer.md
   - NumPyNet/layers/yolo_layer.md
 
-theme:
-  - jekyll-theme-slate
+theme: jekyll-theme-slate

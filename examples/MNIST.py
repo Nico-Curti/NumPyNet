@@ -31,7 +31,7 @@ from sklearn.model_selection import train_test_split
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Example MNIST'
+
 
 if __name__ == '__main__':
 

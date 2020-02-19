@@ -222,7 +222,7 @@ def load_super_resolution (hr_image_filename, patch_size=(48, 48), scale=4):
   '''
 
   hr_image = Image(hr_image_filename)
-  w, h, c = hr_image.shape
+  w, h, _ = hr_image.shape
 
   patch_x, patch_y = patch_size
 

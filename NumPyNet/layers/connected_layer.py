@@ -218,7 +218,7 @@ if __name__ == '__main__':
   bias    = np.random.uniform(low=-1., high=1., size=(outputs,))
 
   # Model initialization
-  layer = Connected_layer(inpt.shape, outputs,
+  layer = Connected_layer(outputs, input_shape=inpt.shape,
                           activation=layer_activation, weights=weights, bias=bias)
   print(layer)
 

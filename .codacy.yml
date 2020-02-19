@@ -15,3 +15,4 @@ exclude_paths:
   - NumPyNet/__version__.py
   - NumPyNet/layers/__init__.py
   - testing/**
+  - timing/**
