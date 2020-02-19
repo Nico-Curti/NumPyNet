@@ -192,7 +192,7 @@ class Image (object):
     dx, dy = dsize
     sx, sy = size
 
-    self._data[dx : dx + sx, dy : dy + sy]
+    self._data = self._data[dx : dx + sx, dy : dy + sy]
     return self
 
   def rgb2rgba (self):

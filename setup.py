@@ -15,7 +15,7 @@ except ImportError:
 
 
 def get_requires (requirements_filename):
-  """
+  '''
   What packages are required for this module to be executed?
 
   Parameters
@@ -27,7 +27,7 @@ def get_requires (requirements_filename):
   -------
     requirements : list
       list of required packages
-  """
+  '''
   with open(requirements_filename, 'r') as fp:
     requirements = fp.read()
 
@@ -35,7 +35,7 @@ def get_requires (requirements_filename):
 
 
 def read_description (readme_filename):
-  """
+  '''
   Description package from filename
 
   Parameters
@@ -47,7 +47,7 @@ def read_description (readme_filename):
   -------
     description : str
       str with description
-  """
+  '''
 
   try:
 
@@ -70,7 +70,7 @@ DESCRIPTION = 'Neural Networks Library in pure Numpy'
 URL = 'https://github.com/Nico-Curti/NumPyNet'
 EMAIL = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 AUTHOR = ['Mattia Ceccarelli', 'Nico Curti']
-REQUIRES_PYTHON = '>=3.4'
+REQUIRES_PYTHON = '>=2.7'
 VERSION = None
 KEYWORDS = 'neural-networks deep-neural-networks deep-learning image-classification super-resolution'
 

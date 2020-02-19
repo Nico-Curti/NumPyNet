@@ -16,8 +16,8 @@
 
 # Neural Networks in Pure NumPy - NumPyNet
 
-Implementation in **pure** numpy of neural networks models.
-This library is usefull as testing framework for optimized codes.
+Implementation in **pure** `Numpy` of neural networks models.
+This library is useful as testing framework for optimized codes.
 
 ## Table of Contents
 
@@ -53,7 +53,7 @@ It usually receives as input only the global delta of the network, on which it p
 
 ## Layers
 
-Some text for introduction
+Some texts for introduction:
 
 * [Activation Layer](./NumPyNet/layers/activation_layer.md)
 * [Avgpool Layer](./NumPyNet/layers/avgpool_layer.md)
@@ -78,7 +78,7 @@ Some text for introduction
 Python version supported : ![Python version](https://img.shields.io/badge/python-2.7|3.4|3.5|3.6|3.7|3.8-blue.svg)
 
 First of all ensure that a right Python version is installed (Python >= 2.7 is required).
-The [Anaconda/Miniconda](https://www.anaconda.com/) python version is recomended.
+The [Anaconda/Miniconda](https://www.anaconda.com/) python version is recommended.
 
 **Note:** some utilities (e.g image and video objects) required OpenCV library.
 OpenCV does not support `Python2.6` and `Python3.3`.

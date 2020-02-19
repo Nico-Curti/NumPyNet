@@ -7,7 +7,6 @@ from __future__ import print_function
 import numpy as np
 from inspect import isclass
 from NumPyNet import activations
-from ast import literal_eval as eval
 from NumPyNet.exception import NotFittedError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
@@ -166,4 +165,4 @@ def from_categorical (categoricals):
   Corresponding labels in 1D array
   '''
 
-  return np.argmax(categoricals, axis=1)
+  return np.argmax(categoricals, axis=-1)

@@ -11,7 +11,6 @@ from copy import copy
 
 import numpy as np
 from time import time as now
-from ast import literal_eval as eval
 
 from NumPyNet.layers.activation_layer import Activation_layer
 from NumPyNet.layers.avgpool_layer import Avgpool_layer
