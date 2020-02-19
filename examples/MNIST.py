@@ -6,7 +6,7 @@ Little example on how to use the Network class to create a model and perform
 a basic classification of the MNIST dataset
 '''
 
-from time import time
+from time import time as now
 
 #from NumPyNet.layers.input_layer import Input_layer
 from NumPyNet.layers.connected_layer import Connected_layer
@@ -21,6 +21,7 @@ from NumPyNet.network import Network
 from NumPyNet.optimizer import SGD
 # from NumPyNet.optimizer import Adam, SGD, Momentum
 from NumPyNet.utils import to_categorical
+from NumPyNet.utils import from_categorical
 from NumPyNet.metrics import accuracy_score
 
 import numpy as np
@@ -104,37 +105,37 @@ if __name__ == '__main__':
   model.compile(optimizer=SGD(lr=0.01, decay=0., lr_min=0., lr_max=np.inf))
   model.summary()
 
-  truth = y_test.argmax(axis=3).ravel()
+  truth = from_categorical(y_test)
 
-  model._fitted = True # for testing purpose
+  # model._fitted = True # for testing purpose
 
-  out1       = model.predict(X=X_test)
-  predicted1 = out1.argmax(axis=3).ravel()
-  accuracy1  = accuracy_score(truth, predicted1)
+  # out1       = model.predict(X=X_test)
+  # predicted1 = out1.argmax(axis=3).ravel()
+  # accuracy1  = accuracy_score(truth, predicted1)
 
-  # accuracy test
-  print('\nAccuracy Score      : {:.3f}'.format(accuracy1))
+  # # accuracy test
+  # print('\nAccuracy Score      : {:.3f}'.format(accuracy1))
 
   print('\n***********START TRAINING***********\n')
 
   # Fit the model on the training set with timing
 
-  tic = time()
+  tic = now()
   model.fit(X=X_train, y=y_train, max_iter=10)
-  toc = time()
+  toc = now()
   train_time = toc - tic
 
   print('\n***********END TRAINING**************\n')
 
   # Test the prediction with timing
-  tic  = time()
+  tic  = now()
   out2 = model.predict(X=X_test)
-  toc  = time()
+  toc  = now()
   test_time = toc - tic
 
-  predicted2 = out2.argmax(axis=3).ravel()
+  predicted2 = from_categorical(out2)
   accuracy2  = accuracy_score(truth, predicted2)
 
   print('Accuracy Score      : {:.3f}'.format(accuracy2))
-  print('And it tooks {:.1f}s for training and {:.1f}s for predict\n'.format(train_time, test_time))
+  print('And it tooks {:.1f}s for training and {:.1f}s for predict'.format(train_time, test_time))
   # best score I could obtain was 94% with 10 epochs, lr = 0.01 %

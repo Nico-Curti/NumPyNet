@@ -87,7 +87,7 @@ class DataGenerator (object):
     self._data, self._label = (None, None)
 
   @property
-  def num_data(self):
+  def num_data (self):
     return self._num_data
 
   def _randomize (self, source, label=None):
@@ -120,20 +120,34 @@ class DataGenerator (object):
 
     return (source, label)
 
-  def _load (self, sources, labels):
+  def _load (self, sources, labels=None):
     '''
     Map the loading function over the sources and labels
     '''
 
-    try:
-      self._data, self._label = zip(*map(self.load_func, sources, labels))
+    if labels is not None:
+      try:
+        self._data, self._label = zip(*map(self.load_func, sources, labels))
 
-    except Exception as e:
+      except Exception as e:
 
-      self._stopped = True
-      raise e
+        self._stopped = True
+        raise e
 
-    return (self._data, self._label)
+      return (self._data, self._label)
+
+    else:
+
+      try:
+        self._data = zip(*map(self.load_func, sources))
+
+      except Exception as e:
+
+        self._stopped = True
+        raise e
+
+      return (self._data, None)
+
 
 
   def _update (self, source_files, label_files):
@@ -161,7 +175,6 @@ class DataGenerator (object):
                                                label_files[self._current_batch : self._current_batch + self._batch])
 
         else:
-          # TODO: add label loads
           self._data, self._label = self._load(source_files[self._current_batch : self._current_batch + self._batch])
 
         self._current_batch += self._batch
@@ -197,7 +210,11 @@ class DataGenerator (object):
     data, label = (self._data, self._label)
     self._data = None
 
-    return (data, label, not self._stopped)
+    if label is not None:
+      return (data, label, not self._stopped)
+    else:
+      return (data, not self._stopped)
+
 
 
 

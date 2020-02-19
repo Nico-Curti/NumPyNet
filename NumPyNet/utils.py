@@ -165,4 +165,4 @@ def from_categorical (categoricals):
   Corresponding labels in 1D array
   '''
 
-  return np.argmax(categoricals, axis=1)
+  return np.argmax(categoricals, axis=-1)

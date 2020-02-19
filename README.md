@@ -16,8 +16,8 @@
 
 # Neural Networks in Pure NumPy - NumPyNet
 
-Implementation in **pure** numpy of neural networks models.
-This library is usefull as testing framework for optimized codes.
+Implementation in **pure** `Numpy` of neural networks models.
+This library is useful as testing framework for optimized codes.
 
 * [Overview](#overview)
 * [Theory](#theory)
@@ -34,7 +34,18 @@ This library is usefull as testing framework for optimized codes.
 
 ## Overview
 
-**TODO**
+`NumPyNet` is born as educational framework for the study of Neural Network models.
+It is written trying to balance code readability and computational performances and it is enriched with a large documentation to better understand the functionality of each script.
+The library is written in pure `Python` and the only external library used is [`Numpy`](http://www.numpy.org/) (a base package for the scientific research).
+
+Despite all common libraries are correlated by a wide documentation is often difficult for novel users to move around the many hyper-links and papers cited in them.
+`NumPyNet` tries to overcome this problem with a minimal mathematical documentation associated to each script and a wide range of comments inside the code.
+
+An other "problem" to take in count is related to performances.
+Libraries like [`Tensorflow`](http://tensorflow.org/) are certainly efficient from a computational point-of-view and the numerous wrappers (like *Keras* library) guarantee an extremely simple user interface.
+On the other hand, the deeper functionalities of the code and the implementation strategies used are unavoidably hidden behind tons of code lines.
+In this way the user can perform complex computational tasks using the library as black-box package.
+`NumPyNet` wants to overcome this problem using simple `Python` codes, with extremely readability also for novel users, to better understand the symmetry between mathematical formulas and code.
 
 ## Theory
 
@@ -44,12 +55,12 @@ This library is usefull as testing framework for optimized codes.
 
 Python version supported : ![Python version](https://img.shields.io/badge/python-2.7|3.4|3.5|3.6|3.7|3.8-blue.svg)
 
-First of all ensure that a right Python version is installed (Python >= 2.7 is required).
-The [Anaconda/Miniconda](https://www.anaconda.com/) python version is recomended.
+First of all ensure that a right `Python` version is installed (`Python` >= 2.7 is required).
+The [Anaconda/Miniconda](https://www.anaconda.com/) python version is recommended.
 
-**Note:** some utilities (e.g image and video objects) required OpenCV library.
-OpenCV does not support `Python2.6` and `Python3.3`.
-If you are working with these two versions, please consider to remove the utilities objects or simply convert the OpenCV dependencies with other packages (like [Pillow](https://pypi.org/project/Pillow) or [scikit-image](https://pypi.org/project/scikit-image)).
+**Note:** some utilities (e.g image and video objects) required `OpenCV` library.
+`OpenCV` does not support `Python2.6` and `Python3.3`.
+If you are working with these two versions, please consider to remove the utilities objects or simply convert the `OpenCV` dependencies with other packages (like [Pillow](https://pypi.org/project/Pillow) or [scikit-image](https://pypi.org/project/scikit-image)).
 
 ## Installation
 
@@ -111,6 +122,10 @@ Any contribution is more than welcome :heart:. Just fill an [issue](https://gith
 See [here](https://github.com/Nico-Curti/NumPyNet/blob/master/CONTRIBUTING.md) for further informations about how to contribute with this project.
 
 ## References
+
+<blockquote>1- Travis Oliphant. "NumPy: A guide to NumPy", USA: Trelgol Publishing, 2006. </blockquote>
+
+<blockquote>2- Bradski, G. "The OpenCV Library", Dr. Dobb's Journal of Software Tools, 2000. </blockquote>
 
 **TODO**
 

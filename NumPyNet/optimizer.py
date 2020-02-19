@@ -14,8 +14,8 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 class Optimizer (object):
   '''
   '''
-                      # changed lr from 1e-3
-  def __init__ (self, lr=0.1, decay=0., lr_min=0., lr_max=np.inf):
+
+  def __init__ (self, lr=1e-3, decay=0., lr_min=0., lr_max=np.inf):
 
     self.lr = lr
     self.decay = decay
