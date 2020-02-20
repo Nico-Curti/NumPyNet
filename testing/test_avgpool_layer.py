@@ -43,10 +43,10 @@ class TestAvgpoolLayer:
     if size <= 0 :
 
       with pytest.raises(LayerError):
-        layer = Avgpool_layer(size=size, stride=stride, padding=pad)
+        layer = Avgpool_layer(size=size, stride=stride, pad=pad)
 
     else:
-      layer = Avgpool_layer(size=size, stride=stride, padding=pad)
+      layer = Avgpool_layer(size=size, stride=stride, pad=pad)
 
       assert layer.size        == (size, size)
       assert len(layer.size)   == 2
@@ -80,7 +80,7 @@ class TestAvgpoolLayer:
             deadline=None)
   def test_printer (self, size, stride, pad):
 
-    layer = Avgpool_layer(size=size, stride=stride, padding=pad)
+    layer = Avgpool_layer(size=size, stride=stride, pad=pad)
 
     #TODO : to be discussed
     print(layer)
@@ -99,7 +99,7 @@ class TestAvgpoolLayer:
     inpt = np.random.uniform(low=0., high=1., size=(batch, w, h, c))
 
     # Numpy_net model
-    numpynet = Avgpool_layer(size=size, stride=stride, padding=pad)
+    numpynet = Avgpool_layer(size=size, stride=stride, pad=pad)
 
     if pad:
       keras_pad = 'same'
@@ -137,7 +137,7 @@ class TestAvgpoolLayer:
     inpt = np.random.uniform(low=0., high=1., size=(batch, w, h, c))
 
     # Numpy_net model
-    numpynet = Avgpool_layer(size=size, stride=stride, padding=pad)
+    numpynet = Avgpool_layer(size=size, stride=stride, pad=pad)
 
     if pad:
       keras_pad = 'same'

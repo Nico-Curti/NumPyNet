@@ -19,34 +19,44 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 class Convolutional_layer(object):
 
-  def __init__(self, filters, size, input_shape=None, stride=None,
+  def __init__(self, filters, size, stride=None, input_shape=None,
                weights=None, bias=None,
                pad=False,
                activation=Activations,
                **kwargs):
     '''
-    Convolution Layer: the output is the convolution of of the input batch
+    Convolution Layer: the output is the convolution of the input images
     with a group of kernel of shape size = (kx,ky) with step stride.
 
-    Parameters:
-      input_shape  : tuple, shape of the input batch of image (batch, w, h, channels_in)
-      filters      : int, Number of filters to be slided over the input, and also
-              the number of channels of the output
-      size        : tuple of int, size of the kernel of shape (kx, ky)
-      stride      : tuple of int, step of the kernel of shape (st1, st2)
-      weights     : filters array, with shape (kx, ky, channels_in, channels_out)
-      pad         : boolean, if False the image is cutted along the last raws and columns, if True
-                    the input is padded following keras SAME padding
-      activation  : activation function of the layer
+    Parameters
+    ----------
+      filters : integer. Number of filters to be slided over the input, and also
+                the number of channels of the output (channels_out)
+      size    : tuple of int, size of the kernel of shape (kx, ky).
+      stride  : tuple of int, default None. Step of the kernel, with shape (st1, st2).
+                If None, stride is assigned size values.
+      input_shape : tuple, default None. Shape of the input in the format (batch, w, h, c),
+                    None is used when the layer is part of a Network model.
+      weights : numpy array, default None. filters of the convolutionanl layer,
+                with shape (kx, ky, channels_in, filters). If None, random weights are initialized
+      bias : numpy array, default None. Bias of the convolutional layer.
+             If None, bias init is random with shape (filters, )
+      pad  : boolean, default False. If False the image is cutted along the last raws and columns, if True
+             the input is padded following keras SAME padding
+      activation : activation function of the layer
     '''
 
-    self.channels_out = filters
-    self.weights = weights
-    self.bias = bias
+    if isinstance(filters, int) and filters > 0:
+      self.channels_out = filters
+    else:
+      raise ValueError('Parameter "filters" must be an integer and > 0')
 
     self.size = size
     if not hasattr(self.size, '__iter__'):
       self.size = (int(self.size), int(self.size))
+
+    if self.size[0] <= 0. or self.size[1] <= 0.:
+      raise LayerError('Convolutional layer. Incompatible size values. They must be both > 0')
 
     if not stride:
       self.stride = size
@@ -56,23 +66,17 @@ class Convolutional_layer(object):
     if not hasattr(self.stride, '__iter__'):
       self.stride = (int(self.stride), int(self.stride))
 
+    if self.stride[0] <= 0. or self.stride[1] <= 0.:
+      raise LayerError('Convolutional layer. Incompatible stride values. They must be both > 0')
+
     if len(self.size) != 2 or len(self.stride) != 2:
       raise LayerError('Convolutional layer. Incompatible stride/size dimensions. They must be a 1D-2D tuple of values')
 
-    self.pad = pad
-    self.pad_left, self.pad_right, self.pad_bottom, self.pad_top = (0, 0, 0, 0)
+    # Weights and bias
+    self.weights = weights
+    self.bias    = bias
 
-    activation = _check_activation(self, activation)
-
-    # Activation function
-    self.activation = activation.activate
-    self.gradient   = activation.gradient
-
-    self.delta, self.output = (None, None)
-
-    # Weights and bias with input shape (single layer)
     if input_shape is not None:
-
       self.batch, self.w, self.h, self.c = input_shape
 
       if weights is None:
@@ -82,7 +86,19 @@ class Convolutional_layer(object):
       if bias is None:
         self.bias = np.zeros(shape=(self.channels_out, ), dtype=float)
 
-    # Updates
+    # Activation function
+    activation = _check_activation(self, activation)
+
+    self.activation = activation.activate
+    self.gradient   = activation.gradient
+
+    # Padding
+    self.pad = pad
+    self.pad_left, self.pad_right, self.pad_bottom, self.pad_top = (0, 0, 0, 0)
+
+    # Output, Delta and Updates
+    self.output = None
+    self.delta  = None
     self.weights_update = None
     self.bias_update    = None
     self.optimizer      = None
@@ -128,9 +144,14 @@ class Convolutional_layer(object):
     '''
     Load weights from full array of model weights
 
-    Parameters:
+    Parameters
+    ----------
       chunck_weights : numpy array of model weights
       pos : current position of the array
+
+    Returns
+    ----------
+    pos
     '''
     self.bias = chunck_weights[pos : pos + self.channels_out]
     pos += self.channels_out
@@ -147,7 +168,7 @@ class Convolutional_layer(object):
     '''
     return np.concatenate([self.bias.ravel(), self.weights.ravel()], axis=0).tolist()
 
-  def _asStride(self, arr, sub_shape, stride):
+  def _asStride(self, arr):
     '''
     _asStride returns a view of the input array such that a kernel of size = (kx,ky)
     is slided over the image with stride = (st1, st2)
@@ -158,25 +179,28 @@ class Convolutional_layer(object):
     see also:
     https://stackoverflow.com/questions/42463172/how-to-perform-max-mean-pooling-on-a-2d-array-using-numpy
 
-    Parameters:
-      inpt  : input batch of images to be stride with shape = ()
-      size  : a tuple indicating the horizontal and vertical size of the kernel
-      stride: a tuple indicating the horizontal and vertical steps of the kernel
+    Parameters
+    ----------
+      inpt : input batch of images to be stride with shape = (b, out_w, out_h, kx, ky, out_c)
+
+    Returns
+    ----------
+      View of the input array with shape (batch, out_w, out_h, kx, ky, out_c)
     '''
     B, s0, s1 = arr.strides[:3]
     b, m1, n1 = arr.shape[:3]
 
-    m2, n2   = sub_shape
-    st1, st2 = stride
+    m2, n2   = self.size
+    st1, st2 = self.stride
 
-    self.out_w = 1 + (m1 - m2) // st1 # output final shapes out_w, out_h
+    self.out_w = 1 + (m1 - m2) // st1
     self.out_h = 1 + (n1 - n2) // st2
 
     # Shape of the final view
-    view_shape = (b,) + (self.out_w, self.out_h) + (m2, n2) + arr.shape[3:]
+    view_shape = (b, self.out_w, self.out_h, m2, n2) + arr.shape[3:]
 
     # strides of the final view
-    strides = (B,) + (st1 * s0,st2 * s1) + (s0, s1) + arr.strides[3:]
+    strides = (B, st1 * s0, st2 * s1, s0, s1) + arr.strides[3:]
 
     subs = np.lib.stride_tricks.as_strided(arr, view_shape, strides=strides)
     # without any reshape, it's indeed a view of the input
@@ -184,9 +208,9 @@ class Convolutional_layer(object):
 
   def _evaluate_padding(self):
     '''
-    Compute padding dimensions following keras SAME padding
-    See also:
-    https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
+    Compute padding dimensions following keras SAME padding.
+      See also:
+      https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
     '''
 
     # Compute how many Raws are needed to pad the image in the 'w' axis
@@ -209,10 +233,15 @@ class Convolutional_layer(object):
 
   def _pad(self, inpt):
     '''
-    Padd every image in a batch with zeros, following keras SAME padding
+    Padd every image in a batch with zeros, following keras SAME padding.
 
-    Parameters:
-      inpt    : input images in the format (batch, in_w, in_h, in_c)
+    Parameters
+    ----------
+      inpt : input images in the format (batch, in_w, in_h, in_c).
+
+    Returns
+    ----------
+      padded input array, following keras SAME padding.
     '''
 
     # return the zeros-padded image, in the same format as inpt (batch, in_w + pad_w, in_h + pad_h, in_c)
@@ -222,15 +251,19 @@ class Convolutional_layer(object):
   def forward(self, inpt, copy=False):
     '''
     Forward function of the Convolutional Layer: it convolves an image with 'channels_out'
-    filters with dimension (kx,ky, channels_in). In doing so, it creates a view of the image
-    with shape (batch * out_w * out_h, in_c * kx * ky) in order to perform a single matrix
-    multiplication with the reshaped filters array, wich shape is (in_c * kx * ky, out_c)
+      filters with dimension (kx,ky, channels_in). In doing so, it creates a view of the image
+      with shape (batch, out_w, out_h, in_c, kx, ky) in order to perform a single matrix
+      multiplication with the reshaped filters array, which shape is (in_c * kx * ky, out_c).
 
-
-    Parameters:
+    Parameters
+    ----------
       inpt : input batch of images in format (batch, in_w, in_h, in _c)
       copy : boolean, default is False. If False the activation function
-            modifies it's input, if True make a copy instead
+             modifies it's input, if True make a copy instead
+
+    Returns:
+    ----------
+    Convolutional_layer object
     '''
 
     kx, ky = self.size
@@ -244,30 +277,32 @@ class Convolutional_layer(object):
       # If no pad, every image in the batch is cut
       mat_pad = inpt[:, : (self.w - kx) // sx*sx + kx, : (self.h - ky) // sy*sy + ky, ...]
 
-
     # Create the view of the array with shape (batch, out_w ,out_h, kx, ky, in_c)
-    self.view = self._asStride(mat_pad, self.size, self.stride) # self, is used also in backward. Better way?
+    self.view = self._asStride(mat_pad)
 
     # the choice of numpy.einsum is due to reshape of self.view is a copy and not a view
-    # it seems to be slower though
-
     z = np.einsum('lmnijk,ijko -> lmno', self.view, self.weights, optimize=True) + self.bias
 
     self.output = self.activation(z, copy=copy) # (batch, out_w, out_h, out_c)
-    self.delta = np.zeros(shape=self.out_shape, dtype=float)
+    self.delta  = np.zeros(shape=self.out_shape, dtype=float)
 
     return self
 
   def backward(self, delta, copy=False):
     '''
-    Backward function of the Convolutional layer
+    Backward function of the Convolutional layer.
 
-    Parameters:
-      delta : array of shape (batch, in_w, in _h, in_c). Global delta to be
-        backpropagated
-      copy : bool, specifies if the gradient of the activation functions needs to
-        return a copy of its input
+    Parameters
+    ----------
+      delta : array of shape (batch, w, h, c). Global delta to be backpropagated.
+      copy : bool, default False. States if the activation function have to return a copy of the
+             input or not.
+
+    Returns
+    ----------
+      Convolutional_layer object.
     '''
+
     check_is_fitted(self, 'delta')
 
     # delta padding to match dimension with padded input when computing the view
@@ -277,7 +312,7 @@ class Convolutional_layer(object):
       mat_pad = delta
 
     # View on delta, I can use this to modify it
-    delta_view = self._asStride(mat_pad, self.size, self.stride)
+    delta_view = self._asStride(mat_pad)
 
     self.delta *= self.gradient(self.output, copy=copy)
 
@@ -288,7 +323,7 @@ class Convolutional_layer(object):
     self.bias_update = self.delta.sum(axis=(0, 1, 2)) # shape = (channels_out,)
 
     # to access every pixel one at a time I need to create every combinations of indexes
-    b, w, h, kx, ky, c = delta_view.shape
+    _, w, h, _, _, _ = delta_view.shape
     combo = itertools.product(range(w), range(h))
 
     # Actual operation to be performed, it's basically the convolution of self.delta with weights.transpose
@@ -310,10 +345,8 @@ class Convolutional_layer(object):
 
   def update(self):
     '''
-    update function for the convolution layer
-
-    Parameters:
-      optimizer : Optimizer object
+    update function for the convolution layer. optimizer must be assigned
+      externally as an optimizer object.
     '''
     check_is_fitted(self, 'delta')
 

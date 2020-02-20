@@ -8,113 +8,297 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input
 import tensorflow.keras.backend as K
 
+from NumPyNet.activations import Activations
 from NumPyNet.activations import Relu
 from NumPyNet.activations import Logistic
 from NumPyNet.activations import Linear
 from NumPyNet.activations import Tanh
+from NumPyNet.exception import LayerError
+from NumPyNet.exception import NotFittedError
 from NumPyNet.layers.convolutional_layer import Convolutional_layer
 from tensorflow.keras.layers import Conv2D
 
 import numpy as np
+import pytest
+from hypothesis import strategies as st
+from hypothesis import given
+from hypothesis import settings
+
+from random import choice
+import numpy as np
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-__package__ = 'Convolutional Layer testing'
+# __package__ = 'Convolutional Layer testing'
 
-def test_convolutional_layer():
+
+class TestConvolutionalLayer :
   '''
   Tests:
-    if the convolutional layer forward is consistent with keras
-    if the convolutional layer backward is consistent with keras
+    - costructor of Convolutional_layer object
+    - print function
+    - forward function against tf.keras
+    - backward function against tf.keras
 
   to be:
     update function
   '''
-  np.random.seed(123)
-
-  keras_activations = ['relu', 'sigmoid', 'tanh','linear']
-  numpynet_activations = [Relu, Logistic, Tanh, Linear]
 
 
-  sizes   = [(3, 3), (20, 20), (30, 30)]
-  strides = [(2, 2), (10, 10), (20, 20)]
+  @given(b = st.integers(min_value=1,  max_value=10),
+         w = st.integers(min_value=30, max_value=100),
+         h = st.integers(min_value=30, max_value=100),
+         c = st.integers(min_value=1,  max_value=10),
+         filters = st.integers(min_value=-5, max_value=10),
+         size1   = st.integers(min_value=-5, max_value=10),
+         size2   = st.integers(min_value=-5, max_value=10),
+         stride  = st.integers(min_value=0, max_value=10),
+         pad     = st.booleans())
+  @settings(max_examples=50,
+            deadline=None)
+  def test_costructor (self, b, w, h, c, filters, size1, size2, stride, pad):
 
-  padding = [False, True]
+    numpynet_activ = [Relu, Logistic, Tanh, Linear]
+    input_shape    = (b, w, h, c)
 
-  for keras_activ, numpynet_activ in zip(keras_activations,numpynet_activations):
-    for size,stride in zip(sizes,strides):
-      for pad in padding:
+    size   = choice([(size1, size2), size1, size2])
+    stride = choice([stride, None])
 
-        batch = np.random.randint(low=1, high=10)
-        c_out = np.random.randint(low=2, high=50)
-        c_in  = np.random.randint(low=1, high=c_out)
+    if filters <= 0:
+      with pytest.raises(ValueError):
+        layer = Convolutional_layer(filters=filters, size=1)
+      filters += 10
 
-        if pad:
-          keras_pad = 'same'
-        else :
-          keras_pad = 'valid'
+    if hasattr(size, '__iter__'):
+      if size[0] < 0 or size[1] < 0:
+        with pytest.raises(LayerError):
+          layer = Convolutional_layer(filters=filters, size=size)
+        size[0] += 10
+        size[1] += 10
 
-        inpt       = np.random.uniform(low=-1., high=1., size=(batch, 100, 100, c_in))
-        b, w, h, c = inpt.shape
-        # Shape (size1,size2,c_in, c_out), reshape inside numpynet.forward.
-        filters    = np.random.uniform(low=-1., high=1., size=size + (c,c_out))
-        bias       = np.random.uniform(low=-1., high=1., size=(c_out,))
+      weights_choice = [np.random.uniform(low=-1, high=1., size=(size[0], size[1], c, filters)), None]
+
+    else :
+      if size <= 0:
+        with pytest.raises(LayerError):
+          layer = Convolutional_layer(filters=filters, size=size)
+        size += 10
+      weights_choice = [np.random.uniform(low=-1, high=1., size=(size, size, c, filters)), None]
+
+    if stride:
+      if stride < 0:
+        with pytest.raises(LayerError):
+          layer = Convolutional_layer(filters=filters, size=size, stride=stride)
+          stride += 10
+
+    bias_choice = [np.random.uniform(low=-1, high=1., size=(filters,)), None]
+
+    weights = choice(weights_choice)
+    bias    = choice(bias_choice)
+
+    for activ in numpynet_activ:
+
+      layer = Convolutional_layer(filters=filters,
+                                  size=size, stride=stride, pad=pad,
+                                  weights=weights, bias=bias,
+                                  input_shape=input_shape,
+                                  activations=activ)
+
+      if weights is not None:
+        assert np.allclose(layer.weights, weights)
+      else:
+        assert (layer.weights is not None)
+
+      if bias is None:
+        assert np.allclose(layer.bias, np.zeros(shape=(filters,)))
+      else:
+        assert np.allclose(layer.bias, bias)
+
+      assert layer.delta   == None
+      assert layer.output  == None
+      assert layer.weights_update == None
+      assert layer.bias_update    == None
+      assert layer.optimizer      == None
+
+      assert layer.batch == b
+      assert layer.w == w
+      assert layer.h == h
+      assert layer.c == c
+
+      assert layer.pad        == pad
+      assert layer.pad_left   == 0
+      assert layer.pad_right  == 0
+      assert layer.pad_top    == 0
+      assert layer.pad_bottom == 0
 
 
-        # Numpy_net model
-        numpynet = Convolutional_layer(filters=c_out, input_shape=inpt.shape,
-                                       weights=filters, bias=bias,
-                                       activation=numpynet_activ,
-                                       size=size, stride=stride,
-                                       pad=pad)
+  @given(b = st.integers(min_value=1,  max_value=10),
+         w = st.integers(min_value=15, max_value=100),
+         h = st.integers(min_value=15, max_value=100),
+         c = st.integers(min_value=1,  max_value=10),
+         filters = st.integers(min_value=1, max_value=10),
+         size    = st.integers(min_value=1, max_value=10),
+         stride  = st.integers(min_value=1, max_value=10),
+         pad     = st.booleans())
+  @settings(max_examples=10,
+            deadline=None)
+  def test_printer (self, b, w, h, c, filters, size, stride, pad):
 
-        # Keras model
-        inp  = Input(batch_shape=inpt.shape)
-        Conv2d = Conv2D(filters=c_out,
-                        kernel_size=size, strides=stride,
-                        padding=keras_pad,
-                        activation=keras_activ,
-                        data_format='channels_last',
-                        use_bias=True, bias_initializer='zeros',
-                        dilation_rate=1)(inp)     # dilation rate = 1 is no dilation (I think)
-        model = Model(inputs=[inp], outputs=[Conv2d])
+    activ = Linear
 
-        model.set_weights([filters, bias])
+    layer = Convolutional_layer(filters=filters,
+                                size=size, stride=stride, pad=pad,
+                                input_shape=(b, w, h, c),
+                                activations=activ)
 
-        # FORWARD
+    with pytest.raises(AttributeError):
+      print(layer)
 
-        #print(c_in, c_out, keras_activ, size, stride, pad, keras_pad, '\n', sep='\n')
 
-        forward_out_keras = model.predict(inpt)
+  @given(b = st.integers(min_value=1,  max_value=10),
+         w = st.integers(min_value=15, max_value=100),
+         h = st.integers(min_value=15, max_value=100),
+         c = st.integers(min_value=1,  max_value=10),
+         filters = st.integers(min_value=1, max_value=10),
+         size1   = st.integers(min_value=1, max_value=10),
+         size2   = st.integers(min_value=1, max_value=10),
+         stride1 = st.integers(min_value=1, max_value=10),
+         stride2 = st.integers(min_value=1, max_value=10),
+         pad     = st.booleans())
+  @settings(max_examples=10,
+            deadline=None)
+  def test_forward (self, b, w, h, c,  filters, size1, size2, stride1, stride2, pad):
 
-        numpynet.forward(inpt, copy=False)
-        forward_out_numpynet = numpynet.output
+    if pad:
+      keras_pad = 'same'
+    else :
+      keras_pad = 'valid'
 
-        assert forward_out_keras.shape == forward_out_numpynet.shape
-        assert np.allclose(forward_out_keras, forward_out_numpynet, atol=1e-04, rtol=1e-3)
+    keras_activs    = ['relu', 'sigmoid', 'tanh','linear']
+    numpynet_activs = [Relu, Logistic, Tanh, Linear]
 
-        # BACKWARD
+    size   = (size1, size2)
+    stride = (stride1, stride2)
 
-        grad1 = K.gradients(model.output, [model.input])
-        grad2 = K.gradients(model.output, model.trainable_weights)
+    inpt    = np.random.uniform(low=-1., high=1., size=(b, w, h, c))
+    weights = np.random.uniform(low=-1., high=1., size=(size1, size2) + (c, filters))
+    bias    = np.random.uniform(low=-1., high=1., size=(filters,))
 
-        func1 = K.function(model.inputs + model.outputs, grad1 )
-        func2 = K.function(model.inputs + model.trainable_weights + model.outputs, grad2)
+    for numpynet_activ, keras_activ in zip(numpynet_activs, keras_activs):
 
-        delta_keras = func1([inpt])[0]
-        updates     = func2([inpt])
+      layer = Convolutional_layer(filters=filters, input_shape=inpt.shape,
+                                  weights=weights, bias=bias,
+                                  activation=numpynet_activ,
+                                  size=(size1,size2), stride=stride,
+                                  pad=pad)
 
-        weights_updates_keras = updates[0]
-        bias_updates_keras    = updates[1]
+      # Keras model
+      inp    = Input(batch_shape=inpt.shape)
+      Conv2d = Conv2D(filters=filters,
+                      kernel_size=size, strides=stride,
+                      padding=keras_pad,
+                      activation=keras_activ,
+                      data_format='channels_last',
+                      use_bias=True, bias_initializer='zeros',
+                      dilation_rate=1)(inp)
+      model = Model(inputs=[inp], outputs=[Conv2d])
 
-        delta_numpynet = np.zeros(shape=inpt.shape, dtype=float)
-        numpynet.delta = np.ones(shape=numpynet.out_shape, dtype=float)
-        numpynet.backward(delta_numpynet, copy=False)
+      model.set_weights([weights, bias])
 
-        assert np.allclose(delta_numpynet,          delta_keras,           atol=1e-3, rtol=1e-3)
-        assert np.allclose(numpynet.weights_update, weights_updates_keras, atol=1e-3, rtol=1e-3) # for a lot of operations, atol is lower
-        assert np.allclose(numpynet.bias_update,    bias_updates_keras,    atol=1e-5, rtol=1e-3)
+      # FORWARD
 
-if __name__ == '__main__':
+      forward_out_keras = model.predict(inpt)
 
-  test_convolutional_layer()
+      layer.forward(inpt, copy=False)
+      forward_out_numpynet = layer.output
+
+      assert forward_out_keras.shape == forward_out_numpynet.shape
+      assert np.allclose(forward_out_keras, forward_out_numpynet,  atol=1e-4, rtol=1e-3)
+
+
+  @given(b = st.integers(min_value=1,  max_value=10),
+         w = st.integers(min_value=15, max_value=100),
+         h = st.integers(min_value=15, max_value=100),
+         c = st.integers(min_value=1,  max_value=10),
+         filters = st.integers(min_value=1, max_value=10),
+         size1   = st.integers(min_value=1, max_value=10),
+         size2   = st.integers(min_value=1, max_value=10),
+         stride1 = st.integers(min_value=1, max_value=10),
+         stride2 = st.integers(min_value=1, max_value=10),
+         pad     = st.booleans())
+  @settings(max_examples=10,
+            deadline=None)
+  def test_backward (self, b, w, h, c, filters, size1, size2, stride1, stride2, pad):
+
+    if pad:
+      keras_pad = 'same'
+    else :
+      keras_pad = 'valid'
+
+    keras_activs    = ['relu', 'sigmoid', 'tanh','linear']
+    numpynet_activs = [Relu, Logistic, Tanh, Linear]
+
+    size   = (size1, size2)
+    stride = (stride1, stride2)
+
+    inpt    = np.random.uniform(low=-1., high=1., size=(b, w, h, c))
+    weights = np.random.uniform(low=-1., high=1., size=(size1, size2) + (c, filters))
+    bias    = np.random.uniform(low=-1., high=1., size=(filters,))
+
+    for numpynet_activ, keras_activ in zip(numpynet_activs, keras_activs):
+
+      layer = Convolutional_layer(filters=filters, input_shape=inpt.shape,
+                                  weights=weights, bias=bias,
+                                  activation=numpynet_activ,
+                                  size=(size1,size2), stride=stride,
+                                  pad=pad)
+
+      # Keras model
+      inp    = Input(batch_shape=inpt.shape)
+      Conv2d = Conv2D(filters=filters,
+                      kernel_size=size, strides=stride,
+                      padding=keras_pad,
+                      activation=keras_activ,
+                      data_format='channels_last',
+                      use_bias=True, bias_initializer='zeros',
+                      dilation_rate=1)(inp)
+      model = Model(inputs=[inp], outputs=[Conv2d])
+
+      model.set_weights([weights, bias])
+
+      # Try backward:
+      with pytest.raises(NotFittedError):
+        delta = np.empty(shape=inpt.shape)
+        layer.backward(inpt, delta)
+
+      # FORWARD
+
+      forward_out_keras = model.predict(inpt)
+
+      layer.forward(inpt, copy=False)
+      forward_out_numpynet = layer.output
+
+      assert forward_out_keras.shape == forward_out_numpynet.shape
+      assert np.allclose(forward_out_keras, forward_out_numpynet,  atol=1e-4, rtol=1e-3)
+
+      # BACKWARD
+
+      grad1 = K.gradients(model.output, [model.input])
+      grad2 = K.gradients(model.output, model.trainable_weights)
+
+      func1 = K.function(model.inputs + model.outputs, grad1 )
+      func2 = K.function(model.inputs + model.trainable_weights + model.outputs, grad2)
+
+      delta_keras = func1([inpt])[0]
+      updates     = func2([inpt])
+
+      weights_updates_keras = updates[0]
+      bias_updates_keras    = updates[1]
+
+      delta_numpynet = np.zeros(shape=inpt.shape, dtype=float)
+      layer.delta    = np.ones(shape=layer.out_shape, dtype=float)
+      layer.backward(delta_numpynet, copy=False)
+
+      assert np.allclose(delta_numpynet,          delta_keras,        atol=1e-3, rtol=1e-3)
+      assert np.allclose(layer.weights_update, weights_updates_keras, atol=1e-3, rtol=1e-3)
+      assert np.allclose(layer.bias_update,    bias_updates_keras,    atol=1e-5, rtol=1e-3)

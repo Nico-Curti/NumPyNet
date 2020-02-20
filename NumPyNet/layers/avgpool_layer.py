@@ -16,7 +16,7 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 class Avgpool_layer(object):
 
-  def __init__(self, size, stride=None, padding=False, **kwargs):
+  def __init__(self, size, stride=None, pad=False, **kwargs):
 
     '''
     Avgpool layer
@@ -26,7 +26,7 @@ class Avgpool_layer(object):
       size    : tuple with two integers (kx, ky) or integer, size of the kernel to be slided over the input image.
       stride  : tuple of two integers, default None. Represents the horizontal and vertical stride of the kernel.
                 If None or 0, stride is assigned the values of size.
-      padding : boolean, default False. If False the image is cut to fit the size and stride dimensions, if True the
+      pad     : boolean, default False. If False the image is cut to fit the size and stride dimensions, if True the
                 image is padded following keras SAME padding, as indicated here:
                 https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
     '''
@@ -53,7 +53,7 @@ class Avgpool_layer(object):
     self.batch, self.w, self.h, self.c = (0, 0, 0, 0)
 
     # for padding
-    self.pad = padding
+    self.pad = pad
     self.pad_left, self.pad_right, self.pad_bottom, self.pad_top = (0, 0, 0, 0)
 
     self.output, self.delta = (None, None)
