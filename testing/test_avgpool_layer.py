@@ -24,7 +24,7 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 # __package__ = 'AvgPool Layer testing'
 
 
-class TestAvgpoolLayer(object):
+class TestAvgpoolLayer:
   '''
   Tests:
     - costructor of Avgpool_layer object

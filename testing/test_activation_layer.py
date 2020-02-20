@@ -58,9 +58,9 @@ class TestActivationLayer:
                      Selu, SoftPlus, SoftSign, Stair,
                      SymmElliot, Tanh]
 
-    for act_fun in range(0, len(numpynet_activ)):
+    for act_fun in numpynet_activ:
 
-      layer = Activation_layer(activation=numpynet_activ[act_fun])
+      layer = Activation_layer(activation=act_fun)
 
       assert layer.output is None
       assert layer.delta is None
@@ -79,9 +79,9 @@ class TestActivationLayer:
                      Selu, SoftPlus, SoftSign, Stair,
                      SymmElliot, Tanh]
 
-    for act_fun in range(0, 4):
+    for act_fun in numpynet_activ:
 
-      layer = Activation_layer(activation=numpynet_activ[act_fun])
+      layer = Activation_layer(activation=act_fun)
 
       with pytest.raises(TypeError):
         print(layer)
@@ -162,12 +162,11 @@ class TestActivationLayer:
       numpynet = Activation_layer(activation=numpynet_activ[act_fun])
 
       # Keras Model init
-      inp = Input(batch_shape=(batch, w, h, c))
-      x = Activation(activation=keras_activ[act_fun])(inp)
+      inp   = Input(batch_shape=(batch, w, h, c))
+      x     = Activation(activation=keras_activ[act_fun])(inp)
       model = Model(inputs=[inp], outputs=x)
 
       # try to backward
-
       with pytest.raises(NotFittedError):
         # Global delta init.
         delta = np.empty(shape=inpt.shape, dtype=float)

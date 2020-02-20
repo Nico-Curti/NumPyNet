@@ -19,24 +19,32 @@ class Connected_layer(object):
 
   def __init__(self, outputs, activation=Activations, input_shape=None, weights=None, bias=None, **kwargs):
     '''
-    Connected layer:
+    Connected layer
 
-    Parameters :
-      input_shape : tuple, shape of the input in the format (batch, w, h, c)
-      outputs     : int, number of output of the layers
+    Parameters
+    ----------
+      outputs     : integer, number of outputs of the layers
       activation  : activation function of the layer
-      weights     : array of shape (w * h * c, outputs), weights of the dense layer
-      bias        : array of shape (outputs, ), bias of the dense layer
+      input_shape : tuple, default None. Shape of the input in the format (batch, w, h, c),
+                    None is used when the layer is part of a Network model.
+      weights     : array of shape (w * h * c, outputs), default is None. Weights of the dense layer.
+                    If None, weights init is random.
+      bias        : array of shape (outputs, ), default None. Bias of the dense layer.
+                    If None, bias init is random
     '''
 
-    self.outputs = outputs
+    if isinstance(outputs, int) and outputs > 0:
+      self.outputs = outputs
+    else :
+      raise ValueError('Parameter "outputs" must be an integer and > 0')
+
     self.weights = weights
     self.bias = bias
 
     activation = _check_activation(self, activation)
 
     self.activation = activation.activate
-    self.gradient = activation.gradient
+    self.gradient   = activation.gradient
 
     # if input shape is passed, init of weights, else done in  __call__
     if input_shape is not None:
@@ -92,9 +100,14 @@ class Connected_layer(object):
     '''
     Load weights from full array of model weights
 
-    Parameters:
+    Parameters
+    ----------
       chunck_weights : numpy array of model weights
       pos : current position of the array
+
+    Returns
+    ----------
+    pos
     '''
     self.bias = chunck_weights[pos : pos + self.outputs]
     pos += self.outputs
@@ -118,15 +131,21 @@ class Connected_layer(object):
       between inpt and weights, add bias and activate the result with the
       chosen activation function.
 
-    Parameters:
-      inpt : numpy array with shape (batch, w, h, c) input batch of images of the layer
-      copy : boolean, states if the activation function have to return a copy of the
-            input or not.
+    Parameters
+    ----------
+      inpt : numpy array with shape (batch, w, h, c). Input batch of images of the layer
+      copy : boolean, default False. States if the activation function have to return a copy of the
+             input or not.
+
+    Returns
+    ----------
+    Connected_layer object
     '''
 
-    inpt = inpt.reshape(inpt.shape[0], -1)                  # shape (batch, w*h*c)
+    # shape (batch, w*h*c)
+    inpt = inpt.reshape(inpt.shape[0], -1)
 
-    # z = (inpt @ self.weights) + self.bias                # shape (batch, outputs)
+    # shape (batch, outputs)
     z = np.einsum('ij, jk -> ik', inpt, self.weights, optimize=True) + self.bias
     # z = np.dot(inpt, self.weights) + self.bias
 
@@ -141,11 +160,16 @@ class Connected_layer(object):
     Backward function of the connected layer, updates the global delta of the
       network to be Backpropagated, he weights upadtes and the biases updates
 
-    Parameters:
+    Parameters
+    ----------
       inpt  : original input of the layer
       delta : global delta, to be backpropagated.
-      copy  : boolean, states if the activation function have to return a copy of the
-            input or not.
+      copy  : boolean, default False. States if the activation function have to return a copy of the
+              input or not.
+
+    Returns
+    ----------
+    Connected_layer object
     '''
 
     check_is_fitted(self, 'delta')
@@ -174,11 +198,10 @@ class Connected_layer(object):
 
   def update(self):
     '''
-    update function for the convolution layer
-
-    Parameters:
-      optimizer : Optimizer object
+    Update function for the Connected_layer object. optimizer must be assigned
+      externally as an optimizer object.
     '''
+
     check_is_fitted(self, 'delta')
 
     self.bias, self.weights = self.optimizer.update(params=[self.bias, self.weights],
