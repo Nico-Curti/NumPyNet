@@ -75,7 +75,9 @@ Some texts for introduction:
 
 ## Installation
 
-Python version supported : ![Python version](https://img.shields.io/badge/python-2.7|3.4|3.5|3.6|3.7|3.8-blue.svg)
+Python version supported :
+
+![Python version](https://img.shields.io/badge/python-2.7|3.4|3.5|3.6|3.7|3.8-blue.svg)
 
 First of all ensure that a right Python version is installed (Python >= 2.7 is required).
 The [Anaconda/Miniconda](https://www.anaconda.com/) python version is recommended.

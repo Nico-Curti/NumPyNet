@@ -265,8 +265,9 @@ class Stair (Activations):
 
     n = np.floor(y)
     z = np.floor(y/2.)
-    y[n%2 == 0.] = z[n%2 == 0]
-    y[n%2 != 0.] = ((x-n) + z)[n%2 != 0]
+    even = n % 2
+    y[even == 0.] = z[even == 0]
+    y[even != 0.] = ((x - n) + z)[even != 0]
     return y
 
   @staticmethod

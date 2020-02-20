@@ -39,39 +39,49 @@ def test_batchnorm_layer(b, w, h, c):
     update functions
   '''
 
-  inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
+  np.random.seed(42)
+
+  inpt = np.random.uniform(low=1., high=10., size=(b, w, h, c))
 
   bias   = np.random.uniform(low=0., high=1., size=(w, h, c)) # random biases
   scales = np.random.uniform(low=0., high=1., size=(w, h, c)) # random scales
+
+  inpt_tf = tf.convert_to_tensor(inpt.astype('float32'))
 
   # Numpy_net model
   numpynet = BatchNorm_layer(scales=scales, bias=bias)
 
   # initializers must be callable with this syntax, I need those for dimensionality problems
-  def bias_init(shape, dtype=None):
-    return bias
+  def bias_init(shape, **kwargs):
+    return np.expand_dims(bias, axis=0)
 
   def gamma_init(shape, dtype=None):
-    return scales
+    return np.expand_dims(scales, axis=0)
 
   def mean_init(shape, dtype=None):
-    return inpt.mean(axis=0)
+    return np.expand_dims(inpt.mean(axis=0), axis=0)
 
   def var_init(shape, dtype=None):
-    return inpt.var(axis=0)
+    return np.expand_dims(inpt.var(axis=0), axis=0)
 
   # Keras Model
   inp = Input(batch_shape=inpt.shape)
   x = BatchNormalization(momentum=1., epsilon=1e-8, center=True, scale=True,
-                         axis=-1,
+                         axis=[1, 2, 3],
                          beta_initializer=bias_init,
                          gamma_initializer=gamma_init,
                          moving_mean_initializer=mean_init,
                          moving_variance_initializer=var_init)(inp)
   model = Model(inputs=[inp], outputs=x)
 
+  # Opens a TensorFlow Session to Initialize Variables
+  sess = tf.InteractiveSession()
+  # Initialization of variables, code won't work without it
+  sess.run([tf.global_variables_initializer(),
+            tf.local_variables_initializer()])
+
   # Keras forward
-  forward_out_keras = model.predict(inpt)[0, ...]
+  forward_out_keras = model.predict(inpt)
 
   numpynet.forward(inpt)
   forward_out_numpynet = numpynet.output
@@ -92,24 +102,18 @@ def test_batchnorm_layer(b, w, h, c):
 
   # BACKWARD
 
-  # Opens a TensorFlow Session to Initialize Variables
-  sess = tf.InteractiveSession()
-
   # Computes analytical output gradients w.r.t input and w.r.t trainable_weights
   # Kept them apart for clarity
-  grad      = K.gradients(model.output, [model.input])
-  gradients = K.gradients(model.output, model.trainable_weights)
+  grad1 = K.gradients(model.output, [model.input])
+  grad2 = K.gradients(model.output, model.trainable_weights)
 
-  # Define 2 functions to compute the numerical values of grad and gradients
-  func  = K.function(model.inputs + [model.output], grad)
-  func2 = K.function(model.inputs + model.trainable_weights + [model.output], gradients)
+  # Definning functions to compute those gradients
+  func1 = K.function(model.inputs + [model.output], grad1)
+  func2 = K.function(model.inputs + model.trainable_weights + [model.output], grad2)
 
-  # Initialization of variables, code won't work without it
-  sess.run(tf.global_variables_initializer())
-
-  # Assigns Numerical Values
-  updates     = func2([np.expand_dims(inpt, axis=0)])
-  delta_keras = func([np.expand_dims(inpt, axis=0)])[0][0, :, :, :, :]
+  # Evaluation of Delta, weights_updates and bias_updates for Keras
+  delta_keras = func1([inpt])[0]
+  updates     = func2([inpt])
 
   # Initialization of numpynet delta to one (multiplication) and an empty array to store values
   numpynet.delta = np.ones(shape=inpt.shape, dtype=float)
@@ -117,9 +121,9 @@ def test_batchnorm_layer(b, w, h, c):
 
   # numpynet bacward, updates delta_numpynet
   numpynet.backward(delta_numpynet)
-
   # Testing delta, the precision change with the image
   assert delta_keras.shape == delta_numpynet.shape       # 1e-1 for random image, 1e-8 for dog
+  print(inpt.shape, abs(delta_keras - delta_numpynet).max())
   assert np.allclose(delta_keras, delta_numpynet, atol=1e-1)
 
   # Testing scales updates
@@ -128,7 +132,7 @@ def test_batchnorm_layer(b, w, h, c):
 
   # Testing Bias updates
   assert updates[1].shape == numpynet.bias_updates.shape
-  assert np.allclose(updates[1], numpynet.bias_updates,   atol=1e-06)
+  assert np.allclose(updates[1], numpynet.bias_updates, atol=1e-06)
 
   # All passed, but precision it's not consistent, missing update functions
 

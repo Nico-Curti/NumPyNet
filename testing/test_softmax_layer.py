@@ -7,6 +7,7 @@ from __future__ import print_function
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input
 from tensorflow.keras.layers import Softmax
+from tensorflow.keras.layers import Reshape
 from tensorflow.keras.losses import categorical_crossentropy
 import tensorflow.keras.backend as K
 
@@ -44,7 +45,14 @@ def test_softmax_layer():
     numpynet = Softmax_layer(groups=1, temperature=1., spatial=spatial)
 
     inp = Input(batch_shape=inpt.shape)
-    x = Softmax(axis=axis)(inp)
+    if isinstance(axis, tuple):
+      # insert a reshape opeartion to be compatible with tensorflow softmax on multi axis
+      reshaped = Reshape((batch, w * h * c), input_shape=inpt.shape)(inp)
+      axis = -1
+      x = Softmax(axis=axis)(reshaped)
+      x = Reshape((batch, w, h, c), input_shape=(batch, w * h * c))(x)
+    else:
+      x = Softmax(axis=axis)(inp)
     model = Model(inputs=[inp], outputs=x)
     model.compile(optimizer='sgd', loss='categorical_crossentropy')
 
