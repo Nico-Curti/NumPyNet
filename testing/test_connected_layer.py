@@ -50,7 +50,7 @@ class TestConnectedLayer:
          c      = st.integers(min_value=1, max_value=10))
   @settings(max_examples=20,
             deadline=None)
-  def test_costructor (self, outputs, b, w, h, c):
+  def test_constructor (self, outputs, b, w, h, c):
 
     numpynet_activ = [Relu, Logistic, Tanh, Linear]
 

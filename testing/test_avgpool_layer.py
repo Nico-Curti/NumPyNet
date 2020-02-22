@@ -38,7 +38,7 @@ class TestAvgpoolLayer:
          pad    = st.booleans())
   @settings(max_examples=20,
             deadline=None)
-  def test_costructor (self, size, stride, pad):
+  def test_constructor (self, size, stride, pad):
 
     if size <= 0 :
 
