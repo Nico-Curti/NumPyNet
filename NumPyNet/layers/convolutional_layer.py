@@ -173,10 +173,10 @@ class Convolutional_layer(object):
     self.out_h = 1 + (n1 - n2) // st2
 
     # Shape of the final view
-    view_shape = (b,) + (self.out_w, self.out_h) + (m2, n2) + arr.shape[3:]
+    view_shape = (b, self.out_w, self.out_h) + (m2, n2) + arr.shape[3:]
 
     # strides of the final view
-    strides = (B,) + (st1 * s0,st2 * s1) + (s0, s1) + arr.strides[3:]
+    strides = (B, st1 * s0, st2 * s1) + (s0, s1) + arr.strides[3:]
 
     subs = np.lib.stride_tricks.as_strided(arr, view_shape, strides=strides)
     # without any reshape, it's indeed a view of the input
@@ -273,7 +273,7 @@ class Convolutional_layer(object):
     # delta padding to match dimension with padded input when computing the view
     if self.pad:
       mat_pad = self._pad(delta) # padded with same values as input
-    else  :
+    else:
       mat_pad = delta
 
     # View on delta, I can use this to modify it
@@ -287,16 +287,16 @@ class Convolutional_layer(object):
     # out_c number of bias_updates.
     self.bias_update = self.delta.sum(axis=(0, 1, 2)) # shape = (channels_out,)
 
-    # to access every pixel one at a time I need to create every combinations of indexes
-    b, w, h, kx, ky, c = delta_view.shape
-    combo = itertools.product(range(w), range(h))
-
     # Actual operation to be performed, it's basically the convolution of self.delta with weights.transpose
     operator = np.einsum('ijkl, mnol -> ijkmno', self.delta, self.weights)
 
+    delta_review = np.moveaxis(delta_view, source=[1, 2], destination=[0, 1])
+    operator = np.moveaxis(operator, source=[1, 2], destination=[0, 1])
+
     # Atomically modify, really slow as for maxpool and avgpool
-    for j, k in combo:
-      delta_view[:, j, k, :] += operator[:, j, k, :]
+    for d, o in zip(delta_review, operator):
+      for di, oi in zip(d, o):
+        di += oi
 
     # Here delta is updated correctly
     if self.pad :

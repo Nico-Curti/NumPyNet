@@ -226,20 +226,19 @@ class Avgpool_layer(object):
     net_delta_view = self._asStride(mat_pad)
 
     # norm = 1./(kx*ky) # needs to count only no nan values for keras
-    b, w, h, c = self.output.shape
-    combo = itertools.product(range(b), range(w), range(h), range(c)) # every combination of indices
+    _, w, h, c = self.output.shape
+    combo = itertools.product(range(w), range(h), range(c)) # every combination of indices
 
     # The indexes are necessary to access every pixel value one at a time, since
     # modifing the same memory address more times at once doesn't produce the correct result
 
-#    norm = 1. / (kx*ky)
+    # norm = 1. / (kx*ky)
     norm = self.delta * (1. / np.count_nonzero(~np.isnan(net_delta_view), axis=(4, 5)))
 
-    for (b, i, j, k), n in zip(combo, np.nditer(norm)):
+    for (i, j, k), n in zip(combo, np.nditer(norm)):
       #norm = np.count_nonzero(~np.isnan(net_delta_view[b, i, j, k, :])) # this only counts non nan values for norm
-      net_delta_view[b, i, j, k, :] += n
-
-#    net_delta_view *= norm
+      net_delta_view[:, i, j, k, ...] += n
+    # net_delta_view *= norm
 
     # Here delta is updated correctly
     if self.pad:

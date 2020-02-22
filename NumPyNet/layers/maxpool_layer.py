@@ -269,6 +269,8 @@ if __name__ == '__main__':
 
   forward_out = layer.output
 
+  print(layer)
+
   # BACKWARD
 
   delta = np.zeros(inpt.shape, dtype=float)

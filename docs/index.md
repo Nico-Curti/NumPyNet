@@ -9,9 +9,9 @@
 [![GitHub watchers](https://img.shields.io/github/watchers/Nico-Curti/NumPyNet.svg?label=Watch&style=social)](https://github.com/Nico-Curti/NumPyNet/watchers)
 
 <a href="https://github.com/UniboDIFABiophysics">
-<div class="image">
-<img src="https://cdn.rawgit.com/physycom/templates/697b327d/logo_unibo.png" width="90" height="90">
-</div>
+  <div class="image">
+    <img src="https://cdn.rawgit.com/physycom/templates/697b327d/logo_unibo.png" width="90" height="90">
+  </div>
 </a>
 
 # Neural Networks in Pure NumPy - NumPyNet
@@ -75,9 +75,7 @@ Some texts for introduction:
 
 ## Installation
 
-Python version supported :
-
-![Python version](https://img.shields.io/badge/python-2.7|3.4|3.5|3.6|3.7|3.8-blue.svg)
+Python version supported : ![Python version](https://img.shields.io/badge/python-2.7-3.4-3.5-3.6-3.7-3.8-blue.svg)
 
 First of all ensure that a right Python version is installed (Python >= 2.7 is required).
 The [Anaconda/Miniconda](https://www.anaconda.com/) python version is recommended.
