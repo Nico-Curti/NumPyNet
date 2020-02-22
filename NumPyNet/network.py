@@ -187,9 +187,9 @@ class Network(object):
 
       print('{:>4d} {}'.format(i, self._net[-1]), flush=True, end='\n')
 
-      #if model.get(layer, 'batch_normalize', 0): # wrong because it add a new layer and so the shortcut is broken
-      #  self._net.append( BatchNorm_layer()(self._net[-1]) )
-      #  print('{:>4d} {}'.format(i, self._net[-1]), flush=True, end='\n')
+      # if model.get(layer, 'batch_normalize', 0): # wrong because it add a new layer and so the shortcut is broken
+      #   self._net.append( BatchNorm_layer()(self._net[-1]) )
+      #   print('{:>4d} {}'.format(i, self._net[-1]), flush=True, end='\n')
 
     if weights is not None:
       self.load_weights(weights)

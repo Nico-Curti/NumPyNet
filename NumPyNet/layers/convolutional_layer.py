@@ -394,7 +394,7 @@ if __name__ == '__main__':
 
   b, w, h, c = inpt.shape
   filters    = np.random.uniform(-1., 1., size = (size[0], size[1], c, channels_out))
-#  bias       = np.random.uniform(-1., 1., size = (channels_out,))
+  # bias       = np.random.uniform(-1., 1., size = (channels_out,))
   bias = np.zeros(shape=(channels_out,))
 
   layer = Convolutional_layer(input_shape=inpt.shape,
@@ -420,7 +420,7 @@ if __name__ == '__main__':
   delta = np.zeros(shape=inpt.shape, dtype=float)
   layer.backward(delta)
 
-#  layer.update()
+  # layer.update()
 
   # Visualization
 
