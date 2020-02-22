@@ -16,20 +16,26 @@ class Dropout_layer(object):
 
   def __init__(self, prob, **kwargs):
     '''
-    DropOut Layer: drop a random selection of Inputs. This helps avoid overfitting
+    Dropout Layer: drop a random selection of Inputs. This helps avoid overfitting.
 
-    Parameters:
-      prob : float between 0. and 1., probability for every entry to be set to zero
+    Parameters
+    ----------
+      prob : float between 0. and 1., probability for every entry to be set to zero.
     '''
 
-    self.probability = prob
+    if prob >= 0. and prob <= 1.:
+      self.probability = prob
+
+    else :
+      raise ValueError('DropOut layer : parameter "prob" must be 0. < prob < 1., but it is {}'.format(prob))
+
     if prob != 1.:
       self.scale = 1. / (1. - prob)
     else:
       self.scale = 1. # it doesn't matter anyway, since everything is zero
 
-
-    self.output, self.delta = (None, None)
+    self.output = None
+    self.delta  = None
     self._out_shape = None
 
   def __str__(self):
@@ -59,15 +65,20 @@ class Dropout_layer(object):
       in the batch and set to zero the chosen values. Other pixels are scaled
       with the scale variable.
 
-    Parameters :
-      inpt : array of shape (batch, w, h, c), input of the layer
+    Parameters
+    ----------
+      inpt : numpy array of shape (batch, w, h, c), input of the layer
+
+    Returns
+    ----------
+      Dropout layer object
     '''
 
     self._out_shape = inpt.shape
 
     self.rnd = np.random.uniform(low=0., high=1., size=self.out_shape) > self.probability
     self.output = self.rnd * inpt * self.scale
-    self.delta = np.zeros(shape=inpt.shape)
+    self.delta  = np.zeros(shape=inpt.shape)
 
     return self
 
@@ -77,9 +88,14 @@ class Dropout_layer(object):
       it backprogates delta only to those pixel which values has not been set to zero
       in the forward.
 
-    Parameters :
-      delta : array of shape (batch, w, h, c), default value is None.
+    Parameters
+    ----------
+      delta : numpy array of shape (batch, w, h, c), default value is None.
             If given, is the global delta to be backpropagated
+
+    Returns
+    ----------
+      Dropout layer object
     '''
 
     check_is_fitted(self, 'delta')
@@ -147,7 +163,3 @@ if __name__ == '__main__':
   ax3.axis('off')
 
   plt.show()
-
-
-
-

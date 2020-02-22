@@ -187,8 +187,8 @@ class Convolutional_layer(object):
     ----------
       View of the input array with shape (batch, out_w, out_h, kx, ky, out_c)
     '''
-    B, s0, s1 = arr.strides[:3]
-    b, m1, n1 = arr.shape[:3]
+    B, s0, s1, c1 = arr.strides
+    b, m1, n1, c  = arr.shape
 
     m2, n2   = self.size
     st1, st2 = self.stride
@@ -197,10 +197,14 @@ class Convolutional_layer(object):
     self.out_h = 1 + (n1 - n2) // st2
 
     # Shape of the final view
-    view_shape = (b, self.out_w, self.out_h, m2, n2) + arr.shape[3:]
+    view_shape = (b, self.out_w, self.out_h, m2, n2, c)
 
     # strides of the final view
-    strides = (B, st1 * s0, st2 * s1, s0, s1) + arr.strides[3:]
+    strides = (B, st1 * s0, st2 * s1, s0, s1, c1)
+
+    print(view_shape)
+    print(B, s0, s1, c1)
+    print(strides)
 
     subs = np.lib.stride_tricks.as_strided(arr, view_shape, strides=strides)
     # without any reshape, it's indeed a view of the input
@@ -281,9 +285,10 @@ class Convolutional_layer(object):
     self.view = self._asStride(mat_pad)
 
     # the choice of numpy.einsum is due to reshape of self.view is a copy and not a view
-    z = np.einsum('lmnijk,ijko -> lmno', self.view, self.weights, optimize=True) + self.bias
+    z = np.einsum('lmnijk, ijko -> lmno', self.view, self.weights, optimize=True) + self.bias
 
-    self.output = self.activation(z, copy=copy) # (batch, out_w, out_h, out_c)
+    # (batch, out_w, out_h, out_c)
+    self.output = self.activation(z, copy=copy)
     self.delta  = np.zeros(shape=self.out_shape, dtype=float)
 
     return self

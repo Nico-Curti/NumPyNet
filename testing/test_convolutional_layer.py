@@ -56,7 +56,7 @@ class TestConvolutionalLayer :
          pad     = st.booleans())
   @settings(max_examples=50,
             deadline=None)
-  def test_costructor (self, b, w, h, c, filters, size1, size2, stride, pad):
+  def test_constructor (self, b, w, h, c, filters, size1, size2, stride, pad):
 
     numpynet_activ = [Relu, Logistic, Tanh, Linear]
     input_shape    = (b, w, h, c)
