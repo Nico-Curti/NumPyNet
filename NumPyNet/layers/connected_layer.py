@@ -29,7 +29,7 @@ class Connected_layer(object):
                     None is used when the layer is part of a Network model.
       weights     : array of shape (w * h * c, outputs), default is None. Weights of the dense layer.
                     If None, weights init is random.
-      bias        : array of shape (outputs, ), default None. Bias of the dense layer.
+      bias        : array of shape (outputs, ), default None. Bias of the connected layer.
                     If None, bias init is random
     '''
 

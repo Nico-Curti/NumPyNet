@@ -39,8 +39,8 @@ class TestConnectedLayer:
     - forward function against tf.keras
     - backward function against tf.keras
 
-  to be tested:
-    update function, keras update not clear.
+  to be:
+    update function.
   '''
 
   @given(outputs= st.integers(-3, 10),

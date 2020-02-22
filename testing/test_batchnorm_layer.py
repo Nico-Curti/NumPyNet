@@ -121,17 +121,18 @@ def test_batchnorm_layer(b, w, h, c):
 
   # numpynet bacward, updates delta_numpynet
   numpynet.backward(delta_numpynet)
+  
   # Testing delta, the precision change with the image
-  assert delta_keras.shape == delta_numpynet.shape       # 1e-1 for random image, 1e-8 for dog
+  assert delta_keras.shape == delta_numpynet.shape
   print(inpt.shape, abs(delta_keras - delta_numpynet).max())
   assert np.allclose(delta_keras, delta_numpynet, atol=1e-1)
 
   # Testing scales updates
-  assert updates[0].shape == numpynet.scales_updates.shape
+  assert updates[0][0].shape == numpynet.scales_updates.shape
   assert np.allclose(updates[0], numpynet.scales_updates, atol=1e-03)
 
   # Testing Bias updates
-  assert updates[1].shape == numpynet.bias_updates.shape
+  assert updates[1][0].shape == numpynet.bias_updates.shape
   assert np.allclose(updates[1], numpynet.bias_updates, atol=1e-06)
 
   # All passed, but precision it's not consistent, missing update functions
