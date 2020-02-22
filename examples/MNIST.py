@@ -1,12 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 '''
 Little example on how to use the Network class to create a model and perform
 a basic classification of the MNIST dataset
 '''
-
-from time import time as now
 
 #from NumPyNet.layers.input_layer import Input_layer
 from NumPyNet.layers.connected_layer import Connected_layer
@@ -18,7 +16,7 @@ from NumPyNet.layers.softmax_layer import Softmax_layer
 # from NumPyNet.layers.cost_layer import cost_type
 from NumPyNet.layers.batchnorm_layer import BatchNorm_layer
 from NumPyNet.network import Network
-from NumPyNet.optimizer import SGD
+from NumPyNet.optimizer import Adam
 # from NumPyNet.optimizer import Adam, SGD, Momentum
 from NumPyNet.utils import to_categorical
 from NumPyNet.utils import from_categorical
@@ -27,8 +25,6 @@ from NumPyNet.metrics import accuracy_score
 import numpy as np
 from sklearn import datasets
 from sklearn.model_selection import train_test_split
-# from sklearn.metrics import accuracy_score as sk_ac
-# import matplotlib.pyplot as plt
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -98,44 +94,33 @@ if __name__ == '__main__':
   model.add(Softmax_layer(spatial=True, groups=1, temperature=1.))
   # model.add(Cost_layer(cost_type=cost_type.mse))
 
+  # model.compile(optimizer=SGD(lr=0.01, decay=0., lr_min=0., lr_max=np.inf))
+  model.compile(optimizer=Adam())
+
   print('*************************************')
   print('\n Total input dimension: {}'.format(X_train.shape), '\n')
-  print('*************************************')
+  print('**************MODEL SUMMARY***********')
 
-  model.compile(optimizer=SGD(lr=0.01, decay=0., lr_min=0., lr_max=np.inf))
   model.summary()
 
-  truth = from_categorical(y_test)
-
-  # model._fitted = True # for testing purpose
-
-  # out1       = model.predict(X=X_test)
-  # predicted1 = out1.argmax(axis=3).ravel()
-  # accuracy1  = accuracy_score(truth, predicted1)
-
-  # # accuracy test
-  # print('\nAccuracy Score      : {:.3f}'.format(accuracy1))
 
   print('\n***********START TRAINING***********\n')
 
   # Fit the model on the training set with timing
 
-  tic = now()
   model.fit(X=X_train, y=y_train, max_iter=10)
-  toc = now()
-  train_time = toc - tic
 
-  print('\n***********END TRAINING**************\n')
+  print('\n***********START TESTING**************\n')
 
   # Test the prediction with timing
-  tic  = now()
-  out2 = model.predict(X=X_test)
-  toc  = now()
-  test_time = toc - tic
+  loss, out = model.evaluate(X=X_test, truth=y_test, verbose=True)
 
-  predicted2 = from_categorical(out2)
-  accuracy2  = accuracy_score(truth, predicted2)
+  truth = from_categorical(y_test)
+  predicted = from_categorical(out)
+  accuracy  = accuracy_score(truth, predicted)
 
-  print('Accuracy Score      : {:.3f}'.format(accuracy2))
-  print('And it tooks {:.1f}s for training and {:.1f}s for predict'.format(train_time, test_time))
-  # best score I could obtain was 94% with 10 epochs, lr = 0.01 %
+  print('\nLoss Score: {:.3f}'.format(loss))
+  print('Accuracy Score: {:.3f}'.format(accuracy))
+  # SGD : best score I could obtain was 94% with 10 epochs, lr = 0.01 %
+  # Momentum : best score I could obtain was 93% with 10 epochs
+  # Adam : best score I could obtain was 95% with 10 epochs

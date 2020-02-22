@@ -121,10 +121,9 @@ def test_batchnorm_layer(b, w, h, c):
 
   # numpynet bacward, updates delta_numpynet
   numpynet.backward(delta_numpynet)
-  
+
   # Testing delta, the precision change with the image
   assert delta_keras.shape == delta_numpynet.shape
-  print(inpt.shape, abs(delta_keras - delta_numpynet).max())
   assert np.allclose(delta_keras, delta_numpynet, atol=1e-1)
 
   # Testing scales updates

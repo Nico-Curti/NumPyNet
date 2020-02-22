@@ -4,8 +4,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import itertools
-
 from NumPyNet.activations import Activations
 from NumPyNet.utils import _check_activation
 from NumPyNet.utils import check_is_fitted
@@ -197,17 +195,10 @@ class Convolutional_layer(object):
     self.out_h = 1 + (n1 - n2) // st2
 
     # Shape of the final view
-<<<<<<< HEAD
-    view_shape = (b, self.out_w, self.out_h) + (m2, n2) + arr.shape[3:]
-
-    # strides of the final view
-    strides = (B, st1 * s0, st2 * s1) + (s0, s1) + arr.strides[3:]
-=======
     view_shape = (b, self.out_w, self.out_h, m2, n2) + arr.shape[3:]
 
     # strides of the final view
     strides = (B, st1 * s0, st2 * s1, s0, s1) + arr.strides[3:]
->>>>>>> f1c6f1c36983f8c59ad0802f54f01d65b4fa0462
 
     subs = np.lib.stride_tricks.as_strided(arr, view_shape, strides=strides)
     # without any reshape, it's indeed a view of the input
@@ -336,6 +327,8 @@ class Convolutional_layer(object):
     operator = np.moveaxis(operator, source=[1, 2], destination=[0, 1])
 
     # Atomically modify, really slow as for maxpool and avgpool
+    # The best results can be obtained reshaping the delta_review tensor
+    # but we cannot reach them without losing the the view
     for d, o in zip(delta_review, operator):
       for di, oi in zip(d, o):
         di += oi

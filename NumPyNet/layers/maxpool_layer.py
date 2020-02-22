@@ -4,8 +4,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import itertools
-
 import numpy as np
 from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
@@ -221,13 +219,12 @@ class Maxpool_layer(object):
     # a six dimensional array
     b, w, h, c = self.output.shape
 
-    combo = itertools.product(range(b), range(w), range(h), range(c))
     # here I left the transposition, because of self.
 
     # those indexes are usefull to access 'Atomically'(one at a time) every element in net_delta_view
     # that needs to be modified
     # Here, I can't do anything for now, since every image has its own indexes
-    for (i, j, k, l), m, o, D in zip(combo, self.indexes[0], self.indexes[1], np.nditer(self.delta)):
+    for (i, j, k, l), m, o, D in zip(np.ndindex(b, w, h, c), self.indexes[0], self.indexes[1], np.nditer(self.delta)):
       net_delta_view[i, j, k, l, m, o] += D
 
     # Here delta is correctly modified

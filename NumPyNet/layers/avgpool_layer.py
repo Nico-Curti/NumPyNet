@@ -4,8 +4,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import itertools
-
 import numpy as np
 from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
@@ -227,17 +225,16 @@ class Avgpool_layer(object):
 
     # norm = 1./(kx*ky) # needs to count only no nan values for keras
     _, w, h, c = self.output.shape
-    combo = itertools.product(range(w), range(h), range(c)) # every combination of indices
 
     # The indexes are necessary to access every pixel value one at a time, since
     # modifing the same memory address more times at once doesn't produce the correct result
 
     # norm = 1. / (kx*ky)
     norm = self.delta * (1. / np.count_nonzero(~np.isnan(net_delta_view), axis=(4, 5)))
+    net_delta_review = np.moveaxis(net_delta_view, source=[1, 2, 3], destination=[0, 1, 2])
 
-    for (i, j, k), n in zip(combo, np.nditer(norm)):
-      #norm = np.count_nonzero(~np.isnan(net_delta_view[b, i, j, k, :])) # this only counts non nan values for norm
-      net_delta_view[:, i, j, k, ...] += n
+    for (i, j, k), n in zip(np.ndindex(w, h, c), np.nditer(norm)):
+      net_delta_review[i, j, k, ...] += n
     # net_delta_view *= norm
 
     # Here delta is updated correctly

@@ -271,6 +271,7 @@ class Network(object):
     '''
 
     num_data = len(X)
+    begin = now()
 
     batches = np.array_split(range(num_data), indices_or_sections=num_data // self.batch)
 
@@ -287,11 +288,11 @@ class Network(object):
 
       for i, idx in enumerate(batches):
 
-        input = X[idx, ...]
-        truth = y[idx, ...]
+        _input = X[idx, ...]
+        _truth = y[idx, ...]
 
-        _ = self._forward(X=input, truth=truth)
-        self._backward(X=input)
+        _ = self._forward(X=_input, truth=_truth)
+        self._backward(X=_input)
 
         loss += self._get_loss() / len(idx)
 
@@ -306,6 +307,9 @@ class Network(object):
         start = now()
 
       print('\n', end='', flush=True)
+
+    end = now()
+    print('Training on {:d} epochs tooks {:1.1f} sec'.format(max_iter, end - begin))
 
     self._fitted = True
 
@@ -333,21 +337,58 @@ class Network(object):
     self._fitted = True
 
 
-  def predict(self, X, truth=None):
+  def predict(self, X, truth=None, verbose=True):
     '''
     Predict the given input
     '''
     if not self._fitted:
       raise NetworkError('This Network model instance is not fitted yet. Please use the "fit" function before the predict')
 
-    output = self._forward(X, truth)
-    return output
+    num_data = len(X)
+    _truth = None
 
-  def evaluate(self, X, truth):
+    batches = np.array_split(range(num_data), indices_or_sections=num_data // self.batch)
+
+    begin = now()
+    start = begin
+    loss = 0.
+    output = []
+
+    for i, idx in enumerate(batches):
+
+      _input = X[idx, ...]
+      if truth is not None:
+        _truth = truth[idx, ...]
+
+      predict = self._forward(X=_input, truth=_truth)
+      output.append(predict)
+
+      loss += self._get_loss() / len(idx)
+
+      if verbose:
+        done = int(50 * (i + 1) / len(batches))
+        print('\r{:>3d}/{:<3d} |{}{}| ({:1.1f} sec/iter) loss: {:3.3f}'.format( len(idx) * (i + 1),
+                                                                                num_data,
+                                                                               r'█' * done,
+                                                                                '-' * (50 - done),
+                                                                                now() - start,
+                                                                                loss
+                                                                              ), flush=True, end='')
+        start = now()
+
+    if verbose:
+      print('\n', end='', flush=True)
+
+      end = now()
+      print('Prediction on {:d} samples tooks {:1.1f} sec'.format(num_data, end - begin))
+
+    return np.concatenate(output)
+
+  def evaluate(self, X, truth, verbose=False):
     '''
     Return output and loss of the model
     '''
-    output = self.predict(X, truth)
+    output = self.predict(X, truth=truth, verbose=verbose)
     loss = self._get_loss() / len(X)
 
     return (loss, output)
