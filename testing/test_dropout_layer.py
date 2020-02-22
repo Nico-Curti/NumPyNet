@@ -89,7 +89,7 @@ class TestDropoutLayer:
 
     if prob == 1.:
       assert zeros_out == 0
-      assert np.all(forward_out_numpynet)
+      assert not np.all(forward_out_numpynet)
 
     elif prob == 0.:
       assert zeros_out == b * w * h * c
