@@ -200,10 +200,6 @@ class Convolutional_layer(object):
     # strides of the final view
     strides = (B, st1 * s0, st2 * s1, s0, s1, c1)
 
-    print(view_shape)
-    print(B, s0, s1, c1)
-    print(strides)
-
     subs = np.lib.stride_tricks.as_strided(arr, view_shape, strides=strides)
     # without any reshape, it's indeed a view of the input
     return subs

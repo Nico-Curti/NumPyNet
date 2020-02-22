@@ -18,7 +18,7 @@ class CfgfmtError (Exception):
 
 class CfgVariableError (Exception):
 
-  def __init__ (self, message, errors=1):
+  def __init__ (self, message, errors=2):
 
     super(CfgVariableError, self).__init__(message)
 
@@ -27,7 +27,7 @@ class CfgVariableError (Exception):
 
 class DataVariableError (Exception):
 
-  def __init__ (self, message, errors=1):
+  def __init__ (self, message, errors=3):
 
     super(DataVariableError, self).__init__(message)
 
@@ -35,15 +35,23 @@ class DataVariableError (Exception):
 
 class LayerError (Exception):
 
-  def __init__ (self, message, errors=1):
+  def __init__ (self, message, errors=4):
 
     super(LayerError, self).__init__(message)
 
     self.errors = errors
 
+class MetricsError (Exception):
+
+  def __init__ (self, message, errors=5):
+
+    super(MetricsError, self).__init__(message)
+
+    self.errors = errors
+
 class NetworkError (Exception):
 
-  def __init__ (self, message, errors=1):
+  def __init__ (self, message, errors=6):
 
     super(NetworkError, self).__init__(message)
 
@@ -51,7 +59,7 @@ class NetworkError (Exception):
 
 class VideoError (Exception):
 
-  def __init__ (self, message, errors=1):
+  def __init__ (self, message, errors=7):
 
     super(VideoError, self).__init__(message)
 
@@ -59,7 +67,7 @@ class VideoError (Exception):
 
 class NotFittedError (Exception):
 
-  def __init__ (self, message, errors=1):
+  def __init__ (self, message, errors=8):
 
     super(NotFittedError, self).__init__(message)
 

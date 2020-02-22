@@ -8,14 +8,13 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Concatenate
 from tensorflow.keras.layers import Activation
 from tensorflow.keras.layers import Input
-from tensorflow.keras.optimizers import SGD as K_SGD
 import tensorflow.keras.backend as K
 
 from NumPyNet.layers.route_layer import Route_layer
 from NumPyNet.layers.activation_layer import Activation_layer
 from NumPyNet.layers.cost_layer import Cost_layer
 from NumPyNet.layers.cost_layer import cost_type
-from NumPyNet.optimizer import SGD as N_SGD
+from NumPyNet.optimizer import SGD
 from NumPyNet.network import Network
 
 import numpy as np
@@ -46,6 +45,7 @@ def test_route_layer():
   y      = Activation(activation='tanh')(x)
   Concat = Concatenate( axis=-1)([x, y]) # concatenate of x and y
   model  = Model(inputs=[inp], outputs=Concat)
+  model.compile(optimizer='sgd', loss='mse')
 
   # init NumPyNet model
   net = Network(batch=batch, input_shape=(w, h, c))
@@ -53,6 +53,8 @@ def test_route_layer():
   net.add(Activation_layer(activation='relu')) # layer 1
   net.add(Activation_layer(activation='tanh')) # layer 2
   net.add(Route_layer(input_layers=(1,2), by_channels=True))
+  net.add(Cost_layer(cost_type='mse', scale=1., ratio=0., noobject_scale=1., threshold=0., smoothing=0.))
+  net.compile(optimizer=SGD())
 
   net._fitted = True # False control
 
@@ -63,7 +65,7 @@ def test_route_layer():
 
   assert np.allclose(fwd_out_keras, fwd_out_numpynet) # ok
 
-  net.fitted = False # the correct state of the network
+  net._fitted = False # the correct state of the network
 
   # BACKWARD
 

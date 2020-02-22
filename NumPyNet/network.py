@@ -36,6 +36,7 @@ from NumPyNet.optimizer import Optimizer
 from NumPyNet.parser import net_config
 from NumPyNet.exception import DataVariableError
 from NumPyNet.exception import LayerError
+from NumPyNet.exception import MetricsError
 from NumPyNet.exception import NetworkError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
@@ -84,6 +85,7 @@ class Network(object):
     else:
       self._net = []
 
+    self.metrics = None
     self._fitted = False
 
 
@@ -257,7 +259,7 @@ class Network(object):
 
     return self
 
-  def compile(self, optimizer=Optimizer):
+  def compile(self, optimizer=Optimizer, metrics=None):
     '''
     '''
 
@@ -266,12 +268,38 @@ class Network(object):
       if hasattr(layer, 'optimizer'):
         layer.optimizer = copy(optimizer)
 
+    if metrics is not None:
+      self._check_metrics(metrics)
+
+
+  def _check_metrics(self, metrics):
+    '''
+    '''
+
+    for func in metrics:
+      if not callable(func):
+        raise MetricsError('Metrics {} is not a callable object'.format(func.__name__))
+
+      # TODO: check if the signature is correct
+
+    self.metrics = metrics
+
+
+  def _evaluate_metrics(self, y_true, y_pred):
+    '''
+    '''
+
+    results = {func.__name__ : func(y_true, y_pred) for func in self.metrics}
+    print(' '.join(' {}: {:1.3f}'.format(k, v) for k, v in results.items()))
+
+
   def fit(self, X, y, max_iter=100, shuffle=True):
     '''
     '''
 
     num_data = len(X)
     begin = now()
+    self._fitted = True
 
     batches = np.array_split(range(num_data), indices_or_sections=num_data // self.batch)
 
@@ -306,12 +334,15 @@ class Network(object):
                                                                               ), flush=True, end='')
         start = now()
 
+      if self.metrics is not None:
+
+        y_pred = self.predict(X, truth=y, verbose=False)
+        self._evaluate_metrics(y, y_pred)
+
       print('\n', end='', flush=True)
 
     end = now()
     print('Training on {:d} epochs tooks {:1.1f} sec'.format(max_iter, end - begin))
-
-    self._fitted = True
 
 
   def fit_generator(self, Xy_generator, max_iter=100):

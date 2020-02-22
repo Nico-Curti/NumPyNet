@@ -20,7 +20,7 @@ from NumPyNet.optimizer import Adam
 # from NumPyNet.optimizer import Adam, SGD, Momentum
 from NumPyNet.utils import to_categorical
 from NumPyNet.utils import from_categorical
-from NumPyNet.metrics import accuracy_score
+from NumPyNet.metrics import mean_accuracy_score
 
 import numpy as np
 from sklearn import datasets
@@ -28,6 +28,15 @@ from sklearn.model_selection import train_test_split
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
+
+
+def accuracy (y_true, y_pred):
+  '''
+  Temporary metrics to overcome "from_categorical" missing in standard metrics
+  '''
+  truth = from_categorical(y_true)
+  predicted = from_categorical(y_pred)
+  return mean_accuracy_score(truth, predicted)
 
 
 if __name__ == '__main__':
@@ -95,7 +104,7 @@ if __name__ == '__main__':
   # model.add(Cost_layer(cost_type=cost_type.mse))
 
   # model.compile(optimizer=SGD(lr=0.01, decay=0., lr_min=0., lr_max=np.inf))
-  model.compile(optimizer=Adam())
+  model.compile(optimizer=Adam(), metrics=[accuracy])
 
   print('*************************************')
   print('\n Total input dimension: {}'.format(X_train.shape), '\n')
@@ -117,7 +126,7 @@ if __name__ == '__main__':
 
   truth = from_categorical(y_test)
   predicted = from_categorical(out)
-  accuracy  = accuracy_score(truth, predicted)
+  accuracy  = mean_accuracy_score(truth, predicted)
 
   print('\nLoss Score: {:.3f}'.format(loss))
   print('Accuracy Score: {:.3f}'.format(accuracy))

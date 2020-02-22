@@ -10,7 +10,7 @@ __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-def accuracy_score (y_true, y_pred):
+def mean_accuracy_score (y_true, y_pred):
   '''
   Compute average accuracy score of a classification.
 
@@ -27,8 +27,93 @@ def accuracy_score (y_true, y_pred):
     score : float
       Average accuracy between the two inputs
   '''
-
   return np.mean(np.equal(y_true, y_pred))
+
+
+def mean_square_error (y_true, y_pred):
+  '''
+  Compute average square error score of a classification.
+
+  Parameters
+  ----------
+    y_true : 2d array-like
+      Ground truth (correct) labels expressed as image.
+
+    y_pred : 2d array-like
+      Predicted labels, as returned by the NN
+
+  Returns
+  -------
+    score : float
+      Average square error between the two inputs
+  '''
+  diff = y_truth - y_pred
+  diff *= diff
+  return np.mean(diff)
+
+
+def mean_absolute_error (y_true, y_pred):
+  '''
+  Compute average absolute error score of a classification.
+
+  Parameters
+  ----------
+    y_true : 2d array-like
+      Ground truth (correct) labels expressed as image.
+
+    y_pred : 2d array-like
+      Predicted labels, as returned by the NN
+
+  Returns
+  -------
+    score : float
+      Average absolute error between the two inputs
+  '''
+  diff = np.abs(y_truth - y_pred)
+  return np.mean(diff)
+
+
+def mean_logcosh (y_true, y_pred):
+  '''
+  Compute average logcosh score of a classification.
+
+  Parameters
+  ----------
+    y_true : 2d array-like
+      Ground truth (correct) labels expressed as image.
+
+    y_pred : 2d array-like
+      Predicted labels, as returned by the NN
+
+  Returns
+  -------
+    score : float
+      Average logcosh error between the two inputs
+  '''
+  diff = np.log(np.cosh(y_truth - y_pred))
+  return np.mean(diff)
+
+
+def mean_hellinger (y_true, y_pred):
+  '''
+  Compute average hellinger score of a classification.
+
+  Parameters
+  ----------
+    y_true : 2d array-like
+      Ground truth (correct) labels expressed as image.
+
+    y_pred : 2d array-like
+      Predicted labels, as returned by the NN
+
+  Returns
+  -------
+    score : float
+      Average hellinger error between the two inputs
+  '''
+  diff = np.sqrt(y_true) - np.sqrt(y_pred)
+  diff *= diff
+  return np.mean(diff)
 
 
 def mean_iou_score (y_true, y_pred):

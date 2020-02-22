@@ -45,6 +45,7 @@ class Cost_layer(object):
       smooothing: float, default = 0.,
     '''
 
+    self.cost = 0.
     self.cost_type = cost_type
     self.scale = scale
     self.ratio = ratio
