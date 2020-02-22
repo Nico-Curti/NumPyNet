@@ -141,7 +141,6 @@ class TestDropoutLayer:
 
     else:
       assert forward_out_numpynet.shape == inpt.shape
-      assert np.any(forward_out_numpynet)
 
     assert np.allclose(layer.delta, np.zeros(shape=(b, w, h, c)))
 
