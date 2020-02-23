@@ -84,7 +84,7 @@ before_install:
   - python -m pip install enum34
   - python -m pip install configparser
   # testing libraries
-  - python -m pip install tensorflow==1.15.0
+  - python -m pip install tensorflow==1.14.0
   - python -m pip install hypothesis==4.13.0
 
   - python -m pip install codecov
