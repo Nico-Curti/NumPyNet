@@ -165,3 +165,8 @@ class TestInputLayer :
     # Check dimension and delta
     assert keras_delta.shape == delta.shape
     assert np.allclose(keras_delta, delta)
+
+    delta = np.zeros(shape=(1,2,3,4))
+
+    with pytest.raises(ValueError):
+      layer.backward(delta)

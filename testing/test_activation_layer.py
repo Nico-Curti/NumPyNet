@@ -44,7 +44,7 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 class TestActivationLayer:
   '''
   Tests:
-    - costructor of Activation_layer object
+    - constructor of Activation_layer object
     - print function
     - forward function against tf.keras for different activations
     - backward function against tf.keras for different activations

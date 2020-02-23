@@ -17,7 +17,13 @@ class L2Norm_layer(object):
   def __init__(self, axis=None, **kwargs):
     '''
     L2Norm layer
+
+    Parameters
+    ----------
+      axis : integer, default None. Axis along which the vector is normalized.
+        If None, the norm is computed along the whole vector.
     '''
+
     self.axis = axis
 
     self.scales = None
@@ -48,8 +54,13 @@ class L2Norm_layer(object):
     Forward of the l2norm layer, apply the l2 normalization over
     the input along the given axis
 
-    Parameters:
-      inpt: the input to be normaliza
+    Parameters
+    ----------
+      inpt: numpy array, the input to be normalized.
+
+    Returns
+    -------
+      L2norm_layer object
     '''
     self._out_shape = inpt.shape
 
@@ -61,12 +72,17 @@ class L2Norm_layer(object):
 
     return self
 
-  def backward(self, delta, copy=False):
+  def backward(self, delta):
     '''
     Compute the backward of the l2norm layer
 
-    Parameter:
-      delta : global error to be backpropagated
+    Parameters
+    ----------
+      delta : numpy array, global error to be backpropagated.
+
+    Returns
+    -------
+      L2norm_layer object
     '''
 
     check_is_fitted(self, 'delta')

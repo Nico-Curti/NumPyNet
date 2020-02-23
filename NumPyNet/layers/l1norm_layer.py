@@ -17,6 +17,11 @@ class L1Norm_layer(object):
   def __init__(self, axis=None, **kwargs):
     '''
     L1Norm layer
+
+    Parameters
+    ----------
+      axis : integer, default None. Axis along which the L1Normalization
+        is performed. If None, normalize the entire array.
     '''
     self.axis = axis
 
@@ -48,9 +53,15 @@ class L1Norm_layer(object):
     Forward of the l1norm layer, apply the l1 normalization over
     the input along the given axis
 
-    Parameters:
-      inpt: the input to be normaliza
+    Parameters
+    ----------
+      inpt: numpy array, the input to be normalized.
+
+    Returns
+    -------
+      L1norm_layer object
     '''
+
     self._out_shape = inpt.shape
 
     norm = np.abs(inpt).sum(axis=self.axis, keepdims=True)
@@ -65,8 +76,13 @@ class L1Norm_layer(object):
     '''
     Compute the backward of the l1norm layer
 
-    Parameter:
-      delta : global error to be backpropagated
+    Parameters
+    ---------
+      delta : numpy array, global error to be backpropagated.
+
+    Returns
+    -------
+      L1norm_layer object.
     '''
 
     check_is_fitted(self, 'delta')
