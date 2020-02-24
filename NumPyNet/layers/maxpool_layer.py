@@ -14,22 +14,28 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 class Maxpool_layer(object):
 
-  def __init__(self, size, stride=None, padding=None, **kwargs):
+  def __init__(self, size, stride=None, pad=None, **kwargs):
 
     '''
     MaxPool Layer: perfmors a downsample of the image through the slide of a kernel
     of shape equal to size = (kx, ky) with step stride = (st1, st2)
 
-    Parameters:
-      size   : tuple of int, size of the kernel with shape (kx, ky)
-      stride : tuple of int, step of the kernel with shape (st1, st2)
-      padding: boolean, default is None. If True pad the image following keras SAME
+    Parameters
+    ----------
+      size   : int or tuple of int. Size of the kernel with shape (kx, ky)
+      stride : int or tuple of int, default None. Step of the kernel with shape (st1, st2).
+              If None, stride is set equal to size.
+      pad    : boolean, default None. If True pad the image following keras SAME
         padding. If False the image is not padded
     '''
 
     self.size = size
+
     if not hasattr(self.size, '__iter__'):
       self.size = (int(self.size), int(self.size))
+
+    if self.size[0] <= 0. or self.size[1] <= 0.:
+      raise LayerError('Avgpool layer. Incompatible size dimensions. They must be both > 0')
 
     if not stride:
       self.stride = size
@@ -45,7 +51,7 @@ class Maxpool_layer(object):
     self.batch, self.w, self.h, self.c = (0, 0, 0, 0)
 
     # for padding
-    self.pad = padding
+    self.pad = pad
     self.pad_left, self.pad_right, self.pad_bottom, self.pad_top = (0, 0, 0, 0)
 
     self.output, self.indexes, self.delta = (None, None, None)
@@ -79,7 +85,7 @@ class Maxpool_layer(object):
     out_channels = self.c
     return (self.batch, out_width, out_height, out_channels)
 
-  def _asStride(self, inpt, size, stride):
+  def _asStride(self, inpt):
     '''
     _asStride returns a view of the input array such that a kernel of size = (kx,ky)
     is slided over the image with stride = (st1, st2)
@@ -90,15 +96,19 @@ class Maxpool_layer(object):
     see also:
     https://stackoverflow.com/questions/42463172/how-to-perform-max-mean-pooling-on-a-2d-array-using-numpy
 
-    Parameters:
-      inpt  : input batch of images to be stride with shape = ()
-      size  : a tuple indicating the horizontal and vertical size of the kernel
-      stride: a tuple indicating the horizontal and vertical steps of the kernel
+    Parameters
+    ----------
+      inpt : numpy array, input batch of images to be strided with shape = (batch, w, h, c)
+
+    Returns
+    -------
+      View on input with shape (batch, out_w, out_h, out_c, kx, ky)
     '''
+
     batch_stride, s0, s1, s3 = inpt.strides
     batch, w, h, c = inpt.shape
-    kx, ky   = size
-    st1, st2 = stride
+    kx, ky   = self.size
+    st1, st2 = self.stride
 
     out_w = 1 + (w - kx)//st1
     out_h = 1 + (h - ky)//st2
@@ -116,6 +126,7 @@ class Maxpool_layer(object):
     '''
     Compute padding dimensions
     '''
+
     # Compute how many raws are needed to pad the image in the 'w' axis
     if (self.w % self.stride[0] == 0):
       pad_w = max(self.size[0] - self.stride[0], 0)
@@ -140,8 +151,13 @@ class Maxpool_layer(object):
     See also:
       https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
 
-    Parameters:
-      inpt    : input images in the format (batch, width, height, channels)
+    Parameters
+    ----------
+      inpt : numpy array, input images in the format (batch, w, h, c)
+
+    Returns
+    -------
+      padded array.
     '''
 
     # return the nan-padded image, in the same format as inpt (batch, width + pad_w, height + pad_h, channels)
@@ -149,7 +165,6 @@ class Maxpool_layer(object):
                   mode='constant', constant_values=(np.nan, np.nan))
 
   def forward(self, inpt):
-
     '''
     Forward function of the maxpool layer: It slides a kernel over every input image and return
     the maximum value of every sub-window.
@@ -157,8 +172,13 @@ class Maxpool_layer(object):
     (batch, out_w, out_h , c, kx, ky), where, for every image in the batch we have:
     out_w * out_h * c sub matrixes kx * ky, containing pixel values.
 
-    Parameters:
+    Parameters
+    ----------
       inpt : input images in the format (batch, input_w, input_h, input_c)
+
+    Returns
+    -------
+      Maxpool layer object
     '''
 
     self.batch, self.w, self.h, self.c = inpt.shape
@@ -173,7 +193,7 @@ class Maxpool_layer(object):
       mat_pad = inpt[:, : (self.w - kx) // st1*st1 + kx, : (self.h - ky) // st2*st2 + ky, ...]
 
     # Return a strided view of the input array, shape: (batch, 1+(w-kx)//st1,1+(h-ky)//st2 ,c, kx, ky)
-    view = self._asStride(mat_pad, self.size, self.stride)
+    view = self._asStride(mat_pad)
 
     # final shape (batch, out_w, out_h, c)
 
@@ -183,12 +203,13 @@ class Maxpool_layer(object):
     new_shape = view.shape[:4] + (kx*ky, )
 
     self.indexes = np.nanargmax(view.reshape(new_shape), axis=4)
+
+    # self.indexes = np.unravel_index(self.indexes.ravel(), (kx, ky)) ?
     try:
       self.indexes = np.unravel_index(self.indexes.ravel(), shape=(kx, ky))
     except TypeError: # retro-compatibility for Numpy version older than 1.16
       self.indexes = np.unravel_index(self.indexes.ravel(), dims=(kx, ky))
 
-    # self.indexes = np.asarray(self.indexes).T
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
     return self
@@ -200,8 +221,13 @@ class Maxpool_layer(object):
     Since we work with a 'view' of delta, the same pixel may appear more than one time,
     and an atomic acces to it's value is needed to correctly modifiy it.
 
-    Parameters:
-      delta : the global delta to be backpropagated with shape (batch, w, h, c)
+    Parameters
+    ----------
+      delta : numpy array, the global delta to be backpropagated with shape (batch, w, h, c)
+
+    Returns
+    -------
+      maxpool layer object.
     '''
 
     check_is_fitted(self, 'delta')
@@ -212,18 +238,12 @@ class Maxpool_layer(object):
     else:
       mat_pad = delta
 
-    # Create a view of net delta, following the padding true or false
-    net_delta_view = self._asStride(mat_pad, self.size, self.stride) # that is a view on mat_pad
+    # Create a view of mat_pad, following the padding true or false
+    net_delta_view = self._asStride(mat_pad)
 
-    # Create every possibile combination of index for the first four dimensions of
-    # a six dimensional array
     b, w, h, c = self.output.shape
 
-    # here I left the transposition, because of self.
-
     # those indexes are usefull to access 'Atomically'(one at a time) every element in net_delta_view
-    # that needs to be modified
-    # Here, I can't do anything for now, since every image has its own indexes
     for (i, j, k, l), m, o, D in zip(np.ndindex(b, w, h, c), self.indexes[0], self.indexes[1], np.nditer(self.delta)):
       net_delta_view[i, j, k, l, m, o] += D
 

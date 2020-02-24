@@ -66,7 +66,7 @@ class TestInputLayer :
          w = st.integers(min_value=1, max_value=100),
          h = st.integers(min_value=1, max_value=100),
          c = st.integers(min_value=1, max_value=10 ))
-  @settings(max_examples=20,
+  @settings(max_examples=50,
             deadline=None)
   def test_printer (self, b, w, h, c):
 

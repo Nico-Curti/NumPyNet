@@ -112,11 +112,9 @@ if __name__ == '__main__':
 
   model.summary()
 
-
   print('\n***********START TRAINING***********\n')
 
-  # Fit the model on the training set with timing
-
+  # Fit the model on the training set
   model.fit(X=X_train, y=y_train, max_iter=10)
 
   print('\n***********START TESTING**************\n')

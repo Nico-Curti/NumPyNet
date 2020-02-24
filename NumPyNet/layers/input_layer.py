@@ -47,11 +47,12 @@ class Input_layer(object):
       inpt: numpy array, input array of the layer.
 
     Returns
-    ----------
+    -------
       Input layer object.
     '''
-    if self.out_shape != inpt.shape:
-      raise ValueError('Forward Input layer. Incorrect input shape. Expected {} and given {}'.format(self.out_shape, inpt.shape))
+
+    # if self.out_shape != inpt.shape:
+    #   raise ValueError('Forward Input layer. Incorrect input shape. Expected {} and given {}'.format(self.out_shape, inpt.shape))
 
     self.output = inpt
     self.delta  = np.zeros(shape=self.out_shape, dtype=float)
@@ -67,7 +68,7 @@ class Input_layer(object):
       delta : numpy array, global error to be backpropagated.
 
     Returns
-    ----------
+    -------
       Input layer object.
     '''
 

@@ -8,6 +8,7 @@ import os
 import re
 import pickle
 from copy import copy
+import sys
 
 import numpy as np
 from time import time as now
@@ -140,7 +141,7 @@ class Network(object):
     '''
     print('layer       filters  size              input                output')
     for i, layer in enumerate(self._net):
-      print('{:>4d} {}'.format(i, layer), flush=True, end='\n')
+      print('{:>4d} {}'.format(i, layer), end='\n') # flush=True
 
 
   def load(self, cfg_filename, weights=None):
@@ -187,7 +188,8 @@ class Network(object):
       else:
         self._net.append( self.LAYERS[layer_t](input_shape=input_shape, **layer_params)(self._net[-1]) )
 
-      print('{:>4d} {}'.format(i, self._net[-1]), flush=True, end='\n')
+      print('{:>4d} {}'.format(i, self._net[-1]), end='\n') # flush=True
+      sys.stdout.flush() # compatibility with pythonn 2.7
 
       # if model.get(layer, 'batch_normalize', 0): # wrong because it add a new layer and so the shortcut is broken
       #   self._net.append( BatchNorm_layer()(self._net[-1]) )
@@ -307,7 +309,9 @@ class Network(object):
 
       start = now()
 
-      print('Epoch {:d}/{:d}'.format(_ + 1, max_iter), flush=True)
+      print('Epoch {:d}/{:d}'.format(_ + 1, max_iter)) # flush=True)
+
+      sys.stdout.flush() # compatibility with python 2.7
 
       loss = 0.
 
@@ -331,7 +335,8 @@ class Network(object):
                                                                                 '-' * (50 - done),
                                                                                 now() - start,
                                                                                 loss
-                                                                              ), flush=True, end='')
+                                                                              ), end='') #flush=True
+        sys.stdout.flush() # compatibility with pythonn 2.7
         start = now()
 
       if self.metrics is not None:
@@ -339,7 +344,9 @@ class Network(object):
         y_pred = self.predict(X, truth=y, verbose=False)
         self._evaluate_metrics(y, y_pred)
 
-      print('\n', end='', flush=True)
+      print('\n', end='') # flush=True)
+      sys.stdout.flush() # compatibility with pythonn 2.7
+
 
     end = now()
     print('Training on {:d} epochs tooks {:1.1f} sec'.format(max_iter, end - begin))
@@ -404,11 +411,14 @@ class Network(object):
                                                                                 '-' * (50 - done),
                                                                                 now() - start,
                                                                                 loss
-                                                                              ), flush=True, end='')
+                                                                              ), end='') # flush=True,
+        sys.stdout.flush() # compatibility with pythonn 2.7
         start = now()
 
     if verbose:
-      print('\n', end='', flush=True)
+      print('\n', end='') #flush=True)
+      sys.stdout.flush() # compatibility with pythonn 2.7
+
 
       end = now()
       print('Prediction on {:d} samples tooks {:1.1f} sec'.format(num_data, end - begin))
