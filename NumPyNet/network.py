@@ -123,9 +123,9 @@ class Network(object):
     return self
 
   def __next__(self):
-    if self.layer_index < self.num_layers-1:
+    if self.layer_index < self.num_layers:
       self.layer_index += 1
-      return self._net[self.layer_index]
+      return self._net[self.layer_index - 1]
 
     else:
       raise StopIteration

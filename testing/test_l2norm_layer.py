@@ -111,9 +111,9 @@ class TestL2normLayer :
       sess = tf.Session()
 
       # Keras output
-      output_tf, norm_tf = tf.linalg.normalize(inpt_tf, ord=2, axis=axis)
+      output_tf = K.l2_normalize(inpt_tf, axis=axis)
 
-      forward_out_keras = output_tf.eval(session=sess)
+      forward_out_keras = K.eval(output_tf)
 
       # numpynet forward and output
       layer.forward(inpt)

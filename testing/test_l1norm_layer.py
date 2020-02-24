@@ -45,7 +45,7 @@ class TestL1normLayer :
 
   def test_printer (self):
 
-    layer = L1Norm_layer(axis=None)
+    layer = L1Norm_layer(axis=1)
 
     with pytest.raises(TypeError):
       print(layer)
@@ -54,7 +54,7 @@ class TestL1normLayer :
 
     print(layer)
 
-    layer.forward(np.random.uniform(size=(1,2)))
+    layer.forward(np.random.uniform(size=(1, 2)))
 
     with pytest.raises(ValueError):
       print(layer)
@@ -67,7 +67,8 @@ class TestL1normLayer :
             deadline=None)
   def test_forward (self, b, w, h, c):
 
-    for axis in [None, 1, 2, 3]:
+    # None is supported only in NumPyNet version!
+    for axis in [1, 2, 3]:
 
       inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
       inpt_tf = tf.convert_to_tensor(inpt)
@@ -78,9 +79,8 @@ class TestL1normLayer :
       sess = tf.Session()
 
       # # Keras output
-      output_tf, norm_tf = tf.linalg.normalize(inpt_tf, ord=1, axis=axis)
-
-      forward_out_keras = output_tf.eval(session=sess)
+      output_tf = tf.linalg.norm(inpt_tf, ord=1, axis=axis, keepdims=True)
+      forward_out_keras = K.eval(inpt_tf / output_tf)
 
       # numpynet forward and output
       layer.forward(inpt)
@@ -100,7 +100,8 @@ class TestL1normLayer :
             deadline=None)
   def test_backward (self, b, w, h, c):
 
-    for axis in [None, 1, 2, 3]:
+    # None is supported only in NumPyNet version!
+    for axis in [1, 2, 3]:
 
       inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
       inpt_tf = tf.convert_to_tensor(inpt)
@@ -111,9 +112,8 @@ class TestL1normLayer :
       sess = tf.Session()
 
       # Keras output
-      output_tf, norm_tf = tf.linalg.normalize(inpt_tf, ord=1, axis=axis)
-
-      forward_out_keras = output_tf.eval(session=sess)
+      output_tf = tf.linalg.norm(inpt_tf, ord=1, axis=axis, keepdims=True)
+      forward_out_keras = K.eval(inpt_tf / output_tf)
 
       # numpynet forward and output
       layer.forward(inpt)
@@ -125,7 +125,7 @@ class TestL1normLayer :
 
       # BACKWARD
 
-      grad = K.gradients(output_tf, [inpt_tf])
+      grad = K.gradients([output_tf], [inpt_tf])
       func = K.function([inpt_tf] + [output_tf], grad)
       delta_keras = func([inpt])[0]
 

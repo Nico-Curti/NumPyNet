@@ -115,7 +115,7 @@ class Softmax_layer():
         it's the global delta to be backpropagated
     '''
 
-    check_is_fitted(self, 'delta')
+    check_is_fitted(self, 'output')
 
     # This is an approximation
     if delta is not None:

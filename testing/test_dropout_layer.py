@@ -76,7 +76,7 @@ class TestDropoutLayer:
   def test_forward (self, b, w, h, c, prob):
 
     # Random input
-    inpt     = np.random.uniform(low=0., high=1., size=(b, w, h, c))
+    inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
 
     # Initialize the numpy_net model
     layer = Dropout_layer(prob)
@@ -91,7 +91,7 @@ class TestDropoutLayer:
 
     if prob == 1.:
       assert zeros_out == 0
-      # assert not np.all(forward_out_numpynet)
+      assert not np.all(forward_out_numpynet)
 
     elif prob == 0.:
       assert zeros_out == b * w * h * c
@@ -135,7 +135,7 @@ class TestDropoutLayer:
 
     if prob == 1.:
       assert zeros_out == 0
-      # assert np.all(forward_out_numpynet)
+      assert not np.all(forward_out_numpynet)
 
     elif prob == 0.:
       assert zeros_out == b * w * h * c

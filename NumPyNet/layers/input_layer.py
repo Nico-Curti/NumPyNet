@@ -28,8 +28,8 @@ class Input_layer(object):
     except:
       raise ValueError('Input layer error. Incorrect input_shape. Expected a 4D array (batch, width, height, channel). Given {}'.format(input_shape))
 
-    self.output = np.empty(shape=input_shape, dtype=float)
-    self.delta  = np.empty(shape=input_shape, dtype=float)
+    self.output = None
+    self.delta  = None
 
   def __str__(self):
     return 'input                  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(self.batch, self.w, self.h, self.c)

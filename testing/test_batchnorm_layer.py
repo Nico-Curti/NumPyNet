@@ -75,10 +75,10 @@ def test_batchnorm_layer(b, w, h, c):
   model = Model(inputs=[inp], outputs=x)
 
   # Opens a TensorFlow Session to Initialize Variables
-  sess = tf.InteractiveSession()
+  sess = tf.compat.v1.InteractiveSession()
   # Initialization of variables, code won't work without it
-  sess.run([tf.global_variables_initializer(),
-            tf.local_variables_initializer()])
+  sess.run([tf.compat.v1.global_variables_initializer(),
+            tf.compat.v1.local_variables_initializer()])
 
   # Keras forward
   forward_out_keras = model.predict(inpt)
