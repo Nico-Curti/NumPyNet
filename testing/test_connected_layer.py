@@ -43,7 +43,7 @@ class TestConnectedLayer:
     update function.
   '''
 
-  @given(outputs= st.integers(-3, 10),
+  @given(outputs= st.integers(min_value=-3, max_value=10),
          b      = st.integers(min_value=1, max_value=15),
          w      = st.integers(min_value=15, max_value=100),
          h      = st.integers(min_value=15, max_value=100),
@@ -92,7 +92,7 @@ class TestConnectedLayer:
       assert layer.gradient   == numpynet_act.gradient
 
 
-  @given(outputs= st.integers(1, 10),
+  @given(outputs= st.integers(min_value=1, max_value=10),
          b      = st.integers(min_value=1, max_value=15),
          w      = st.integers(min_value=15, max_value=100),
          h      = st.integers(min_value=15, max_value=100),
@@ -103,7 +103,7 @@ class TestConnectedLayer:
 
     layer = Connected_layer(outputs=outputs, activation=Linear)
 
-    with pytest.raises(AttributeError):
+    with pytest.raises(TypeError):
       print(layer)
 
     layer = Connected_layer(outputs=outputs, activation=Linear, input_shape=(b, w, h, c))
@@ -111,7 +111,7 @@ class TestConnectedLayer:
     print(layer)
 
 
-  @given(outputs= st.integers(1, 10),
+  @given(outputs= st.integers(min_value=1, max_value=10),
          b      = st.integers(min_value=1, max_value=15),
          w      = st.integers(min_value=15, max_value=100),
          h      = st.integers(min_value=15, max_value=100),
@@ -156,7 +156,7 @@ class TestConnectedLayer:
       assert np.allclose(forward_out_numpynet[:, 0, 0, :], forward_out_keras, atol=1e-4)
 
 
-  @given(outputs= st.integers(1, 10),
+  @given(outputs= st.integers(min_value=1, max_value=10),
          b      = st.integers(min_value=1, max_value=15),
          w      = st.integers(min_value=15, max_value=100),
          h      = st.integers(min_value=15, max_value=100),

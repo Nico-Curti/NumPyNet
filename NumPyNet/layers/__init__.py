@@ -15,6 +15,7 @@ from .l1norm_layer import L1Norm_layer
 from .l2norm_layer import L2Norm_layer
 from .logistic_layer import Logistic_layer
 from .maxpool_layer import Maxpool_layer
+from .rnn_layer import RNN_layer
 from .route_layer import Route_layer
 from .shortcut_layer import Shortcut_layer
 from .shuffler_layer import Shuffler_layer

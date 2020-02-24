@@ -49,7 +49,6 @@ class Connected_layer(object):
     # if input shape is passed, init of weights, else done in  __call__
     if input_shape is not None:
       self.input_shape = input_shape
-      self.inputs = np.prod(input_shape[1:])
 
       if weights is None:
         scale = np.sqrt(2. / self.inputs)
@@ -62,10 +61,17 @@ class Connected_layer(object):
       else:
         self.bias = np.asarray(bias)
 
+    else:
+      self.input_shape = None
+
     self.output, self.delta = (None, None)
     self.weights_update = None
     self.bias_update    = None
     self.optimizer      = None
+
+  @property
+  def inputs(self):
+    return np.prod(self.input_shape[1:])
 
   def __str__(self):
     b, w, h, c = self.input_shape
@@ -80,7 +86,6 @@ class Connected_layer(object):
       raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
 
     self.input_shape = previous_layer.out_shape
-    self.inputs = np.prod(self.input_shape[1:])
     self._out_shape = (self.inputs, self.outputs)
 
     if self.weights is None:
@@ -192,7 +197,7 @@ class Connected_layer(object):
       # shapes : (batch , w * h * c) = (batch , w * h * c) + (batch, outputs) @ (outputs, w * h * c)
 
       # delta_shaped[:] += self.delta @ self.weights.transpose()')  # I can modify delta using its view
-      delta_shaped[:] += np.dot(self.delta, self.weights.transpose())
+      delta_shaped[:] += np.einsum('ij, kj -> ik', self.delta, self.weights, optimize=True)
 
     return self
 
@@ -268,8 +273,8 @@ if __name__ == '__main__':
   ax1.set_title('Original Image')
   ax1.axis('off')
 
-  ax2.matshow(forward_out[:,0,0,:], cmap='bwr')
-  ax2.set_title('Forward', y = 4)
+  ax2.matshow(forward_out[:, 0, 0, :], cmap='bwr')
+  ax2.set_title('Forward', y=4)
   ax2.axes.get_yaxis().set_visible(False)         # no y axis tick
   ax2.axes.get_xaxis().set_ticks(range(outputs))  # set x axis tick for every output
 

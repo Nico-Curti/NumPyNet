@@ -143,7 +143,7 @@ def to_categorical (arr):
   '''
 
   n = len(arr)
-  uniques, index = np.unique(arr, return_inverse=True)
+  uniques, index = np.unique(np.asarray(arr), return_inverse=True)
 
   categorical = np.zeros(shape=(n, uniques.size), dtype=float)
   categorical[range(0, n), index] = 1.
