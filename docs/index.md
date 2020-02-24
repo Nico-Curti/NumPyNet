@@ -17,7 +17,7 @@
 # Neural Networks in Pure NumPy - NumPyNet
 
 Implementation in **pure** `Numpy` of neural networks models.
-This library is useful as testing framework for optimized codes.
+`NumPyNet` supports a syntax very close to the `Keras` one but it is written using **only** `Numpy` functions: in this way it is very light and fast to install and use/modify.
 
 ## Table of Contents
 
@@ -67,6 +67,7 @@ Some texts for introduction:
 * [L2norm Layer](./NumPyNet/layers/l2norm_layer.md)
 * [Logistic Layer](./NumPyNet/layers/logistic_layer.md)
 * [MaxPool Layer](./NumPyNet/layers/maxpool_layer.md)
+* [RNN Layer](./docs/NumPyNet/layers/rnn_layer.md) : **TODO**
 * [Route Layer](./NumPyNet/layers/route_layer.md)
 * [PixelShuffle Layer](./NumPyNet/layers/pixelshuffle_layer.md)
 * [Shortcut Layer](./NumPyNet/layers/shortcut_layer.md)
@@ -134,6 +135,10 @@ Any contribution is more than welcome :heart:. Just fill an [issue](https://gith
 See [here](https://github.com/Nico-Curti/NumPyNet/blob/master/CONTRIBUTING.md) for further informations about how to contribute with this project.
 
 ## References
+
+<blockquote>1- Travis Oliphant. "NumPy: A guide to NumPy", USA: Trelgol Publishing, 2006. </blockquote>
+
+<blockquote>2- Bradski, G. "The OpenCV Library", Dr. Dobb's Journal of Software Tools, 2000. </blockquote>
 
 **TODO**
 

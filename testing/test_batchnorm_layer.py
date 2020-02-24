@@ -20,6 +20,9 @@ __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 __package__ = 'BatchNorm Layer testing'
 
+
+np.random.seed(42)
+
 @given(b = st.integers(min_value=3, max_value=15 ),
        w = st.integers(min_value=50, max_value=300), # numerical instability for small dimensions!
        h = st.integers(min_value=50, max_value=300), # numerical instability for small dimensions!
@@ -38,8 +41,6 @@ def test_batchnorm_layer(b, w, h, c):
   to be:
     update functions
   '''
-
-  np.random.seed(42)
 
   inpt = np.random.uniform(low=1., high=10., size=(b, w, h, c))
 
@@ -124,7 +125,7 @@ def test_batchnorm_layer(b, w, h, c):
 
   # Testing delta, the precision change with the image
   assert delta_keras.shape == delta_numpynet.shape
-  assert np.allclose(delta_keras, delta_numpynet, atol=1e-1)
+  assert np.allclose(delta_keras, delta_numpynet, rtol=1e-1, atol=1e-1)
 
   # Testing scales updates
   assert updates[0][0].shape == numpynet.scales_updates.shape

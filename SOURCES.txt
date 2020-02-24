@@ -29,6 +29,7 @@ NumPyNet/layers/l1norm_layer.py
 NumPyNet/layers/l2norm_layer.py
 NumPyNet/layers/logistic_layer.py
 NumPyNet/layers/maxpool_layer.py
+NumPyNet/layers/rnn_layer.py
 NumPyNet/layers/route_layer.py
 NumPyNet/layers/shortcut_layer.py
 NumPyNet/layers/shuffler_layer.py

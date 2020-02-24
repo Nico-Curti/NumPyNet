@@ -122,7 +122,7 @@ if __name__ == '__main__':
   # BACKWARD
 
   delta = np.zeros(shape=inpt.shape, dtype=float)
-  layer.backward(delta, copy=True)
+  layer.backward(delta)
 
   # Visualizations
 
@@ -143,4 +143,5 @@ if __name__ == '__main__':
   ax3.set_title('Backward')
   ax3.axis('off')
 
+  fig.tight_layout()
   plt.show()

@@ -14,7 +14,7 @@ __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class RNN_layer(Connected_layer):
+class RNN_layer(object):
 
   def __init__(self, outputs, steps, activation=Activations, input_shape=None, weights=None, bias=None, **kwargs):
     '''
@@ -92,7 +92,7 @@ class RNN_layer(Connected_layer):
 
   def __call__(self, previous_layer):
     raise NotImplementedError('Not yet supported')
-    return self
+    # return self
 
   @property
   def out_shape(self):
@@ -368,4 +368,5 @@ if __name__ == '__main__':
   ax3.set_title('Backward')
   ax3.axis('off')
 
+  fig.tight_layout()
   plt.show()

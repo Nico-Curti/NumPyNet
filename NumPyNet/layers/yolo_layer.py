@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+from NumPyNet.activations import Logistic
 from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
 
@@ -16,11 +17,11 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 class Yolo_layer(object):
 
   def __init__(self, input_shape, anchors, max_grid,
-                     #warmup_batches,
+                     warmup_batches,
                      ignore_thresh,
-                     #grid_scale,
-                     #obj_scale, noobj_scale,
-                     #xywh_scale, class_scale,
+                     grid_scale,
+                     obj_scale, noobj_scale,
+                     xywh_scale, class_scale,
                      **kwargs):
     '''
     '''
@@ -30,19 +31,23 @@ class Yolo_layer(object):
     self.batch, self.grid_w, self.grid_h, self.c = input_shape
 
     self.ignore_thresh  = ignore_thresh
-    #self.warmup_batches = warmup_batches
+    self.warmup_batches = warmup_batches
     self.anchors        = np.asarray(anchors, dtype=float).reshape(1, 1, 1, 3, 2)
-    #self.grid_scale     = grid_scale
-    #self.obj_scale      = obj_scale
-    #self.noobj_scale    = noobj_scale
-    #self.xywh_scale     = xywh_scale
-    #self.class_scale    = class_scale
+    self.grid_scale     = grid_scale
+    self.obj_scale      = obj_scale
+    self.noobj_scale    = noobj_scale
+    self.xywh_scale     = xywh_scale
+    self.class_scale    = class_scale
 
+    # It seems to work only with equal grid dims
     max_grid_h, max_grid_w = max_grid
 
-    cell_x = np.broadcast_to(range(max_grid_w), shape=(max_grid_w, max_grid_h)).reshape(1, max_grid_h, max_grid_w, 1, 1)
+    cell_x = np.broadcast_to(np.arange(max_grid_w), shape=(max_grid_h, max_grid_w)).T.reshape(1, max_grid_h, max_grid_w, 1, 1)
     cell_y = cell_x.transpose(0, 2, 1, 3, 4)
-    self.cell_grid = np.tile(np.concatenate([cell_x, cell_y], axis=-1), (batch, 1, 1, 3, 1))
+    self.cell_grid = np.tile(np.concatenate((cell_x, cell_y), axis=-1), (batch, 1, 1, 3, 1))
+
+    self.cost = 0.
+    self.output, self.delta = (None, None)
 
 
   def __str__(self):
@@ -71,27 +76,14 @@ class Yolo_layer(object):
 
     # y_pred is the previous output thus the input
 
-    ################## TEMPORARY SOLUTION
+    # adjust the shape of the y_predict [batch, grid_h, grid_w, 3, 4+1+nb_class]
+    inpt = inpt.reshape(inpt.shape[:3] + (3, -1))
 
-    # just a simple 1D convolution
-    self.output = inpt.copy().ravel()
-    size_delta = np.prod(self.out_shape)
-    size = np.prod(self.out_shape[1:]) // self.nb_box
+    # initialize the masks
+    object_mask = np.expand_dims(truth[..., 4], axis=4)
 
-    for i in range(size_delta):
-      index = i % size
-      if index >= wh2 and index < whcoords: continue
-      else:                                 1. / (1. + np.exp(-self.ouput[i]))
-
-    self.delta = np.zeros(shape=self.out_shape, dtype=float)
-
-    if not self.trainable:
-      return self
-
-
-
-    # MISS (line 34-43)
-
+    # the variable to keep track of number of batches processed
+    batch_seen = 0.
 
     # compute grid factor and net factor
     self.grid_w, self.grid_h = truth.shape[:2]
@@ -101,17 +93,16 @@ class Yolo_layer(object):
     net_factor   = np.array([net_w, net_h], dtype=float).reshape((1, 1, 1, 1, 2))
 
     # Adjust prediction
-    pred_box_xy    = (self.cell_grid[:, :grid_h, :grid_w, :, :] + 1. / (1. + np.exp(y_pred[..., :2])))
-    pred_box_wh    = y_pred[..., 2 : 4]
-    pred_box_conf  = np.expand_dims(1. / (1. + np.exp(y_pred[..., 4])), axis=4)
-    pred_box_class = y_pred[..., 5:]
+    pred_box_xy    = (self.cell_grid[:, :grid_h, :grid_w, :, :] + Logistic.activate(inpt[..., :2]))
+    pred_box_wh    = inpt[..., 2 : 4]
+    pred_box_conf  = np.expand_dims(Logistic.activate(inpt[..., 4]), axis=4)
+    pred_box_class = inpt[..., 5:]
 
     # Adjust ground truth
-    true_box_xy    = y_true[..., 0 : 2]
-    true_box_wh    = y_true[..., 2 : 4]
-    true_box_conf  = np.expand_dims(y_true[..., 4], axis=4)
-    true_box_class = np.argmax(y_true[..., 5:], axis=-1)
-
+    true_box_xy    = truth[..., 0 : 2]
+    true_box_wh    = truth[..., 2 : 4]
+    true_box_conf  = np.expand_dims(truth[..., 4], axis=4)
+    true_box_class = np.argmax(truth[..., 5:], axis=-1)
 
     # Compare each predicted box to all true boxes
 
@@ -190,28 +181,40 @@ class Yolo_layer(object):
     avg_noobj = np.sum(pred_box_conf * (1. - object_mask)) / (count_noobj + 1e-3)
     avg_cat = np.sum(object_mask * class_mask) / (count + 1e-3)
 
-    # #  Warm-up training
-    # # MISS (line 149-157)
+    #  Warm-up training
+    batch_seen += 1
 
-    # # Compare each true box to all anchor boxes
-    # wh_scale = np.exp(true_box_wh) * self.anchors / net_factor
-    # wh_scale = np.expand_dims(2 - wh_scale[..., 0] * wh_scale[..., 1], axis=4) # the smaller the box, the bigger the scale
+    if batch_seen < self.warmup_batches + 1:
 
-    # xy_delta    = xywh_mask   * (pred_box_xy   - true_box_xy) * wh_scale * self.xywh_scale
-    # wh_delta    = xywh_mask   * (pred_box_wh   - true_box_wh) * wh_scale * self.xywh_scale
-    # conf_delta  = object_mask * (pred_box_conf - true_box_conf) * self.obj_scale + (1 - object_mask) * conf_delta * self.noobj_scale
-    # class_delta = object_mask *   * self.class_scale # MISS (line 168)
+      true_box_xy = true_box_xy + (.5 + self.cell_grid[: , :grid_h, :grid_w, :, :]) * (1 - object_mask)
+      true_box_wh = true_box_wh + no.zeros_like(true_box_wh) * (1 - object_mask)
+      xywh_mask   = np.ones_like(object_mask)
 
-    # loss_xy    = np.sum(xy_delta * xy_delta,     axis=tuple(range(1, 5)))
-    # loss_wh    = np.sum(wh_delta * wh_delta,     axis=tuple(range(1, 5)))
-    # loss_conf  = np.sum(conf_delta * conf_delta, axis=tuple(range(1, 5)))
-    # loss_class = np.sum(class_delta,             axis=tuple(range(1, 5)))
+    else:
+      # true_box_xy = true_box_xy
+      # true_box_wh = true_box_wh
+      xywh_mask   = object_mask
 
-    # loss = loss_xy + loss_wh + loss_conf + loss_class
+    # Compare each true box to all anchor boxes
+    wh_scale = np.exp(true_box_wh) * self.anchors / net_factor
+    wh_scale = np.expand_dims(2 - wh_scale[..., 0] * wh_scale[..., 1], axis=4) # the smaller the box, the bigger the scale
+
+    xy_delta    = xywh_mask   * (pred_box_xy   - true_box_xy) * wh_scale * self.xywh_scale
+    wh_delta    = xywh_mask   * (pred_box_wh   - true_box_wh) * wh_scale * self.xywh_scale
+    conf_delta  = object_mask * (pred_box_conf - true_box_conf) * self.obj_scale + (1 - object_mask) * conf_delta * self.noobj_scale
+    class_delta = object_mask# *   * self.class_scale # MISS (line 168)
+
+    loss_xy    = np.sum(xy_delta * xy_delta,     axis=tuple(range(1, 5)))
+    loss_wh    = np.sum(wh_delta * wh_delta,     axis=tuple(range(1, 5)))
+    loss_conf  = np.sum(conf_delta * conf_delta, axis=tuple(range(1, 5)))
+    loss_class = np.sum(class_delta,             axis=tuple(range(1, 5)))
+
+    loss = loss_xy + loss_wh + loss_conf + loss_class
 
     print('Yolo {:d} Avg IOU: {:.3f}, Class: {:.3f}, Obj: {:.3f}, No Obj: {:.3f}, .5R: {:.3f}, .75R: {:.3f}, count: {:d}'.format(
           index, avg_iou, avg_cat, avg_obj, avg_noobj, recall50, recall75, count))
 
+    self.cost = loss * self.grid_scale
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
     return self

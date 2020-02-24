@@ -235,9 +235,9 @@ def timing_convolutional_layer (input_shape):
 
 def timing_cost_layer (input_shape):
 
-  from NumPyNet.layers import cost_layer
+  from NumPyNet.layers import cost_type
 
-  costs = [cost_layer.mse, cost_layer.masked, cost_layer.mae, cost_layer.seg, cost_layer.smooth, cost_layer.wgan, cost_layer.hellinger, cost_layer.hinge, cost_layer.logcosh]
+  costs = [cost_type.mse, cost_type.masked, cost_type.mae, cost_type.seg, cost_type.smooth, cost_type.wgan, cost_type.hellinger, cost_type.hinge, cost_type.logcosh]
 
   timing = []
 

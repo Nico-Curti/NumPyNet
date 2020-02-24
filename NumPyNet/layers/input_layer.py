@@ -51,8 +51,8 @@ class Input_layer(object):
       Input layer object.
     '''
 
-    # if self.out_shape != inpt.shape:
-    #   raise ValueError('Forward Input layer. Incorrect input shape. Expected {} and given {}'.format(self.out_shape, inpt.shape))
+    if self.out_shape[1:] != inpt.shape[1:]:
+      raise ValueError('Forward Input layer. Incorrect input shape. Expected {} and given {}'.format(self.out_shape, inpt.shape))
 
     self.output = inpt
     self.delta  = np.zeros(shape=self.out_shape, dtype=float)
@@ -129,4 +129,5 @@ if __name__ == '__main__':
   ax3.set_title('Backward')
   ax3.axis('off')
 
+  fig.tight_layout()
   plt.show()

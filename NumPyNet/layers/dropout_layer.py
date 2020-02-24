@@ -162,4 +162,5 @@ if __name__ == '__main__':
   ax3.set_title('Backward')
   ax3.axis('off')
 
+  fig.tight_layout()
   plt.show()

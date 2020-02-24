@@ -349,7 +349,7 @@ class Network(object):
 
 
     end = now()
-    print('Training on {:d} epochs tooks {:1.1f} sec'.format(max_iter, end - begin))
+    print('Training on {:d} epochs took {:1.1f} sec'.format(max_iter, end - begin))
 
 
   def fit_generator(self, Xy_generator, max_iter=100):
@@ -421,7 +421,7 @@ class Network(object):
 
 
       end = now()
-      print('Prediction on {:d} samples tooks {:1.1f} sec'.format(num_data, end - begin))
+      print('Prediction on {:d} samples took {:1.1f} sec'.format(num_data, end - begin))
 
     return np.concatenate(output)
 

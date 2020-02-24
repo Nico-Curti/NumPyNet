@@ -178,8 +178,6 @@ if __name__ == '__main__':
   delta = np.zeros(shape=inpt.shape, dtype=float)
   layer.backward(delta)
 
-  print(delta.min(), delta.max())
-
   # Visualizations
 
   fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10,5))
@@ -200,4 +198,5 @@ if __name__ == '__main__':
   ax3.set_title('Backward')
   ax3.axis('off')
 
+  fig.tight_layout()
   plt.show()

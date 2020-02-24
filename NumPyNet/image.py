@@ -152,12 +152,12 @@ class Image (object):
 
     return self
 
-  def scale_between (self, min, max):
+  def scale_between (self, minimum, maximum):
     '''
     Rescale image value between min and max
     '''
-    diff = max - min
-    self._data = self._data * diff + min
+    diff = maximum - minimum
+    self._data = self._data * diff + minimum
     return self
 
   def mean_std_norm (self):

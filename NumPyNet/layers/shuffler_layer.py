@@ -60,7 +60,7 @@ class Shuffler_layer(object):
         a N channels at a time taken from every image, where N = out_c // scale**2
       scale : int, scale factor of the layer
     '''
-    b, w, h, c = inpt.shape
+    b, w, h, _ = inpt.shape
     X = inpt.transpose(1, 2, 3, 0).reshape(w, h, scale, scale, b)
     X = np.concatenate(X, axis=1)
     X = np.concatenate(X, axis=1)
@@ -199,4 +199,5 @@ if __name__ == '__main__':
   ax3.set_title('Backward')
   ax3.axis('off')
 
+  fig.tight_layout()
   plt.show()
