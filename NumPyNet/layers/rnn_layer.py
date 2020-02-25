@@ -23,6 +23,7 @@ class RNN_layer(object):
     Parameters
     ----------
       outputs     : integer, number of outputs of the layers
+      steps       : integer, number of mini-batch/steps to perform.
       activation  : activation function of the layer
       input_shape : tuple, default None. Shape of the input in the format (batch, w, h, c),
                     None is used when the layer is part of a Network model.
@@ -62,18 +63,18 @@ class RNN_layer(object):
       self.batches = np.array_split(range(self.input_shape[0]), indices_or_sections=self.batch)
 
       _, w, h, c = self.input_shape
-      self.input_layer  = Connected_layer(outputs, activation, input_shape=(self.batch, w, h, c), weights=weights[0], bias=bias[0])
+      initial_shape = (self.batch, w, h, c)
 
     else:
       self.input_shape = None
 
-      # TODO: remember to overwrite this layer when the input_shape is known!
       self.batch = None
       self.batches = None
-      self.input_layer  = Connected_layer(outputs, activation, input_shape=None, weights=weights[0], bias=bias[0])
+      initial_shape = None
 
-    self.self_layer   = Connected_layer(outputs, activation, input_shape=(self.batch, 1, 1, self.outputs), weights=weights[1], bias=bias[1])
-    self.output_layer = Connected_layer(outputs, activation, input_shape=(self.batch, 1, 1, self.outputs), weights=weights[2], bias=bias[2])
+    self.input_layer  = Connected_layer(self.outputs, activation, input_shape=initial_shape, weights=weights[0], bias=bias[0])
+    self.self_layer   = Connected_layer(self.outputs, activation, input_shape=(self.batch, 1, 1, self.outputs), weights=weights[1], bias=bias[1])
+    self.output_layer = Connected_layer(self.outputs, activation, input_shape=(self.batch, 1, 1, self.outputs), weights=weights[2], bias=bias[2])
 
     if input_shape is not None:
       self.input_layer.input_shape  = (self.input_shape[0], w, h, c)
@@ -81,7 +82,6 @@ class RNN_layer(object):
       self.output_layer.input_shape = (self.input_shape[0], w, h, self.outputs)
 
     self.state     = None
-    self.optimizer = None
 
   def __str__(self):
     return '\n\t'.join(('RNN Layer: {:d} inputs, {:d} outputs'.format(self.inputs, self.outputs),
@@ -91,8 +91,33 @@ class RNN_layer(object):
                         ))
 
   def __call__(self, previous_layer):
-    raise NotImplementedError('Not yet supported')
-    # return self
+
+    if previous_layer.out_shape is None:
+      class_name = self.__class__.__name__
+      prev_name  = layer.__class__.__name__
+      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
+
+    self.input_shape = previous_layer.out_shape
+
+    self.batch = self.input_shape[0] // self.steps
+    self.batches = np.array_split(range(self.input_shape[0]), indices_or_sections=self.batch)
+
+    _, w, h, c = self.input_shape
+    initial_shape = (self.batch, w, h, c)
+    activation = self.self_layer.activation.__qualname__
+    activation = activation.split('.')[0]
+
+    self.input_layer = Connected_layer(self.outputs, activation=activation, input_shape=initial_shape)
+
+    self.input_layer.input_shape  = (self.input_shape[0], w, h, c)
+    self.self_layer.input_shape   = (self.input_shape[0], w, h, self.outputs)
+    self.output_layer.input_shape = (self.input_shape[0], w, h, self.outputs)
+
+    return self
+
+  @property
+  def inputs(self):
+    return np.prod(self.input_shape[1:])
 
   @property
   def out_shape(self):
@@ -247,7 +272,7 @@ class RNN_layer(object):
 
   def update(self):
     '''
-    Update function for the Connected_layer object. optimizer must be assigned
+    Update function for the RNN_layer object. optimizer must be assigned
       externally as an optimizer object.
     '''
 

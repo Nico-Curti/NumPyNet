@@ -25,6 +25,7 @@ from NumPyNet.layers.l1norm_layer import L1Norm_layer
 from NumPyNet.layers.l2norm_layer import L2Norm_layer
 from NumPyNet.layers.logistic_layer import Logistic_layer
 from NumPyNet.layers.maxpool_layer import Maxpool_layer
+from NumPyNet.layers.rnn_layer import RNN_layer
 from NumPyNet.layers.route_layer import Route_layer
 from NumPyNet.layers.shortcut_layer import Shortcut_layer
 from NumPyNet.layers.shuffler_layer import Shuffler_layer
@@ -58,6 +59,7 @@ class Network(object):
             'l2norm'        :  L2Norm_layer,
             'logistic'      :  Logistic_layer,
             'maxpool'       :  Maxpool_layer,
+            'rnn'           :  RNN_layer,
             'route'         :  Route_layer,
             'shortcut'      :  Shortcut_layer,
             'shuffler'      :  Shuffler_layer,
@@ -269,6 +271,11 @@ class Network(object):
 
       if hasattr(layer, 'optimizer'):
         layer.optimizer = copy(optimizer)
+
+      if isinstance(layer, RNN_layer):
+        layer.input_layer.optimizer = copy(optimizer)
+        layer.self_layer.optimizer = copy(optimizer)
+        layer.output_layer.optimizer = copy(optimizer)
 
     if metrics is not None:
       self._check_metrics(metrics)

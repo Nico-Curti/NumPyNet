@@ -47,7 +47,7 @@ def mean_square_error (y_true, y_pred):
     score : float
       Average square error between the two inputs
   '''
-  diff = y_truth - y_pred
+  diff = y_true - y_pred
   diff *= diff
   return np.mean(diff)
 
@@ -69,7 +69,7 @@ def mean_absolute_error (y_true, y_pred):
     score : float
       Average absolute error between the two inputs
   '''
-  diff = np.abs(y_truth - y_pred)
+  diff = np.abs(y_true - y_pred)
   return np.mean(diff)
 
 
@@ -90,7 +90,7 @@ def mean_logcosh (y_true, y_pred):
     score : float
       Average logcosh error between the two inputs
   '''
-  diff = np.log(np.cosh(y_truth - y_pred))
+  diff = np.log(np.cosh(y_true - y_pred))
   return np.mean(diff)
 
 

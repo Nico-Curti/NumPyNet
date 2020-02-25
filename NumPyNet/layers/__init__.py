@@ -14,6 +14,7 @@ from .input_layer import Input_layer
 from .l1norm_layer import L1Norm_layer
 from .l2norm_layer import L2Norm_layer
 from .logistic_layer import Logistic_layer
+from .lstm_layer import LSTM_layer
 from .maxpool_layer import Maxpool_layer
 from .rnn_layer import RNN_layer
 from .route_layer import Route_layer
@@ -32,8 +33,10 @@ Conv2D = Convolutional_layer
 Dropout = Dropout_layer
 L1Normalization = L1Norm_layer
 L2Normalization = L2Norm_layer
+LSTM = LSTM_layer
 MaxPool2D = Maxpool_layer
 concatenate = Route_layer
+RNN = RNN_layer
 Add = Shortcut_layer
 SoftMax = Softmax_layer
 UpSampling2D = Upsample_layer
