@@ -22,12 +22,15 @@ class Route_layer():
 
     YOLOv3 implementation always concatenate by channels
 
-    Parameters:
-      input_layers: iterable, list of integers, index of the layers in the network for which
-        inputs have to concatenated
+    By definition, this layer can't be used without a Network model.
+
+    Parameters
+    ----------
+      input_layers: iterable, list of integers, or single integer, index of the layers in the network for which
+        inputs have to concatenated.
       by_channels   : bool, default True. It determines along
         which dimension the concatenation is performed. For examples if two
-        input with size (b1, w, h , c) and (b2, w, h, c) are concatenated with by_channles=False,
+        input with size (b1, w, h , c) and (b2, w, h, c) are concatenated with by_channels=False,
         then the final output shape will be (b1 + b2, w, h, c).
         Otherwise, if the shapes are (b, w, h, c1) and (b, w, h, c2) and axis=3, the final output size
         will be (b, w, h, c1 + c2) (YOLOv3 model)
@@ -38,8 +41,16 @@ class Route_layer():
     else:
       self.axis = 0
 
-    self.input_layers = input_layers
-    self.outputs = np.array([], dtype=float)
+    if isinstance(input_layers, int):
+      self.input_layer = (input_layers, )
+
+    elif hasattr(input_layers, '__iter__'):
+      self.input_layers = tuple(input_layers)
+
+    else :
+      raise ValueError('Route Layer : parameter "input_layer" is neither iterable or an integer')
+
+    self.output     = np.array([], dtype=float)
     self._out_shape = None
 
   def __str__(self):
@@ -86,8 +97,13 @@ class Route_layer():
     Concatenate along chosen axis the outputs of selected network layers
     In main CNN applications, like YOLOv3, the concatenation happens long channels axis
 
-    Parameters:
+    Parameters
+    ----------
       network : Network object type.
+
+    Returns
+    -------
+      Route Layer object
     '''
 
     self.output = np.concatenate([network[layer_idx].output for layer_idx in self.input_layers], axis=self.axis)
@@ -99,9 +115,14 @@ class Route_layer():
     '''
     Sum self.delta to the correct layer delta on the network
 
-    Parameters:
+    Parameters
+    ----------
       delta  : 4-d numpy array, network delta to be backpropagated
       network: Network object type.
+
+    Returns
+    -------
+      Route layer object
     '''
 
     check_is_fitted(self, 'delta')
