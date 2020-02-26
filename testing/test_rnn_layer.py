@@ -4,8 +4,8 @@
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input
+from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.layers import SimpleRNN
 import tensorflow.keras.backend as K
 
 from NumPyNet.activations import Activations
@@ -28,7 +28,6 @@ from random import choice
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-# __package__ = 'RNN Layer testing'
 
 
 class TestRNNLayer:
@@ -108,3 +107,24 @@ class TestRNNLayer:
     layer = RNN_layer(outputs=outputs, steps=steps, activation=Linear, input_shape=(b, w, h, c))
 
     print(layer)
+
+
+  def forward (self):
+
+    inpt = np.random.uniform(size=(50, 1, 1))
+
+    model = Sequential()
+    model.add(SimpleRNN(units=32, input_shape=(1, 1), activation='linear'))
+
+    forward_out_keras = model.predict(inpt)
+
+    layer = RNN_layer(outputs=32, steps=1, input_shape=(1, 50, 1, 1), activation='linear')
+
+    inpt.shape = (50, 1, 1, 1)
+
+    layer.forward(inpt)
+    forward_out_numpynet = layer.output
+
+    np.allclose(forward_out_numpynet, forward_out_keras)
+
+    forward_out_keras - forward_out_numpynet

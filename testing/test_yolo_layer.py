@@ -27,7 +27,7 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 # Reference: https://github.com/experiencor/keras-yolo3/blob/master/yolo.py
 
 import tensorflow as tf
-from keras.engine.topology import Layer
+from tensorflow.keras.layers import Layer
 
 class YoloLayer(Layer):
 

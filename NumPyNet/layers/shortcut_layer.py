@@ -19,7 +19,6 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 class Shortcut_layer(object):
 
   def __init__(self, activation=Activations, alpha=1., beta=1., **kwargs):
-
     '''
     Shortcut layer: activation of the linear combination of the output of two layers
 
@@ -27,11 +26,11 @@ class Shortcut_layer(object):
 
     Now working only with same shapes input
 
-    Parameters :
-      activation   : activation function of the layer
-      alpha        : float, default = 1., first weight of the combination
-      beta         : float, default = 1., second weight of the combination
-
+    Parameters
+    ----------
+      activation : activation function of the layer
+      alpha : float, default = 1., first weight of the combination.
+      beta  : float, default = 1., second weight of the combination.
     '''
 
     activation = _check_activation(self, activation)
@@ -73,6 +72,7 @@ class Shortcut_layer(object):
     '''
     Evaluate the strided indexes if the input shapes are different
     '''
+
     _, w2, h2, c2 = shape1
     _, w1, h1, c1 = shape2
     stride = w1 // w2
@@ -92,11 +92,16 @@ class Shortcut_layer(object):
 
   def forward(self, inpt, prev_output):
     '''
-    Forward function of the Shortcut layer: activation of the linear combination between input
+    Forward function of the Shortcut layer: activation of the linear combination between input.
 
-    Parameters:
-      inpt        : array of shape (batch, w, h, c), first input of the layer
-      prev_output : array of shape (batch, w, h, c), second input of the layer
+    Parameters
+    ----------
+      inpt        : array of shape (batch, w, h, c), first input of the layer.
+      prev_output : array of shape (batch, w, h, c), second input of the layer.
+
+    Returns
+    -------
+      Shortcut layer object.
     '''
     # assert inpt.shape == prev_output.shape
 
@@ -121,12 +126,12 @@ class Shortcut_layer(object):
       #           [2, 1, 2, 1],
       #           [1, 1, 1, 1]]
 
-      if (self.ix, self.iy, self.kx) is (None, None, None):
+      # TODO: Not working with different dimensions
+      if (self.ix, self.jx, self.kx) is (None, None, None):
         self._stride_index(inpt.shape, prev_output.shape)
 
       self.output = inpt.copy()
-      self.output[:, self.ix, self.jx, self.kx] = self.alpha * self.outpu[:, self.ix, self.jx, self.kx] + self.beta * prev_output[:, self.iy, self.jy, self.ky]
-
+      self.output[:, self.ix, self.jx, self.kx] = self.alpha * self.output[:, self.ix, self.jx, self.kx] + self.beta * prev_output[:, self.iy, self.jy, self.ky]
 
     self.output = self.activation(self.output)
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
@@ -137,10 +142,14 @@ class Shortcut_layer(object):
     '''
     Backward function of the Shortcut layer
 
-    Parameters:
-      delta      : array of shape (batch, w, h, c), first delta to be backpropagated
-      delta_prev : array of shape (batch, w, h, c), second delta to be backporpagated
+    Parameters
+    ----------
+      delta      : array of shape (batch, w, h, c), first delta to be backpropagated.
+      delta_prev : array of shape (batch, w, h, c), second delta to be backporpagated.
 
+    Returns
+    -------
+      Shortcut layer object
     '''
 
     check_is_fitted(self, 'delta')
