@@ -321,6 +321,7 @@ class Network(object):
       sys.stdout.flush() # compatibility with python 2.7
 
       loss = 0.
+      seen = 0
 
       if shuffle:
         np.random.shuffle(batches)
@@ -333,22 +334,23 @@ class Network(object):
         _ = self._forward(X=_input, truth=_truth)
         self._backward(X=_input)
 
-        loss += self._get_loss() / len(idx)
+        loss += self._get_loss()
+        seen += len(idx)
 
         done = int(50 * (i + 1) / len(batches))
-        print('\r{:>3d}/{:<3d} |{}{}| ({:1.1f} sec/iter) loss: {:3.3f}'.format( len(idx) * (i + 1),
+        print('\r{:>3d}/{:<3d} |{}{}| ({:1.1f} sec/iter) loss: {:3.3f}'.format( seen,
                                                                                 num_data,
                                                                                r'█' * done,
                                                                                 '-' * (50 - done),
                                                                                 now() - start,
-                                                                                loss
+                                                                                loss / seen
                                                                               ), end='') #flush=True
         sys.stdout.flush() # compatibility with pythonn 2.7
         start = now()
 
       if self.metrics is not None:
 
-        y_pred = self.predict(X, truth=y, verbose=False)
+        y_pred = self.predict(X, truth=None, verbose=False)
         self._evaluate_metrics(y, y_pred)
 
       print('\n', end='') # flush=True)
@@ -396,7 +398,10 @@ class Network(object):
 
     begin = now()
     start = begin
+
     loss = 0.
+    seen = 0
+
     output = []
 
     for i, idx in enumerate(batches):
@@ -408,16 +413,17 @@ class Network(object):
       predict = self._forward(X=_input, truth=_truth)
       output.append(predict)
 
-      loss += self._get_loss() / len(idx)
+      loss += self._get_loss()
+      seen += len(idx)
 
       if verbose:
         done = int(50 * (i + 1) / len(batches))
-        print('\r{:>3d}/{:<3d} |{}{}| ({:1.1f} sec/iter) loss: {:3.3f}'.format( len(idx) * (i + 1),
+        print('\r{:>3d}/{:<3d} |{}{}| ({:1.1f} sec/iter) loss: {:3.3f}'.format( seen,
                                                                                 num_data,
                                                                                r'█' * done,
                                                                                 '-' * (50 - done),
                                                                                 now() - start,
-                                                                                loss
+                                                                                loss / seen
                                                                               ), end='') # flush=True,
         sys.stdout.flush() # compatibility with pythonn 2.7
         start = now()

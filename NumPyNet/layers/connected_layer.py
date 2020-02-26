@@ -189,7 +189,7 @@ class Connected_layer(object):
     self.bias_update = self.delta.sum(axis=0)   # shape : (outputs,)
 
     # self.weights_update += inpt.transpose() @ self.delta') # shape : (w * h * c, outputs)
-    self.weights_update = np.dot(inpt.transpose(), self.delta)
+    self.weights_update = np.einsum('ji, jk -> ik', inpt, self.delta, optimize=True)
 
     if delta is not None:
       delta_shaped = delta.reshape(inpt.shape[0], -1)  # it's a reshaped VIEW

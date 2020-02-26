@@ -6,6 +6,7 @@ from __future__ import print_function
 
 from NumPyNet.layers import Connected_layer
 from NumPyNet.activations import Activations
+from NumPyNet.utils import _check_activation
 from NumPyNet.utils import check_is_fitted
 
 import numpy as np
@@ -55,33 +56,40 @@ class RNN_layer(object):
       if np.shape(bias)[0] != 3:
         raise ValueError('Wrong number of init "biases". There are 3 connected layers into the RNN cell.')
 
+    self.activation = _check_activation(self, activation)
+
     # if input shape is passed, init of weights, else done in  __call__
     if input_shape is not None:
-      self.input_shape = input_shape
+      b, w, h, c = input_shape
 
-      self.batch = self.input_shape[0] // self.steps
-      self.batches = np.array_split(range(self.input_shape[0]), indices_or_sections=self.batch)
+      if b < self.steps:
+        class_name = self.__class__.__name__
+        prev_name  = layer.__class__.__name__
+        raise LayerError('Incorrect steps found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
 
-      _, w, h, c = self.input_shape
-      initial_shape = (self.batch, w, h, c)
+      self.batch = b // self.steps
+      self.input_shape = (self.batch, w, h, c)
+      indices = np.arange(0, b)
+      self.batches = np.lib.stride_tricks.as_strided(indices, shape=(self.steps, self.batch), strides=(self.batch * 8, 8)).copy()
+
+      self.input_layer  = Connected_layer(self.outputs, self.activation, input_shape=input_shape, weights=weights[0], bias=bias[0])
+      self.self_layer   = Connected_layer(self.outputs, self.activation, weights=weights[1], bias=bias[1])(self.input_layer)
+      self.output_layer = Connected_layer(self.outputs, self.activation, weights=weights[2], bias=bias[2])(self.self_layer)
+
+      self.state = np.zeros(shape=(self.batch, w, h, self.outputs), dtype=float)
 
     else:
-      self.input_shape = None
-
       self.batch = None
+      self.input_shape = None
       self.batches = None
-      initial_shape = None
 
-    self.input_layer  = Connected_layer(self.outputs, activation, input_shape=initial_shape, weights=weights[0], bias=bias[0])
-    self.self_layer   = Connected_layer(self.outputs, activation, input_shape=(self.batch, 1, 1, self.outputs), weights=weights[1], bias=bias[1])
-    self.output_layer = Connected_layer(self.outputs, activation, input_shape=(self.batch, 1, 1, self.outputs), weights=weights[2], bias=bias[2])
+      self.input_layer = None
+      self.self_layer = None
+      self.output_layer = None
+      self.state = None
 
-    if input_shape is not None:
-      self.input_layer.input_shape  = (self.input_shape[0], w, h, c)
-      self.self_layer.input_shape   = (self.input_shape[0], w, h, self.outputs)
-      self.output_layer.input_shape = (self.input_shape[0], w, h, self.outputs)
-
-    self.state     = None
+    self.prev_state = None
+    self.output, self.delta = (None, None)
 
   def __str__(self):
     return '\n\t'.join(('RNN Layer: {:d} inputs, {:d} outputs'.format(self.inputs, self.outputs),
@@ -97,39 +105,36 @@ class RNN_layer(object):
       prev_name  = layer.__class__.__name__
       raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
 
-    self.input_shape = previous_layer.out_shape
+    b, w, h, c = previous_layer.out_shape
 
-    self.batch = self.input_shape[0] // self.steps
-    self.batches = np.array_split(range(self.input_shape[0]), indices_or_sections=self.batch)
+    if b < self.steps:
+      class_name = self.__class__.__name__
+      prev_name  = layer.__class__.__name__
+      raise LayerError('Incorrect steps found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
 
-    _, w, h, c = self.input_shape
-    initial_shape = (self.batch, w, h, c)
-    activation = self.self_layer.activation.__qualname__
-    activation = activation.split('.')[0]
+    self.batch = b // self.steps
+    self.input_shape = (self.batch, w, h, c)
+    indices = np.arange(0, b)
 
-    self.input_layer = Connected_layer(self.outputs, activation=activation, input_shape=initial_shape)
+    self.batches = np.lib.stride_tricks.as_strided(indices, shape=(self.steps, self.batch), strides=(self.batch * 8, 8)).copy()
 
-    self.input_layer.input_shape  = (self.input_shape[0], w, h, c)
-    self.self_layer.input_shape   = (self.input_shape[0], w, h, self.outputs)
-    self.output_layer.input_shape = (self.input_shape[0], w, h, self.outputs)
+    self.input_layer  = Connected_layer(self.outputs, self.activation, input_shape=(b, w, h, c))
+    self.self_layer   = Connected_layer(self.outputs, self.activation)(self.input_layer)
+    self.output_layer = Connected_layer(self.outputs, self.activation)(self.self_layer)
+
+    self.state = np.zeros(shape=(self.batch, w, h, self.outputs), dtype=float)
+
+    self.output, self.delta = (None, None)
 
     return self
 
   @property
   def inputs(self):
-    return np.prod(self.input_shape[1:])
+    return np.prod(self.input_shape[1:]) * self.steps
 
   @property
   def out_shape(self):
     return self.output_layer.out_shape
-
-  @property
-  def output(self):
-    return self.output_layer.output
-
-  @property
-  def delta(self):
-    return self.output_layer.delta
 
   def load_weights(self, chunck_weights, pos=0):
     '''
@@ -158,16 +163,7 @@ class RNN_layer(object):
                            self.self_layer.bias.ravel(), self.self_layer.weights.ravel(),
                            self.output_layer.bias.ravel(), self.output_layer.weights.ravel()], axis=0).tolist()
 
-  def _internal_forward(self, layer, inpt, indices, copy=False):
-
-    _input = inpt[indices, ...]
-    _input = _input.reshape(_input.shape[0], -1)
-
-    z = np.einsum('ij, jk -> ik', _input, layer.weights, optimize=True) + layer.bias
-    layer.output[indices, ...] = layer.activation(z, copy=copy).reshape(-1, 1, 1, layer.outputs)
-
-
-  def forward(self, inpt, shortcut=False, copy=False):
+  def forward(self, inpt, copy=False):
     '''
     Forward function of the RNN layer. It computes the matrix product
       between inpt and weights, add bias and activate the result with the
@@ -176,63 +172,46 @@ class RNN_layer(object):
     Parameters
     ----------
       inpt : numpy array with shape (batch, w, h, c). Input batch of images of the layer
-      shortcut : boolean, default False. Enable/Disable internal shortcut connection.
 
     Returns
     ----------
     RNN_layer object
     '''
 
-    self.state = np.zeros(shape=self.out_shape, dtype=float)
-    self.input_layer.output = np.empty(shape=self.input_layer.out_shape, dtype=float)
-    self.self_layer.output = np.empty(shape=self.self_layer.out_shape, dtype=float)
-    self.output_layer.output = np.empty(shape=self.output_layer.out_shape, dtype=float)
+    self.prev_state = self.state.copy()
+
+    self.input_layer.output = np.zeros(shape=self.input_layer.out_shape, dtype=float)
+    self.self_layer.output = np.zeros(shape=self.self_layer.out_shape, dtype=float)
+    self.output_layer.output = np.zeros(shape=self.output_layer.out_shape, dtype=float)
 
     for idx in self.batches:
 
-      self._internal_forward(layer=self.input_layer, inpt=inpt, indices=idx, copy=copy)
-      self._internal_forward(layer=self.self_layer, inpt=self.state, indices=idx, copy=copy)
+      _input = inpt[idx, ...].reshape(len(idx), -1)
+      _state = self.state.reshape(self.state.shape[0], -1)
 
-      if shortcut:
-        self.state[idx, ...] += self.input_layer.output[idx, ...] + self.self_layer.output[idx, ...]
-      else:
-        self.state[idx, ...]  = self.input_layer.output[idx, ...] + self.self_layer.output[idx, ...]
+      z = np.einsum('ij, jk -> ik', _input, self.input_layer.weights, optimize=True) + self.input_layer.bias
+      self.input_layer.output[idx, ...] = self.input_layer.activation(z, copy=copy).reshape(-1, 1, 1, self.input_layer.outputs)
 
-      self._internal_forward(layer=self.output_layer, inpt=self.state, indices=idx, copy=copy)
+      z = np.einsum('ij, jk -> ik', _state, self.self_layer.weights, optimize=True) + self.self_layer.bias
+      self.self_layer.output[idx, ...] = self.self_layer.activation(z, copy=copy).reshape(-1, 1, 1, self.self_layer.outputs)
+
+      self.state[:] = self.input_layer.output[idx, ...] + self.self_layer.output[idx, ...]
+
+      z = np.einsum('ij, jk -> ik', _state, self.output_layer.weights, optimize=True) + self.output_layer.bias
+      self.output_layer.output[idx, ...] = self.output_layer.activation(z, copy=copy).reshape(-1, 1, 1, self.output_layer.outputs)
+
 
     self.input_layer.delta = np.zeros(shape=self.input_layer.out_shape, dtype=float)
     self.self_layer.delta = np.zeros(shape=self.self_layer.out_shape, dtype=float)
     self.output_layer.delta = np.zeros(shape=self.output_layer.out_shape, dtype=float)
 
+    self.output = self.output_layer.output[:]
+    self.delta = self.output_layer.delta[:]
+
     return self
 
-  def _internal_backward(self, layer, inpt, indices, delta=None, copy=False):
 
-    _input = inpt[indices, ...]
-    _input = _input.reshape(_input.shape[0], -1)
-
-    _delta = layer.delta[indices, ...]
-
-    _delta *= layer.gradient(layer.output[indices, ...], copy=copy)
-    _delta_r = _delta.reshape(-1, layer.outputs)
-
-    layer.bias_update = _delta_r.sum(axis=0)   # shape : (outputs,)
-
-    layer.weights_update = np.dot(_input.transpose(), _delta_r)
-
-    if delta is not None:
-
-      delta_view = delta[indices, ...]
-      delta_shaped = delta_view.reshape(len(indices), -1)
-
-      # shapes : (batch , w * h * c) = (batch , w * h * c) + (batch, outputs) @ (outputs, w * h * c)
-
-      # delta_shaped[:] += self.delta @ self.weights.transpose()')  # I can modify delta using its view
-      delta_shaped[:] += np.einsum('ij, kj -> ik', _delta_r, layer.weights, optimize=True)
-
-      return delta_shaped.reshape(delta_view.shape)
-
-  def backward(self, inpt, delta=None, shortcut=False, copy=False):
+  def backward(self, inpt, delta=None, copy=False):
     '''
     Backward function of the RNN layer, updates the global delta of the
       network to be Backpropagated, he weights upadtes and the biases updates
@@ -241,7 +220,6 @@ class RNN_layer(object):
     ----------
       inpt     : original input of the layer
       delta    : global delta, to be backpropagated.
-      shortcut : boolean, default False. Enable/Disable internal shortcut connection
 
     Returns
     ----------
@@ -250,23 +228,79 @@ class RNN_layer(object):
 
     check_is_fitted(self, 'delta')
 
+    last_input = self.input_layer.output[self.batches[-1]]
+    last_self  = self.self_layer.output[self.batches[-1]]
+
     for i, idx in reversed(list(enumerate(self.batches))):
 
-      self.self_layer.delta[idx, ...] = self._internal_backward(self.output_layer, inpt=self.state, indices=idx, delta=self.self_layer.delta, copy=copy)
+      self.state[:] = self.input_layer.output[idx, ...] + self.self_layer.output[idx, ...]
 
-      if i == 0:
-        self._internal_backward(layer=self.self_layer, inpt=self.state, indices=idx, delta=None, copy=copy)
+      _state = self.state.reshape(self.state.shape[0], -1)
+      _input = inpt[idx, ...].reshape(len(idx), -1)
+
+      # output_layer backward
+
+      _delta = self.output_layer.delta[idx, ...]
+      _delta[:] *= self.output_layer.gradient(self.output_layer.output[idx, ...], copy=copy)
+      _delta_r = _delta.reshape(-1, self.output_layer.outputs)
+
+      self.output_layer.bias_update = _delta_r.sum(axis=0)
+      self.output_layer.weights_update = np.einsum('ji, jk -> ik', _state, _delta_r, optimize=True)
+
+      delta_view = self.self_layer.delta[idx, ...]
+      delta_shaped = delta_view.reshape(len(idx), -1)
+      delta_shaped[:] += np.einsum('ij, kj -> ik', _delta_r, self.output_layer.weights, optimize=True)
+      self.self_layer.delta[idx, ...] = delta_shaped.reshape(delta_view.shape)
+
+      # end 1st backward
+
+      if i != 0:
+        idx2 = self.batches[i - 1]
+        self.state[:] = self.input_layer.output[idx2, ...] + self.self_layer.output[idx2, ...]
       else:
-        self.self_layer.delta[idx, ...] = self._internal_backward(layer=self.self_layer, inpt=self.state, indices=idx, delta=self.self_layer.delta, copy=copy)
+        self.state[:] = self.prev_state.copy()
 
       self.input_layer.delta[idx, ...] = self.self_layer.delta[idx, ...]
-      if shortcut and i > 0:
-        self.input_layer.delta[idx, ...] += self.self_layer.delta[batches[idx - 1], ...]
+
+      _state = self.state.reshape(self.state.shape[0], -1)
+
+      # self_layer backward
+
+      _delta = self.self_layer.delta[idx, ...]
+      _delta[:] *= self.self_layer.gradient(self.self_layer.output[idx, ...], copy=copy)
+      _delta_r = _delta.reshape(-1, self.self_layer.outputs)
+
+      self.self_layer.bias_update = _delta_r.sum(axis=0)
+      self.self_layer.weights_update = np.einsum('ji, jk -> ik', _state, _delta_r, optimize=True)
+
+      if i > 0:
+        idx2 = self.batches[i - 1]
+
+        delta_view = self.self_layer.delta[idx2, ...]
+        delta_shaped = delta_view.reshape(len(idx2), -1)
+        delta_shaped[:] += np.einsum('ij, kj -> ik', _delta_r, self.self_layer.weights, optimize=True)
+        self.self_layer.delta[idx2, ...] = delta_shaped.reshape(delta_view.shape)
+
+      # end 2nd backward
+
+      # input_layer backward
+
+      _delta = self.input_layer.delta[idx, ...]
+      _delta[:] *= self.input_layer.gradient(self.input_layer.output[idx, ...], copy=copy)
+      _delta_r = _delta.reshape(-1, self.input_layer.outputs)
+
+      self.input_layer.bias_update = _delta_r.sum(axis=0)
+      self.input_layer.weights_update = np.einsum('ji, jk -> ik', _input, _delta_r, optimize=True)
 
       if delta is not None:
-        delta[idx, ...] = self._internal_backward(layer=self.input_layer, inpt=inpt, indices=idx, delta=delta, copy=copy)
-      else:
-        self._internal_backward(layer=self.input_layer, inpt=inpt, indices=idx, delta=None, copy=copy)
+        delta_view = delta[idx, ...]
+        delta_shaped = delta_view.reshape(len(idx), -1)
+        delta_shaped[:] += np.einsum('ij, kj -> ik', _delta_r, self.input_layer.weights, optimize=True)
+        delta[idx, ...] = delta_shaped.reshape(delta_view.shape)
+
+      # end 3rd backward
+
+    self.state[:] = last_input[idx, ...] + last_self[idx, ...]
 
     return self
 
@@ -363,7 +397,7 @@ if __name__ == '__main__':
   layer_activation = activations.Relu()
 
   # Model initialization
-  layer = RNN_layer(outputs, steps=3, input_shape=one_hot_encoding.shape,
+  layer = RNN_layer(outputs, steps=4, input_shape=one_hot_encoding.shape,
                     activation=layer_activation)
   print(layer)
 
@@ -387,7 +421,7 @@ if __name__ == '__main__':
 
   ax2.matshow(forward_out[:, 0, 0, :].T, cmap='bwr')
   ax2.set_title('Forward', y=3)
-  ax2.axes.get_xaxis().set_visible(False)         # no x axis tick
+  ax2.axes.get_xaxis().set_visible(False)
 
   ax3.imshow(delta[:, 0, 0, :])
   ax3.set_title('Backward')

@@ -85,8 +85,7 @@ class TestRNNLayer:
         assert np.allclose(layer.self_layer.bias, bias[1])
         assert np.allclose(layer.output_layer.bias, bias[2])
 
-      assert layer.output         == None
-      assert layer.optimizer      == None
+      assert layer.output == None
 
 
   @given(outputs= st.integers(min_value=3, max_value=10),
@@ -101,7 +100,7 @@ class TestRNNLayer:
 
     layer = RNN_layer(outputs=outputs, steps=steps, activation=Linear)
 
-    with pytest.raises(TypeError):
+    with pytest.raises(AttributeError):
       print(layer)
 
     layer = RNN_layer(outputs=outputs, steps=steps, activation=Linear, input_shape=(b, w, h, c))
