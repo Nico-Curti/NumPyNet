@@ -28,11 +28,21 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
 class TestShortcutLayer :
+  '''
+  Tests:
+    - constructor of the layer
+    - printer of the layer
+    - forward of the layer against keras
+    - backward of the layer against keras
+
+  to be:
+    - different shape input.
+  '''
 
   @given(alpha = st.floats(min_value=0., max_value=1., width=32),
          beta  = st.floats(min_value=0., max_value=1., width=32))
   @settings(max_examples=10,
-            deadline=None)  
+            deadline=None)
   def test_constructor (self, alpha, beta):
 
     activation = Linear

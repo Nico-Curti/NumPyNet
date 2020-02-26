@@ -20,13 +20,20 @@ class Shuffler_layer(object):
 
       input shape (batch, w, h, c) -> (batch, w * scale, h * scale, c // scale**2) out shape
 
-    Paramenters:
-      scale : int, scale of the shuffler.
+    Parameters
+    ----------
+      scale : int, scale of the shuffler. The number of channels bust be divisible
+        for scale * scale
     '''
-    self.scale = scale
-    self.scale_step = scale * scale
 
-    self.batch, self.w, self.h, self.c = (0, 0, 0, 0)
+    if isinstance(scale, int) and scale > 1:
+      self.scale = scale
+      self.scale_step = scale * scale
+
+    else:
+      raise ValueError('Shuffler Layer : scale must be an integer > 1, but is {}'.format(scale))
+
+    self.batch, self.w, self.h, self.c = (None, None, None, None)
 
     self.output, self.delta = (None, None)
 
@@ -55,11 +62,17 @@ class Shuffler_layer(object):
     '''
     Shuffles of the pixel in a given input
 
-    Parameters:
+    Parameters
+    ----------
       inpt : the input of this function is not the entire batch of images, but only
         a N channels at a time taken from every image, where N = out_c // scale**2
       scale : int, scale factor of the layer
+
+    Returns
+    -------
+      numpy array ready to be concatenated to form the output.
     '''
+
     b, w, h, _ = inpt.shape
     X = inpt.transpose(1, 2, 3, 0).reshape(w, h, scale, scale, b)
     X = np.concatenate(X, axis=1)
@@ -71,9 +84,14 @@ class Shuffler_layer(object):
     '''
     Reverse function of _phase_shift
 
-    Parameters:
+    Parameters
+    ----------
       delta : input batch of deltas with shape (batch, out_w, out_h, 1)
       scale : int ,scale factor of the layer
+
+    Returns
+    -------
+      numpy array of same shape of input
     '''
     # This function apply numpy.split as a reverse function to numpy.concatenate
     # along the same axis also
@@ -94,21 +112,27 @@ class Shuffler_layer(object):
     the format ('batch' not yet , in_w, in_h, in_c) and it produce an output
     with shape ('batch', in_w * scale, in_h * scale, in_c // scale**2)
 
-    Parameters:
+    Parameters
+    ----------
       inpt : input batch of images to be reorganized, with format (batch, in_w, in_h, in_c)
 
+    Returns
+    -------
+      Shuffler_layer object
     '''
 
     self.batch, self.w, self.h, self.c = inpt.shape
 
-    channel_output = self.c // self.scale_step # out_c
+    if self.c % self.scale_step:
+      raise ValueError('Shuffler Layer forward : c % (step * step) must be 0. But values are {} and {}'.format(self.c, self.scale_step))
 
+    channel_out = self.c // self.scale_step # out_c
 
     # The function phase shift receives only in_c // out_c channels at a time
     # the concatenate stitches together every output of the function.
 
-    self.output = np.concatenate([self._phase_shift(inpt[..., range(i, self.c, channel_output)], self.scale)
-                                  for i in range(channel_output)], axis=3)
+    self.output = np.concatenate([self._phase_shift(inpt[..., range(i, self.c, channel_out)], self.scale)
+                                  for i in range(channel_out)], axis=3)
 
     # output shape = (batch, in_w * scale, in_h * scale, in_c // scale**2)
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
@@ -122,6 +146,10 @@ class Shuffler_layer(object):
 
     Parameters:
       delta : global delta to be backpropagated with shape (batch, out_w, out_h, out_c)
+
+    Returns
+    -------
+      Shuffler_layer object
     '''
 
     check_is_fitted(self, 'delta')
