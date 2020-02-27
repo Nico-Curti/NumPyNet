@@ -72,7 +72,7 @@ class RNN_layer(object):
       indices = np.arange(0, b)
       self.batches = np.lib.stride_tricks.as_strided(indices, shape=(self.steps, self.batch), strides=(self.batch * 8, 8)).copy()
 
-      self.input_layer  = Connected_layer(self.outputs, self.activation, input_shape=input_shape, weights=weights[0], bias=bias[0])
+      self.input_layer  = Connected_layer(self.outputs, self.activation, input_shape=(self.batches[-1][-1] + 1, w, h, c), weights=weights[0], bias=bias[0])
       self.self_layer   = Connected_layer(self.outputs, self.activation, weights=weights[1], bias=bias[1])(self.input_layer)
       self.output_layer = Connected_layer(self.outputs, self.activation, weights=weights[2], bias=bias[2])(self.self_layer)
 
@@ -118,7 +118,7 @@ class RNN_layer(object):
 
     self.batches = np.lib.stride_tricks.as_strided(indices, shape=(self.steps, self.batch), strides=(self.batch * 8, 8)).copy()
 
-    self.input_layer  = Connected_layer(self.outputs, self.activation, input_shape=(b, w, h, c))
+    self.input_layer  = Connected_layer(self.outputs, self.activation, input_shape=(self.batches[-1][-1] + 1, w, h, c))
     self.self_layer   = Connected_layer(self.outputs, self.activation)(self.input_layer)
     self.output_layer = Connected_layer(self.outputs, self.activation)(self.self_layer)
 
@@ -163,7 +163,7 @@ class RNN_layer(object):
                            self.self_layer.bias.ravel(), self.self_layer.weights.ravel(),
                            self.output_layer.bias.ravel(), self.output_layer.weights.ravel()], axis=0).tolist()
 
-  def forward(self, inpt, copy=True):
+  def forward(self, inpt, copy=True, trainable=True):
     '''
     Forward function of the RNN layer. It computes the matrix product
       between inpt and weights, add bias and activate the result with the
@@ -178,7 +178,8 @@ class RNN_layer(object):
     RNN_layer object
     '''
 
-    self.prev_state = self.state.copy()
+    if trainable:
+      self.prev_state = self.state.copy()
 
     self.input_layer.output = np.zeros(shape=self.input_layer.out_shape, dtype=float)
     self.self_layer.output = np.zeros(shape=self.self_layer.out_shape, dtype=float)
@@ -195,7 +196,8 @@ class RNN_layer(object):
       z = np.einsum('ij, jk -> ik', _state, self.self_layer.weights, optimize=True) + self.self_layer.bias
       self.self_layer.output[idx, ...] = self.self_layer.activation(z, copy=copy).reshape(-1, 1, 1, self.self_layer.outputs)
 
-      self.state[:] = self.input_layer.output[idx, ...] + self.self_layer.output[idx, ...]
+      self.state = self.input_layer.output[idx, ...] + self.self_layer.output[idx, ...]
+      _state = self.state.reshape(self.state.shape[0], -1)
 
       z = np.einsum('ij, jk -> ik', _state, self.output_layer.weights, optimize=True) + self.output_layer.bias
       self.output_layer.output[idx, ...] = self.output_layer.activation(z, copy=copy).reshape(-1, 1, 1, self.output_layer.outputs)
@@ -205,8 +207,8 @@ class RNN_layer(object):
     self.self_layer.delta = np.zeros(shape=self.self_layer.out_shape, dtype=float)
     self.output_layer.delta = np.zeros(shape=self.output_layer.out_shape, dtype=float)
 
-    self.output = self.output_layer.output[:]
-    self.delta = self.output_layer.delta[:]
+    self.output = self.output_layer.output
+    self.delta = self.output_layer.delta
 
     return self
 
@@ -233,7 +235,7 @@ class RNN_layer(object):
 
     for i, idx in reversed(list(enumerate(self.batches))):
 
-      self.state[:] = self.input_layer.output[idx, ...] + self.self_layer.output[idx, ...]
+      self.state = self.input_layer.output[idx, ...] + self.self_layer.output[idx, ...]
 
       _state = self.state.reshape(self.state.shape[0], -1)
       _input = inpt[idx, ...].reshape(len(idx), -1)
@@ -256,9 +258,9 @@ class RNN_layer(object):
 
       if i != 0:
         idx2 = self.batches[i - 1]
-        self.state[:] = self.input_layer.output[idx2, ...] + self.self_layer.output[idx2, ...]
+        self.state = self.input_layer.output[idx2, ...] + self.self_layer.output[idx2, ...]
       else:
-        self.state[:] = self.prev_state.copy()
+        self.state = self.prev_state.copy()
 
       self.input_layer.delta[idx, ...] = self.self_layer.delta[idx, ...]
 
@@ -300,7 +302,7 @@ class RNN_layer(object):
 
       # end 3rd backward
 
-    self.state[:] = last_input[idx, ...] + last_self[idx, ...]
+    self.state = last_input[idx, ...] + last_self[idx, ...]
 
     return self
 

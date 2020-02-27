@@ -89,7 +89,7 @@ class Cost_layer(object):
     '''
     self.delta  = np.empty(shape=self._out_shape)
     self._out_shape = inpt.shape
-    self.output = inpt.copy()
+    self.output = inpt[:]
 
     if truth is not None:
 

@@ -331,8 +331,8 @@ class Network(object):
         _input = X[idx, ...]
         _truth = y[idx, ...]
 
-        _ = self._forward(X=_input, truth=_truth)
-        self._backward(X=_input)
+        _ = self._forward(X=_input, truth=_truth, trainable=True)
+        self._backward(X=_input, trainable=True)
 
         loss += self._get_loss()
         seen += len(idx)
@@ -350,7 +350,7 @@ class Network(object):
 
       if self.metrics is not None:
 
-        y_pred = self.predict(X, truth=None, verbose=False)
+        y_pred = self.predict(X, truth=None, trainable=False, verbose=False)
         self._evaluate_metrics(y, y_pred)
 
       print('\n', end='') # flush=True)
@@ -377,7 +377,7 @@ class Network(object):
         data, label, grabbed = Xy_generator.load_data()
 
 
-      self.fit(data, label, max_iter=1, shuffle=False) # data already shuffled
+      self.fit(data, label, max_iter=1, shuffle=False, trainable=True) # data already shuffled
 
     Xy_generator.stop()
 
@@ -410,7 +410,7 @@ class Network(object):
       if truth is not None:
         _truth = truth[idx, ...]
 
-      predict = self._forward(X=_input, truth=_truth)
+      predict = self._forward(X=_input, truth=_truth, trainable=False)
       output.append(predict)
 
       loss += self._get_loss()
@@ -448,32 +448,33 @@ class Network(object):
     return (loss, output)
 
 
-  def _forward(self, X, truth=None):
+  def _forward(self, X, truth=None, trainable=True):
     '''
     Forward function.
     Apply the forward method on all layers
     '''
+    # TODO: add trainable to forward and backward of each layer signature
 
-    y = X.copy()
+    y = X[:]
 
     for layer in self:
 
       forward_args = layer.forward.__code__.co_varnames
 
       if 'truth' in forward_args and truth is not None:
-        layer.forward(inpt=y, truth=truth)
+        layer.forward(inpt=y[:], truth=truth)
 
       if 'network' in forward_args:
         layer.forward(network=self)
 
       else :
-        layer.forward(inpt=y)
+        layer.forward(inpt=y[:])
 
-      y = layer.output.copy() # added a copy
+      y = layer.output[:]
 
     return y
 
-  def _backward(self, X):
+  def _backward(self, X, trainable=True):
     '''
     BackPropagate the error
     '''
@@ -486,7 +487,7 @@ class Network(object):
       backward_args = self._net[i].backward.__code__.co_varnames
 
       if 'inpt' in backward_args:
-        self._net[i].backward(inpt=input, delta=delta[:])
+        self._net[i].backward(inpt=input[:], delta=delta[:])
 
       elif 'network' in backward_args:
         self._net[i].backward(delta=delta[:], network=self)
@@ -497,7 +498,7 @@ class Network(object):
       if hasattr(self._net[i], 'update'):
         self._net[i].update()
 
-    self._net[0].backward(delta[:])
+    self._net[0].backward(delta=delta[:])
 
 
   def _get_loss(self):
