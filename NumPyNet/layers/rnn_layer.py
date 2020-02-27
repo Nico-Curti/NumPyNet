@@ -163,7 +163,7 @@ class RNN_layer(object):
                            self.self_layer.bias.ravel(), self.self_layer.weights.ravel(),
                            self.output_layer.bias.ravel(), self.output_layer.weights.ravel()], axis=0).tolist()
 
-  def forward(self, inpt, copy=False):
+  def forward(self, inpt, copy=True):
     '''
     Forward function of the RNN layer. It computes the matrix product
       between inpt and weights, add bias and activate the result with the
@@ -211,7 +211,7 @@ class RNN_layer(object):
     return self
 
 
-  def backward(self, inpt, delta=None, copy=False):
+  def backward(self, inpt, delta=None, copy=True):
     '''
     Backward function of the RNN layer, updates the global delta of the
       network to be Backpropagated, he weights upadtes and the biases updates

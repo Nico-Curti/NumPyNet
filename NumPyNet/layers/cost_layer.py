@@ -55,7 +55,8 @@ class Cost_layer(object):
 
     self._out_shape = input_shape
     # Need an empty initialization to work out _smooth_l1 and _wgan
-    self.output = np.empty(shape=self._out_shape)
+    self._output = np.empty(shape=self._out_shape)
+    self.output = None
     self.delta  = None # np.empty(shape=self._out_shape)
 
   def __str__(self):
@@ -88,6 +89,7 @@ class Cost_layer(object):
     '''
     self.delta  = np.empty(shape=self._out_shape)
     self._out_shape = inpt.shape
+    self.output = inpt.copy()
 
     if truth is not None:
 
@@ -97,8 +99,8 @@ class Cost_layer(object):
       elif self.cost_type == cost_type.mae:       self._l1(inpt, truth)         # call for l1 if mae is cost
       elif self.cost_type == cost_type.wgan:      self._wgan(inpt, truth)       # call for wgan
       elif self.cost_type == cost_type.hellinger: self._hellinger(inpt, truth)  # call for hellinger distance
-      elif self.cost_type == cost_type.hinge:     self._hinge(inpt, truth)  # call for hellinger distance
-      elif self.cost_type == cost_type.logcosh:   self._logcosh(inpt, truth)  # call for hellinger distance
+      elif self.cost_type == cost_type.hinge:     self._hinge(inpt, truth)      # call for hellinger distance
+      elif self.cost_type == cost_type.logcosh:   self._logcosh(inpt, truth)    # call for hellinger distance
       else:                                       self._l2(inpt, truth)         # call for l2 if mse or nothing
 
       if self.cost_type == cost_type.seg and self.noobject_scale != 1.:      # seg if noobject_scale is not 1.
@@ -117,10 +119,7 @@ class Cost_layer(object):
       norm = 1. / self.delta.size                                            # normalization of delta!
       self.delta *= norm
 
-      self.cost = np.mean(self.output)                                       # compute the cost
-
-    else :
-      self.output = inpt
+      self.cost = np.mean(self._output)                                      # compute the cost
 
     return self
 
@@ -147,7 +146,7 @@ class Cost_layer(object):
     '''
 
     scale = 1. - self.smoothing
-    bias  = self.smoothing / self.output.size
+    bias  = self.smoothing / self._output.size
 
     truth[:] = truth * scale + bias
 
@@ -164,12 +163,12 @@ class Cost_layer(object):
     abs_diff = np.abs(diff)
 
     mask_index = abs_diff < 1.
-    self.output[ mask_index ] = diff[ mask_index ] * diff[ mask_index ]
-    self.delta [ mask_index ] = diff[ mask_index ]
+    self._output[ mask_index ] = diff[ mask_index ] * diff[ mask_index ]
+    self.delta  [ mask_index ] = diff[ mask_index ]
 
     mask_index = ~mask_index
-    self.output[ mask_index ] = 2. * abs_diff[ mask_index ] - 1.
-    self.delta [ mask_index ] = - np.sign(diff[ mask_index ])
+    self._output[ mask_index ] = 2. * abs_diff[ mask_index ] - 1.
+    self.delta  [ mask_index ] = - np.sign(diff[ mask_index ])
 
   def _l1(self, inpt, truth):
     '''
@@ -184,7 +183,7 @@ class Cost_layer(object):
 
     diff = truth - inpt
 
-    self.output = np.abs(diff)
+    self._output = np.abs(diff)
     self.delta = -np.sign(diff)
 
   def _wgan(self, inpt, truth):
@@ -198,9 +197,9 @@ class Cost_layer(object):
     '''
     mask_index = truth != 0
     # mask_index = truth[ truth != 0 ]
-    self.output[mask_index] = -inpt[mask_index]
+    self._output[mask_index] = -inpt[mask_index]
     mask_index = ~mask_index
-    self.output[mask_index] =  inpt[mask_index]
+    self._output[mask_index] =  inpt[mask_index]
 
     self.delta = np.sign(truth)
 
@@ -218,7 +217,7 @@ class Cost_layer(object):
 
     diff = truth - inpt
 
-    self.output = diff * diff
+    self._output = diff * diff
     self.delta  = -2. * diff
 
   def _hinge(self, inpt, truth):
@@ -231,7 +230,7 @@ class Cost_layer(object):
       truth: truth values.
     '''
     diff = truth * inpt
-    self.output = np.maximum(0, 1. - diff)
+    self._output = np.maximum(0, 1. - diff)
     self.delta  = diff
     check1 = np.vectorize(lambda t:   t <= 0.)
     check2 = np.vectorize(lambda t: ( t >  0.) and ( t <= 1.))
@@ -251,7 +250,7 @@ class Cost_layer(object):
       truth: truth values.
     '''
     diff = np.sqrt(truth) - np.sqrt(inpt)
-    self.output = diff * diff
+    self._output = diff * diff
     self.delta  = -diff / np.sqrt(2 * inpt)
 
   def _logcosh(self, inpt, truth):
@@ -263,7 +262,7 @@ class Cost_layer(object):
       truth: truth values.
     '''
     diff = truth - inpt
-    self.output = np.log(np.cosh(diff))
+    self._output = np.log(np.cosh(diff))
     self.delta  = np.tanh(-diff)
 
   def _seg(self, truth):
@@ -276,7 +275,7 @@ class Cost_layer(object):
 
     mask_index = truth == 0.
 
-    self.output[mask_index] *= self.noobject_scale
+    self._output[mask_index] *= self.noobject_scale
     self.delta[ mask_index] *= self.noobject_scale
 
   def _masked(self, inpt, truth):
@@ -314,7 +313,7 @@ class Cost_layer(object):
 
     Parameters :
     '''
-    scale = self.threshold / self.output.size
+    scale = self.threshold / self._output.size
     scale *= scale
 
     self.delta[ self.delta * self.delta < scale ] = 0.

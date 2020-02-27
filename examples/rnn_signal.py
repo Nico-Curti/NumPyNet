@@ -109,6 +109,7 @@ if __name__ == '__main__':
   ax.set_xlabel('Time', fontsize=14)
   ax.set_ylabel('Signal', fontsize=14)
 
+  fig.legend()
   fig.tight_layout()
 
   plt.show()

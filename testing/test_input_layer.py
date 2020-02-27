@@ -74,15 +74,15 @@ class TestInputLayer :
 
     print(layer)
 
-    layer.batch = None
+    layer.batch = 3.14
 
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
       print(layer)
 
   @given(b = st.integers(min_value=1, max_value=15 ),
-         w     = st.integers(min_value=1, max_value=100),
-         h     = st.integers(min_value=1, max_value=100),
-         c     = st.integers(min_value=1, max_value=10 ))
+         w = st.integers(min_value=1, max_value=100),
+         h = st.integers(min_value=1, max_value=100),
+         c = st.integers(min_value=1, max_value=10 ))
   @settings(max_examples=20,
             deadline=None)
   def test_forward (self, b, w, h, c):

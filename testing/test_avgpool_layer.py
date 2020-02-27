@@ -61,10 +61,10 @@ class TestAvgpoolLayer:
       assert layer.delta   == None
       assert layer.output  == None
 
-      assert layer.batch == 0
-      assert layer.w == 0
-      assert layer.h == 0
-      assert layer.c == 0
+      assert layer.batch == None
+      assert layer.w == None
+      assert layer.h == None
+      assert layer.c == None
 
       assert layer.pad        == pad
       assert layer.pad_left   == 0
@@ -82,7 +82,11 @@ class TestAvgpoolLayer:
 
     layer = Avgpool_layer(size=size, stride=stride, pad=pad)
 
-    #TODO : to be discussed
+    with pytest.raises(TypeError):
+      print(layer)
+
+    layer.batch, layer.w, layer.h, layer.c = (1, 2, 3, 4)
+
     print(layer)
 
   @given(batch  = st.integers(min_value=1, max_value=15),

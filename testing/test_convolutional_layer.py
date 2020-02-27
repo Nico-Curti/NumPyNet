@@ -299,6 +299,6 @@ class TestConvolutionalLayer :
       layer.delta    = np.ones(shape=layer.out_shape, dtype=float)
       layer.backward(delta_numpynet, copy=False)
 
-      assert np.allclose(delta_numpynet,          delta_keras,        atol=1e-3, rtol=1e-3)
+      assert np.allclose(delta_numpynet,          delta_keras,        atol=1e-3, rtol=1e-2)
       assert np.allclose(layer.weights_update, weights_updates_keras, atol=1e-3, rtol=1e-3)
       assert np.allclose(layer.bias_update,    bias_updates_keras,    atol=1e-5, rtol=1e-3)

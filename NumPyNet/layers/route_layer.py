@@ -54,7 +54,7 @@ class Route_layer():
     self._out_shape = None
 
   def __str__(self):
-    return 'route   {}'.format([idx for idx in self.input_layers]).translate({ord(i) : None for i in '[],'})
+    return 'route   {}'.format(list(self.input_layers))
 
   def __call__(self, previous_layer):
 

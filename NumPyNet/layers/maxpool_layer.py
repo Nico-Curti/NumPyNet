@@ -48,7 +48,7 @@ class Maxpool_layer(object):
     if len(self.size) != 2 or len(self.stride) != 2:
       raise LayerError('Maxpool layer. Incompatible stride/size dimensions. They must be a 1D-2D tuple of values')
 
-    self.batch, self.w, self.h, self.c = (0, 0, 0, 0)
+    self.batch, self.w, self.h, self.c = (None, None, None, None)
 
     # for padding
     self.pad = pad

@@ -100,7 +100,7 @@ class TestRNNLayer:
 
     layer = RNN_layer(outputs=outputs, steps=steps, activation=Linear)
 
-    with pytest.raises(AttributeError):
+    with pytest.raises(TypeError):
       print(layer)
 
     layer = RNN_layer(outputs=outputs, steps=steps, activation=Linear, input_shape=(b, w, h, c))
