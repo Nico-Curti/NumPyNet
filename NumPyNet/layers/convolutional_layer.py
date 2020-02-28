@@ -243,7 +243,7 @@ class Convolutional_layer(object):
     '''
 
     # return the zeros-padded image, in the same format as inpt (batch, in_w + pad_w, in_h + pad_h, in_c)
-    return np.pad(inpt, ((0, 0), (self.pad_top, self.pad_bottom), (self.pad_left, self.pad_right), (0, 0)),
+    return np.pad(inpt, pad_width=((0, 0), (self.pad_top, self.pad_bottom), (self.pad_left, self.pad_right), (0, 0)),
                   mode='constant', constant_values=(0., 0.))
 
   def forward(self, inpt, copy=False):

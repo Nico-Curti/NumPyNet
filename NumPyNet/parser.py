@@ -20,7 +20,24 @@ class data_config (object):
 
   _data = dict()
 
-  def __init__ (self, filename):
+  def __init__ (filename):
+    '''
+    Data configuration parser
+
+    Parameters
+    ----------
+      filename : str
+        Configuration data filename or path
+
+    Returns
+    -------
+      data_config object
+
+    Notes
+    -----
+    The data configuration stores the global parameters for a given model (ex. cfg filename, weight filename, ...)
+    The file must be saved in a dictionary format like "cfg = config_filename.cfg"
+    '''
 
     if not os.path.isfile(filename):
       raise FileNotFoundError('Could not open or find the data file. Given: {}'.format(filename))
@@ -39,6 +56,17 @@ class data_config (object):
 
 
   def get (self, key, default=None):
+    '''
+    Getter function
+
+    Parameters
+    ----------
+      key : str
+        config dictionary key
+
+      default : dtype (default = None)
+        the default value if the key is not found in the data config
+    '''
 
     try:
       return self._data if key in self._data else default
@@ -64,12 +92,30 @@ class net_config (object):
       OrderedDict.__setitem__(self, key, val)
 
 
-  def __init__ (self, filename):
+  def __init__ (filename):
+    '''
+    Network config parser
+
+    Parameters
+    ----------
+      filename : str
+        Network config filename or path
+
+    Returns
+    -------
+      net_config object
+
+    Notes
+    -----
+    The network configuration file must be stored in INI format.
+    Since multiple layers can have the same type the dictionary must be overloaded by a
+    custom OrderedDict
+    '''
 
     if not os.path.isfile(filename):
       raise FileNotFoundError('Could not open or find the config file. Given: {}'.format(filename))
 
-    self._data = configparser.ConfigParser(defaults=None, dict_type=self.multidict, strict=False)
+    self._data = configparser.ConfigParser(defaults=None, dict_type=multidict, strict=False)
     self._data.read(filename)
 
     first_section = self._data.sections()[0]
@@ -78,30 +124,21 @@ class net_config (object):
       raise CfgVariableError('Config error! First section must be a network one (ex. [net] / [network]). Given: [{}]'.format(first_section))
 
 
-  def __len__ (self):
-    return len(self._data.sections()) - 1 # net is the first
-
-  def __iter__ (self):
-    self.layer_index = 0
-    return self
-
-  def __next__ (self):
-    if self.layer_index < len(self._data.sections()) - 1:
-      self.layer_index += 1
-      return self._data.sections()[self.layer_index]
-
-    else:
-      raise StopIteration
-
-  def get_params (self, section):
-    try:
-
-      return self._data.items(section)
-
-    except:
-      raise CfgVariableError('Config error! Section "{}" does not exist'.format(section))
-
   def get (self, section, key, default=None):
+    '''
+    Getter function
+
+    Parameters
+    ----------
+      section : str
+        Layer name + position
+
+      key : str
+        config dictionary key
+
+      default : dtype (default = None)
+        the default value if the key is not found in the data config
+    '''
 
     try:
       return eval(self._data.get(section, key)) if self._data.has_option(section, key) else default
@@ -134,6 +171,23 @@ class net_config (object):
 # Global parser functions
 
 def read_map (filename):
+  '''
+  Read the map file
+
+  Parameters
+  ----------
+    filename : str
+      Map filename or path
+
+  Returns
+  -------
+    rows : list
+      List of the maps read
+
+  Notes
+  -----
+  This functioni is used by the Yolo layer
+  '''
 
   if not os.path.isfile(filename):
     raise FileNotFoundError('Could not open or find the map file. Given: {}'.format(filename))
@@ -145,6 +199,22 @@ def read_map (filename):
   return rows
 
 def get_labels (filename, classes=-1):
+  '''
+  Read the labels file
+
+  Parameters
+  ----------
+    filename : str
+      Labels filename or path
+
+    classes : int (default = -1)
+      Number of labels to read. If it is equal to -1 the full list of labels is read
+
+  Returns
+  -------
+    labels : list
+      The first 'classes' labels in the file.
+  '''
 
   if not os.path.isfile(filename):
     raise FileNotFoundError('Could not open or find the label file. Given: {}'.format(filename))

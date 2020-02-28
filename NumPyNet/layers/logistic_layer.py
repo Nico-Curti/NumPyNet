@@ -22,6 +22,7 @@ class Logistic_layer(object):
     Parameters:
     '''
     self._out_shape = None
+    self.cost = 0
     self.output, self.delta, self.loss  = (None, None, None)
 
   def __str__(self):
@@ -62,7 +63,7 @@ class Logistic_layer(object):
       out = np.clip(self.output, 1e-8, 1. - 1e-8)
       self.loss = -truth * np.log(out) - (1. - truth) * np.log(1. - out)
       out_upd = out * (1. - out)
-      out_upd[out_upd <= 1e-8] = 1e-8
+      out_upd[out_upd < 1e-8] = 1e-8
       self.delta = (truth - out) * out_upd
       # self.cost = np.mean(self.loss)
       self.cost = np.sum(self.loss) # as for darknet

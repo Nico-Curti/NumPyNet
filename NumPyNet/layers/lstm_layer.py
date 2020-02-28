@@ -277,6 +277,8 @@ class LSTM_layer(object):
     check_is_fitted(self, 'delta')
 
     dh = np.zeros(shape=self.out_shape, dtype=float)
+    prev_cell = None
+    prev_state = None
 
     for _i, idx in reversed(list(enumerate(self.batches))):
 

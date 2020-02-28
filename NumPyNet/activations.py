@@ -152,17 +152,15 @@ class Ramp (Activations):
     if copy: y = x.copy()
     else:    y = x
 
-    y[x >  0.] *= y[x > 0.]
     y[x <= 0.]  = 0
-    return y + .1 * y
+    return y + .1 * x
 
   @staticmethod
   def gradient (x, copy=False):
     if copy: y = x.copy()
     else:    y = x
 
-    y[x > 0.] += .1
-    return y
+    return (y > 0.) + .1
 
 
 class Linear (Activations):
@@ -350,18 +348,14 @@ class Selu (Activations):
     if copy: y = x.copy()
     else:    y = x
 
-    y[x >= 0.] *= 1.0507
-    y[x  < 0.]  = 1.0507 * 1.6732 * (np.exp(y[x < 0.]) - 1.)
-    return y
+    return (y >= 0.) * 1.0507 * y + (y < 0.) * 1.0507 * 1.6732 * (np.exp(x) - 1.)
 
   @staticmethod
   def gradient (x, copy=False):
     if copy: y = x.copy()
     else:    y = x
 
-    y[x >= 0.]  = 1.0507
-    y[x <  0.] += 1.0507 * 1.6732
-    return y
+    return (y >= 0.) * 1.0507 + (y < 0.) * (y + 1.0507 * 1.6732)
 
 
 class Elliot (Activations):

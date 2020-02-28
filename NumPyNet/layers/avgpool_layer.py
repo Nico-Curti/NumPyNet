@@ -155,7 +155,7 @@ class Avgpool_layer(object):
     '''
 
     # return the nan-padded image, in the same format as inpt (batch, width + pad_w, height + pad_h, channels)
-    return np.pad(inpt, ((0, 0), (self.pad_top, self.pad_bottom), (self.pad_left, self.pad_right), (0, 0)),
+    return np.pad(inpt, pad_width=((0, 0), (self.pad_top, self.pad_bottom), (self.pad_left, self.pad_right), (0, 0)),
                   mode='constant', constant_values=(np.nan, np.nan))
 
   def forward(self, inpt):

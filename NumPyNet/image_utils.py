@@ -7,7 +7,7 @@ __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class normalization (Enum):
+class normalization (int, Enum):
   normalize = 0
   denormalize = 1
 

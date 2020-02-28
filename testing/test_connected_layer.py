@@ -153,7 +153,7 @@ class TestConnectedLayer:
       forward_out_numpynet = layer.output
 
       assert forward_out_numpynet.shape == (b, 1, 1, outputs)
-      assert np.allclose(forward_out_numpynet[:, 0, 0, :], forward_out_keras, atol=1e-4)
+      assert np.allclose(forward_out_numpynet[:, 0, 0, :], forward_out_keras, atol=1e-2)
 
 
   @given(outputs= st.integers(min_value=1, max_value=10),

@@ -350,7 +350,7 @@ class Network(object):
 
       if self.metrics is not None:
 
-        y_pred = self.predict(X, truth=None, trainable=False, verbose=False)
+        y_pred = self.predict(X, truth=None, verbose=False)
         self._evaluate_metrics(y, y_pred)
 
       print('\n', end='') # flush=True)
@@ -377,7 +377,7 @@ class Network(object):
         data, label, grabbed = Xy_generator.load_data()
 
 
-      self.fit(data, label, max_iter=1, shuffle=False, trainable=True) # data already shuffled
+      self.fit(data, label, max_iter=1, shuffle=False) # data already shuffled
 
     Xy_generator.stop()
 

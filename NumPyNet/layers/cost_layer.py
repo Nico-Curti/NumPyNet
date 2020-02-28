@@ -16,7 +16,7 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
 # Enum of cost_function, declarations inside class
-class cost_type(Enum):
+class cost_type(int, Enum):
   mse = 0 # mean square error
   masked = 1
   mae = 2 # mean absolute error
@@ -55,7 +55,7 @@ class Cost_layer(object):
 
     self._out_shape = input_shape
     # Need an empty initialization to work out _smooth_l1 and _wgan
-    self._output = np.empty(shape=self._out_shape)
+    self.loss   = np.empty(shape=self._out_shape)
     self.output = None
     self.delta  = None # np.empty(shape=self._out_shape)
 
@@ -119,7 +119,7 @@ class Cost_layer(object):
       norm = 1. / self.delta.size                                            # normalization of delta!
       self.delta *= norm
 
-      self.cost = np.mean(self._output)                                      # compute the cost
+      self.cost = np.mean(self.loss)                                         # compute the cost
 
     return self
 
@@ -146,7 +146,7 @@ class Cost_layer(object):
     '''
 
     scale = 1. - self.smoothing
-    bias  = self.smoothing / self._output.size
+    bias  = self.smoothing / self.loss.size
 
     truth[:] = truth * scale + bias
 
@@ -163,12 +163,12 @@ class Cost_layer(object):
     abs_diff = np.abs(diff)
 
     mask_index = abs_diff < 1.
-    self._output[ mask_index ] = diff[ mask_index ] * diff[ mask_index ]
-    self.delta  [ mask_index ] = diff[ mask_index ]
+    self.loss [ mask_index ] = diff[ mask_index ] * diff[ mask_index ]
+    self.delta[ mask_index ] = diff[ mask_index ]
 
     mask_index = ~mask_index
-    self._output[ mask_index ] = 2. * abs_diff[ mask_index ] - 1.
-    self.delta  [ mask_index ] = - np.sign(diff[ mask_index ])
+    self.loss [ mask_index ] = 2. * abs_diff[ mask_index ] - 1.
+    self.delta[ mask_index ] = - np.sign(diff[ mask_index ])
 
   def _l1(self, inpt, truth):
     '''
@@ -183,7 +183,7 @@ class Cost_layer(object):
 
     diff = truth - inpt
 
-    self._output = np.abs(diff)
+    self.loss  = np.abs(diff)
     self.delta = -np.sign(diff)
 
   def _wgan(self, inpt, truth):
@@ -197,9 +197,9 @@ class Cost_layer(object):
     '''
     mask_index = truth != 0
     # mask_index = truth[ truth != 0 ]
-    self._output[mask_index] = -inpt[mask_index]
+    self.loss[mask_index] = -inpt[mask_index]
     mask_index = ~mask_index
-    self._output[mask_index] =  inpt[mask_index]
+    self.loss[mask_index] =  inpt[mask_index]
 
     self.delta = np.sign(truth)
 
@@ -217,8 +217,8 @@ class Cost_layer(object):
 
     diff = truth - inpt
 
-    self._output = diff * diff
-    self.delta  = -2. * diff
+    self.loss  = diff * diff
+    self.delta = -2. * diff
 
   def _hinge(self, inpt, truth):
     '''
@@ -230,8 +230,8 @@ class Cost_layer(object):
       truth: truth values.
     '''
     diff = truth * inpt
-    self._output = np.maximum(0, 1. - diff)
-    self.delta  = diff
+    self.loss  = np.maximum(0, 1. - diff)
+    self.delta = diff
     check1 = np.vectorize(lambda t:   t <= 0.)
     check2 = np.vectorize(lambda t: ( t >  0.) and ( t <= 1.))
     check3 = np.vectorize(lambda t:   t >= 1.)
@@ -250,8 +250,8 @@ class Cost_layer(object):
       truth: truth values.
     '''
     diff = np.sqrt(truth) - np.sqrt(inpt)
-    self._output = diff * diff
-    self.delta  = -diff / np.sqrt(2 * inpt)
+    self.loss  = diff * diff
+    self.delta = -diff / np.sqrt(2 * inpt)
 
   def _logcosh(self, inpt, truth):
     '''
@@ -262,7 +262,7 @@ class Cost_layer(object):
       truth: truth values.
     '''
     diff = truth - inpt
-    self._output = np.log(np.cosh(diff))
+    self.loss = np.log(np.cosh(diff))
     self.delta  = np.tanh(-diff)
 
   def _seg(self, truth):
@@ -275,7 +275,7 @@ class Cost_layer(object):
 
     mask_index = truth == 0.
 
-    self._output[mask_index] *= self.noobject_scale
+    self.loss  [mask_index] *= self.noobject_scale
     self.delta[ mask_index] *= self.noobject_scale
 
   def _masked(self, inpt, truth):
@@ -313,7 +313,7 @@ class Cost_layer(object):
 
     Parameters :
     '''
-    scale = self.threshold / self._output.size
+    scale = self.threshold / self.loss.size
     scale *= scale
 
     self.delta[ self.delta * self.delta < scale ] = 0.
