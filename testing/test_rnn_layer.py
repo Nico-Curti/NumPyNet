@@ -15,7 +15,7 @@ from NumPyNet.activations import Linear
 from NumPyNet.activations import Tanh
 from NumPyNet.exception import LayerError
 from NumPyNet.exception import NotFittedError
-from NumPyNet.layers.rnn_layer import RNN_layer
+from NumPyNet.layers.temp_rnn_layer import RNN_layer
 from tensorflow.keras.layers import RNN
 
 import numpy as np
@@ -108,22 +108,21 @@ class TestRNNLayer:
     print(layer)
 
 
-  def forward (self):
+  def test_forward (self):
 
-    inpt = np.random.uniform(size=(50, 1, 1))
+    inpt = np.random.uniform(size=(50, 6))
 
-    model = Sequential()
-    model.add(SimpleRNN(units=32, input_shape=(1, 1), activation='linear'))
+    # model = Sequential()
+    # model.add(SimpleRNN(units=32, input_shape=(50, 6), activation='linear'))
+    #
+    # forward_out_keras = model.predict(inpt)
 
-    forward_out_keras = model.predict(inpt)
+    layer = RNN_layer(outputs=32, steps=1, input_shape=(300, 1, 1, 1), activation='linear')
 
-    layer = RNN_layer(outputs=32, steps=1, input_shape=(1, 50, 1, 1), activation='linear')
-
-    inpt.shape = (50, 1, 1, 1)
 
     layer.forward(inpt)
     forward_out_numpynet = layer.output
 
-    np.allclose(forward_out_numpynet, forward_out_keras)
+    # np.allclose(forward_out_numpynet, forward_out_keras)
 
-    forward_out_keras - forward_out_numpynet
+    # forward_out_keras - forward_out_numpynet

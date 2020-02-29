@@ -111,7 +111,7 @@ class Connected_layer(object):
       pos : current position of the array
 
     Returns
-    ----------
+    -------
     pos
     '''
     self.bias = chunck_weights[pos : pos + self.outputs]
@@ -143,8 +143,8 @@ class Connected_layer(object):
              input or not.
 
     Returns
-    ----------
-    Connected_layer object
+    -------
+      Connected_layer object
     '''
 
     # shape (batch, w*h*c)
@@ -152,7 +152,6 @@ class Connected_layer(object):
 
     # shape (batch, outputs)
     z = np.einsum('ij, jk -> ik', inpt, self.weights, optimize=True) + self.bias
-    # z = np.dot(inpt, self.weights) + self.bias
 
     # shape (batch, outputs), activated
     self.output = self.activation(z, copy=copy).reshape(-1, 1, 1, self.outputs)
@@ -173,8 +172,8 @@ class Connected_layer(object):
               input or not.
 
     Returns
-    ----------
-    Connected_layer object
+    -------
+      Connected_layer object
     '''
 
     check_is_fitted(self, 'delta')
