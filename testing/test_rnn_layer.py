@@ -15,7 +15,7 @@ from NumPyNet.activations import Linear
 from NumPyNet.activations import Tanh
 from NumPyNet.exception import LayerError
 from NumPyNet.exception import NotFittedError
-from NumPyNet.layers.temp_rnn_layer import RNN_layer
+from NumPyNet.layers.rnn_layer import RNN_layer
 from tensorflow.keras.layers import RNN
 
 import numpy as np
@@ -108,7 +108,7 @@ class TestRNNLayer:
     print(layer)
 
 
-  def test_forward (self):
+  def _forward (self):
 
     inpt = np.random.uniform(size=(50, 6))
 

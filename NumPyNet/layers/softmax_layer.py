@@ -18,7 +18,8 @@ class Softmax_layer():
     '''
     Softmax layer: perfoms a Softmax transformation of its input
 
-    Parameters:
+    Parameters
+    ----------
       groups       : int, default is 1, indicates how many groups
         every images is divided into. Used only if spatial is False
       spatial      : boolean, default is False. if True performs the softmax
@@ -28,13 +29,20 @@ class Softmax_layer():
         used only is spatial is False
     '''
 
-    self.batch, self.w, self.h, self.c = (0, 0, 0, 0)
+    self.batch, self.w, self.h, self.c  = (None, None, None, None)
     self.output, self.delta, self.loss  = (None, None, None)
 
-    self.groups = groups
-    self.spatial = spatial
-    self.temperature = 1./temperature
+    if isinstance(groups, int) and groups > 0:
+       self.groups = groups
+    else:
+      raise ValueError('Softmax Layer : parameter "groups" must be an integer and > 0')
 
+    self.spatial = spatial
+
+    if temperature > 0:
+      self.temperature = 1./temperature
+    else :
+      raise ValueError('Softmax Layer : paramter "temperature" must be > 0')
 
   def __str__(self):
     batch, out_width, out_height, out_channels = self.out_shape
@@ -60,10 +68,15 @@ class Softmax_layer():
     '''
     Forward function of the Softmax Layer.
 
-    Parameters:
-      inpt  : array of shape (batch, w, h, c), input array
-      truth : array of shape (batch, w, h, c), default is None, target vector.
+    Parameters
+    ----------
+      inpt  : numpy array of shape (batch, w, h, c), input array
+      truth : numpyarray of shape (batch, w, h, c), default is None, target vector.
         if a value is passed, the function compute the cross entropy cost
+
+    Returns
+    -------
+      Softmax layer object
     '''
 
     self.batch, self.w, self.h, self.c = inpt.shape
@@ -100,9 +113,7 @@ class Softmax_layer():
       out = self.output * (1. / self.output.sum())
       out = np.clip(out, 1e-8, 1. - 1e-8)
       self.cost = - np.sum(truth * np.log(out))
-      # Update of delta given truth
       self.delta = np.clip(self.output, 1e-8, 1. - 1e-8) - truth
-      # print('In FORWARD','\n', self.delta[0,0,0,:], '\n')
 
     return self
 
@@ -110,9 +121,14 @@ class Softmax_layer():
     '''
     Backward function of the Softmax Layer.
 
-    Parameters:
+    Parameters
+    ----------
       delta : array of shape (batch, w, h, c), default is None. If an array is passed,
         it's the global delta to be backpropagated
+
+    Returns
+    -------
+     Softmax layer object
     '''
 
     check_is_fitted(self, 'output')

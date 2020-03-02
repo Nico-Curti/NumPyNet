@@ -16,7 +16,7 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 class RNN_layer(object):
 
-  def __init__ (self, outputs, steps, activation=Activations, input_shape=None, weights=None, bias=None):
+  def __init__ (self, outputs, steps, activation1=Activations, activation2=Activations, input_shape=None, weights=None, bias=None):
 
     if isinstance(outputs, int) and outputs > 0:
       self.outputs = outputs
@@ -28,7 +28,8 @@ class RNN_layer(object):
     else :
       raise ValueError('Parameter "steps" must be an integer and > 0')
 
-    self.activation = _check_activation(layer=self, activation_func=activation)
+    self.activation1 = _check_activation(layer=self, activation_func=activation1)
+    self.activation2 = _check_activation(layer=self, activation_func=activation2)
 
     self.weights1 = None
     self.weights2 = None
@@ -45,7 +46,7 @@ class RNN_layer(object):
     self.output = None
     self.delta = None
 
-    self.optimizer = None 
+    self.optimizer = None
 
   def __str__ (self):
     return 'very good rnn '
@@ -96,6 +97,7 @@ class RNN_layer(object):
     '''
     Forward of the RNN layer
     '''
+
     X = inpt.reshape(inpt.shape[0], -1)
 
     _state = np.zeros(shape=(self.batch, self.outputs))
@@ -111,13 +113,13 @@ class RNN_layer(object):
       out2 = np.einsum('ij, jk -> ik', _state, self.weights2, optimize=True)
 
       # update of state at time T -> (steps, hidden)
-      _state = self.activation.activate(out1 + out2 + self.bias1, copy=copy)
+      _state = self.activation1.activate(out1 + out2 + self.bias1, copy=copy)
 
       self.states[idx, ...] = _state.copy()
 
       # final output of the timestep T -> (steps, hidden)
       outT = np.einsum('ij, jk -> ik', _state, self.weights3) + self.bias2
-      self.output[idx, ...] = self.activation.activate(outT, copy=copy)
+      self.output[idx, ...] = self.activation2.activate(outT, copy=copy)
 
     self.output = self.output.reshape(-1, 1, 1, self.outputs)
     self.delta  = np.zeros(shape=self.output.shape)
@@ -135,7 +137,7 @@ class RNN_layer(object):
     delta_r = delta.reshape(X.shape)
 
     # gradient of the second activation function
-    self.delta *= self.activation.gradient(self.output, copy=copy)
+    self.delta *= self.activation2.gradient(self.output, copy=copy)
     self.delta  = self.delta.reshape(-1, self.outputs)
 
     _delta_state = 0.
@@ -153,7 +155,7 @@ class RNN_layer(object):
       dh = np.einsum('ij, kj -> ki', self.weights3, self.delta[idx, ...], optimize=True) + _delta_state
 
       # first activation gradient
-      dh = self.activation.gradient(dh, copy=copy)
+      dh = self.activation1.gradient(dh, copy=copy)
 
       self.bias_update1    += dh.sum(axis=0)
       self.weights_update1 += np.einsum('ij, ik -> kj', dh, X[idx, ...], optimize=True)
@@ -165,7 +167,7 @@ class RNN_layer(object):
       delta_r[idx, ...] = np.einsum('ij, kj -> ik' , dh, self.weights1, optimize=True)
 
 
-  def update(self):
+  def update (self):
     '''
     update function for the rnn layer. optimizer must be assigned
       externally as an optimizer object.
