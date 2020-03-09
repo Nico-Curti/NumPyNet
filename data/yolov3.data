@@ -1,0 +1,6 @@
+cfg      = cfg/yolov3.cfg
+weights  = data/yolov3.weights
+names    = data/coco.names
+thresh   = 0.5
+hier     = 0.5
+classes  = 80

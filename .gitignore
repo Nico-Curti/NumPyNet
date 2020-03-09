@@ -122,6 +122,4 @@ venv.bak/
 # directories
 [Bb]in/
 [Bb]uild/
-[Dd]ata/
 .hypothesis/
-[Cc]fg/

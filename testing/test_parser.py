@@ -51,8 +51,7 @@ class TestDataConfig:
       res = cfg.get(['weights'], 32)
       assert res == 32
 
-    assert cfg.get('weights', '') == 'data/yolov3.weights.byron'
-    assert cfg.get('maskfile', '') == 'data/yolov3.weights.mask'
+    assert cfg.get('weights', '') == 'data/yolov3.weights'
     assert cfg.get('names', '') == 'data/coco.names'
     assert cfg.get('thresh', 2.12) == .5
     assert cfg.get('hier', 3.14) == .5
@@ -73,8 +72,7 @@ class TestDataConfig:
     assert evaluated.get('cfg', '') == 'cfg/yolov3.cfg'
     assert evaluated.get('None', 42) == 42
     assert evaluated.get('weights', 32) != 32
-    assert evaluated.get('weights', '') == 'data/yolov3.weights.byron'
-    assert evaluated.get('maskfile', '') == 'data/yolov3.weights.mask'
+    assert evaluated.get('weights', '') == 'data/yolov3.weights'
     assert evaluated.get('names', '') == 'data/coco.names'
     assert evaluated.get('thresh', 2.12) == .5
     assert evaluated.get('hier', 3.14) == .5

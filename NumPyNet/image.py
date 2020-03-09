@@ -277,6 +277,8 @@ class Image (object):
     # save image
     cv2.imwrite(filename + '.png', img)
 
+    return True
+
   def from_numpy_matrix (self, array):
     '''
     Use numpy array as the image
