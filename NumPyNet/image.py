@@ -185,6 +185,53 @@ class Image (object):
     self._data = self._data.transpose(1, 0, 2)
     return self
 
+  def rotate (self, angle):
+    '''
+    Rotate the image according to the given angle in radiant fmt.
+
+    Note: this rotate preserve the original size so some original parts can be removed
+          from the rotated image. See 'rotate_bound' for a conservative rotation.
+    '''
+    num_rows, num_cols = self._data.shape[:2]
+
+    rotation_matrix = cv2.getRotationMatrix2D(center=(num_cols//2, num_rows//2), angle=angle, scale=1.0)
+    self._data = cv2.warpAffine(self._data, M=rotation_matrix, dsize=(num_cols, num_rows))
+    return self
+
+  def rotate_bound (self, angle):
+    '''
+    Rotate the image according to the given angle in radiant fmt.
+
+    Note: this rotate preserve the original image, so the output can be greater than the
+          original size. See 'rotate' for a rotation which conserve the size.
+
+    Reference: https://www.pyimagesearch.com/2017/01/02/rotate-images-correctly-with-opencv-and-python/
+    '''
+
+    # grab the dimensions of the image and then determine the
+    # center
+    (h, w) = self._data.shape[:2]
+    (cX, cY) = (w // 2, h // 2)
+
+    # grab the rotation matrix (applying the negative of the
+    # angle to rotate clockwise), then grab the sine and cosine
+    # (i.e., the rotation components of the matrix)
+    M = cv2.getRotationMatrix2D(center=(cX, cY), angle=-angle, scale=1.0)
+    cos = np.abs(M[0, 0])
+    sin = np.abs(M[0, 1])
+
+    # compute the new bounding dimensions of the image
+    nW = int((h * sin) + (w * cos))
+    nH = int((h * cos) + (w * sin))
+
+    # adjust the rotation matrix to take into account translation
+    M[0, 2] += (nW / 2) - cX
+    M[1, 2] += (nH / 2) - cY
+
+    # perform the actual rotation and return the image
+    self._data = cv2.warpAffine(self._data, M=M, dsize=(nW, nH))
+    return self
+
   def crop (self, dsize, size):
     '''
     Crop the image according to the given dimensions [dsize[0] : dsize[0] + size[0], dsize[1] : dsize[1] + size[1]]

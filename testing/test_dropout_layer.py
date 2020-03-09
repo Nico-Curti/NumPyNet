@@ -149,13 +149,14 @@ class TestDropoutLayer:
     # BACKWARD
 
     delta = np.random.uniform(low=0., high=1., size=(b, w, h, c))
+    prev_delta = delta.copy()
 
     layer.backward(delta)
 
     assert delta.shape == inpt.shape
 
     if prob == 0.:
-      assert np.allclose(delta, delta)
+      assert np.allclose(delta, prev_delta)
 
     elif prob == 1.:
       assert np.allclose(delta, np.zeros(shape=inpt.shape))

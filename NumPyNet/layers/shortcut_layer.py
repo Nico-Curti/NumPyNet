@@ -77,6 +77,8 @@ class Shortcut_layer(object):
     _, w1, h1, c1 = shape2
     stride = w1 // w2
     sample = w2 // w1
+    stride = stride if stride > 0 else 1
+    sample = sample if sample > 0 else 1
 
     if not ( stride == h1 // h2 and sample == h2 // h1 ):
       class_name = self.__class__.__name__
@@ -90,7 +92,7 @@ class Shortcut_layer(object):
     self.iy, self.jy, self.ky = zip(*idx)
 
 
-  def forward(self, inpt, prev_output):
+  def forward(self, inpt, prev_output, copy=False):
     '''
     Forward function of the Shortcut layer: activation of the linear combination between input.
 
@@ -133,12 +135,12 @@ class Shortcut_layer(object):
       self.output = inpt.copy()
       self.output[:, self.ix, self.jx, self.kx] = self.alpha * self.output[:, self.ix, self.jx, self.kx] + self.beta * prev_output[:, self.iy, self.jy, self.ky]
 
-    self.output = self.activation(self.output)
+    self.output = self.activation(self.output, copy=copy)
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
     return self
 
-  def backward(self, delta, prev_delta):
+  def backward(self, delta, prev_delta, copy=False):
     '''
     Backward function of the Shortcut layer
 
@@ -155,7 +157,7 @@ class Shortcut_layer(object):
     check_is_fitted(self, 'delta')
 
     # derivatives of the activation funtion w.r.t. to input
-    self.delta *= self.gradient(self.output)
+    self.delta *= self.gradient(self.output, copy=copy)
 
     delta[:]   += self.delta * self.alpha
 

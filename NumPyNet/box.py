@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import operator
+from functools import wraps
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -27,15 +28,31 @@ class Box (object):
     else:
       self.x, self.y, self.w, self.h = (None, None, None, None)
 
+  def _is_box (func):
+
+    @wraps(func)
+    def _ (self, b):
+
+      if isinstance(b, self.__class__):
+        return func(self, b)
+      else:
+        raise ValueError('Box functions can be applied only on other Box objects')
+
+    return _
+
   @property
   def box(self):
     return (self.x, self.y, self.w, self.h)
 
   def __iter__ (self):
-    yield self.x - self.w * .5
-    yield self.y - self.h * .5
-    yield self.x + self.w * .5
-    yield self.y + self.h * .5
+    '''
+    Iter over coordinates as (x, y, w, h)
+    '''
+
+    yield self.x
+    yield self.y
+    yield self.w
+    yield self.h
 
 
   def __eq__ (self, other):
@@ -57,13 +74,11 @@ class Box (object):
 
     return min(r1, r2) - max(l1, l2)
 
+  @_is_box
   def intersection (self, other):
     '''
     Common area between boxes
     '''
-
-    if not isinstance(other, Box):
-      raise ValueError('intersection requires a Box object')
 
     w = self._overlap(self.x, self.w, other.x, other.w)
     h = self._overlap(self.y, self.h, other.y, other.h)
@@ -74,37 +89,33 @@ class Box (object):
 
   __and__ = intersection
 
+  @_is_box
   def union (self, other):
     '''
     Full area without intersection
     '''
 
-    if not isinstance(other, Box):
-      raise ValueError('union requires a Box object')
-
     return self.area + other.area - self.intersection(other)
 
   __add__ = union
 
+  @_is_box
   def iou (self, other):
     '''
     Intersection over union
     '''
 
-    if not isinstance(other, Box):
-      raise ValueError('iou requires a Box object')
+    union = self.union(other)
 
-    return self.intersection(other) / self.union(other)
+    return self.intersection(other) / union if union != 0. else float('nan')
 
   __sub__ = iou
 
+  @_is_box
   def rmse (self, other):
     '''
     Root mean square error of the boxes
     '''
-
-    if not isinstance(other, Box):
-      raise ValueError('rmse requires a Box object')
 
     diffs = tuple(map(operator.sub, self, other))
     dot = sum(map(operator.mul, diffs, diffs))

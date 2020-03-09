@@ -464,7 +464,7 @@ class Network(object):
       if 'truth' in forward_args and truth is not None:
         layer.forward(inpt=y[:], truth=truth)
 
-      if 'network' in forward_args:
+      elif 'network' in forward_args:
         layer.forward(network=self)
 
       else :

@@ -72,7 +72,7 @@ class L1Norm_layer(object):
 
     return self
 
-  def backward(self, delta, copy=False):
+  def backward(self, delta):
     '''
     Compute the backward of the l1norm layer
 

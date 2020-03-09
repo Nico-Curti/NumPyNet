@@ -180,6 +180,7 @@ class RNN_layer(object):
 
     if trainable:
       self.prev_state = self.state.copy()
+      self.state = np.zeros_like(self.state)
 
     self.input_layer.output = np.zeros(shape=self.input_layer.out_shape, dtype=float)
     self.self_layer.output = np.zeros(shape=self.self_layer.out_shape, dtype=float)

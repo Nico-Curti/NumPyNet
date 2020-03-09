@@ -10,7 +10,7 @@ from tensorflow.keras.layers import Input
 from tensorflow.keras.layers import Activation
 import tensorflow.keras.backend as K
 
-from NumPyNet.layers import cost_layer as cl
+from NumPyNet.utils import cost_type
 from NumPyNet.layers.cost_layer import Cost_layer
 
 from tensorflow.keras.losses import mean_squared_error
@@ -61,10 +61,10 @@ def test_cost_layer():
     truth_tf = tf.convert_to_tensor(truth)
     inpt_tf  = tf.convert_to_tensor(inpt)
 
-    if   keras_loss_type is mean_squared_error:  cost = cl.cost_type.mse
-    elif keras_loss_type is mean_absolute_error: cost = cl.cost_type.mae
-    elif keras_loss_type is logcosh:             cost = cl.cost_type.logcosh
-    elif keras_loss_type is hinge:               cost = cl.cost_type.hinge
+    if   keras_loss_type is mean_squared_error:  cost = cost_type.mse
+    elif keras_loss_type is mean_absolute_error: cost = cost_type.mae
+    elif keras_loss_type is logcosh:             cost = cost_type.logcosh
+    elif keras_loss_type is hinge:               cost = cost_type.hinge
     else:
       raise ValuError()
 

@@ -34,6 +34,7 @@ class Softmax_layer():
     self.groups = groups
     self.spatial = spatial
     self.temperature = 1./temperature
+    self.cost = 0
 
 
   def __str__(self):
