@@ -15,7 +15,7 @@ class Optimizer (object):
   '''
   '''
 
-  def __init__ (self, lr=1e-3, decay=0., lr_min=0., lr_max=np.inf):
+  def __init__ (self, lr=1e-3, decay=0., lr_min=0., lr_max=np.inf, *args, **kwargs):
 
     self.lr = lr
     self.decay = decay

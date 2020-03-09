@@ -20,7 +20,7 @@ class data_config (object):
 
   _data = dict()
 
-  def __init__ (filename):
+  def __init__ (self, filename):
     '''
     Data configuration parser
 
@@ -69,11 +69,16 @@ class data_config (object):
     '''
 
     try:
-      return self._data if key in self._data else default
+      return self._data[key] if key in self._data else default
 
     except:
       raise CfgVariableError('Type variable not recognized! Possible variables are only [bool, int, float, string, vector<int>, vector<float>, vector<string>].')
 
+  def __str__ (self):
+    return str(self._data)
+
+  def __len__ (self):
+    return len(self._data)
 
 
 
@@ -86,13 +91,13 @@ class net_config (object):
     def __setitem__ (self, key, val):
 
       if isinstance(val, dict):
-        self._unique += 1
         key += str(self._unique)
+        self._unique += 1
 
       OrderedDict.__setitem__(self, key, val)
 
 
-  def __init__ (filename):
+  def __init__ (self, filename):
     '''
     Network config parser
 
@@ -115,7 +120,7 @@ class net_config (object):
     if not os.path.isfile(filename):
       raise FileNotFoundError('Could not open or find the config file. Given: {}'.format(filename))
 
-    self._data = configparser.ConfigParser(defaults=None, dict_type=multidict, strict=False)
+    self._data = configparser.ConfigParser(defaults=None, dict_type=self.multidict, strict=False)
     self._data.read(filename)
 
     first_section = self._data.sections()[0]
@@ -140,6 +145,9 @@ class net_config (object):
         the default value if the key is not found in the data config
     '''
 
+    if section not in self._data:
+      raise DataVariableError('Section not found in the config file. Given {}'.format(section))
+
     try:
       return eval(self._data.get(section, key)) if self._data.has_option(section, key) else default
 
@@ -154,18 +162,18 @@ class net_config (object):
 
     cfg = ''
     for k in self._data.keys():
+      if k == 'DEFAULT':
+        continue
       section = re.split(r'\d+', k)[0]
-      cfg += '[' + section + ']'
-      cfg += '\n'
-
-      for key, val in self._data.items(k):
-        cfg += ' = '.join([key, val])
-        cfg += '\n'
-
-      cfg += '\n'
+      cfg = '\n'.join((cfg, '[{}]'.format(section)))
+      values = ('{} = {}'.format(key, val) for key, val in self._data.items(k))
+      values = '\n'.join(values)
+      cfg = '\n'.join((cfg, values, '\n'))
 
     return cfg
 
+  def __len__ (self):
+    return len(self._data) - 1 # the first section is the default one
 
 
 # Global parser functions

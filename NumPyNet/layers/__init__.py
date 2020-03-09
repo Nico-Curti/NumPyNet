@@ -8,7 +8,7 @@ from .avgpool_layer import Avgpool_layer
 from .batchnorm_layer import BatchNorm_layer
 from .connected_layer import Connected_layer
 from .convolutional_layer import Convolutional_layer
-from .cost_layer import Cost_layer, cost_type
+from .cost_layer import Cost_layer
 from .dropout_layer import Dropout_layer
 from .input_layer import Input_layer
 from .l1norm_layer import L1Norm_layer

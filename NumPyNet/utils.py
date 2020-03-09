@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+from enum import Enum
 from inspect import isclass
 from NumPyNet import activations
 from NumPyNet.exception import NotFittedError
@@ -12,6 +13,17 @@ from NumPyNet.exception import NotFittedError
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
+# Enum of cost_function, declarations inside class
+class cost_type(int, Enum):
+  mse = 0 # mean square error
+  masked = 1
+  mae = 2 # mean absolute error
+  seg = 3
+  smooth = 4
+  wgan = 5
+  hellinger = 6
+  hinge = 7
+  logcosh = 8
 
 def _check_activation (layer, activation_func):
   '''
@@ -71,6 +83,59 @@ def _check_activation (layer, activation_func):
     raise ValueError('{0}: incorrect value of Activation Function given'.format(class_name))
 
   return activation
+
+
+def _check_cost (layer, cost):
+  '''
+  Check if the cost function is valid.
+
+  Parameters
+  ----------
+    layer : object
+      Layer object (ex. Cost_layer)
+
+    cost : string or Cost object
+      cost function to check. The cost object can be use by the cost enum
+
+  Returns
+  -------
+    NumPyNet cost function index
+
+  Notes
+  -----
+  You can use this function to verify if the given cost function is valid.
+  The function can be passed either as a string either as object.
+
+  Examples
+  --------
+
+  >>> layer = Cost_layer(input_shape=(1,2,3))
+  >>> print(_check_cost(layer, 'mae'))
+      2
+  >>> print(_check_cost(layer, cost.mae))
+      2
+  '''
+  if isinstance(cost, str):
+    allowed_cost = [c for c in dir(cost_type) if not c.startswith('__')]
+
+    if cost.lower() not in allowed_cost:
+      class_name = layer.__class__.__name__
+      raise ValueError('{0}: incorrect value of Cost Function given'.format(class_name))
+
+    else:
+      cost = eval('cost_type.{0}.value'.format(cost))
+
+  elif isinstance(cost, cost_type):
+    cost = cost.value
+
+  elif isinstance(cost, int) and cost < max(cost_type):
+    cost = cost_type(cost)
+
+  else:
+    class_name = self.__class__.__name__
+    raise ValueError('{0}: incorrect value of Cost Function given'.format(class_name))
+
+  return cost
 
 
 def check_is_fitted (obj, variable='delta'):

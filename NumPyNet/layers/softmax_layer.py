@@ -38,11 +38,12 @@ class Softmax_layer():
       raise ValueError('Softmax Layer : parameter "groups" must be an integer and > 0')
 
     self.spatial = spatial
+    self.cost = 0
 
     if temperature > 0:
       self.temperature = 1./temperature
     else :
-      raise ValueError('Softmax Layer : paramter "temperature" must be > 0')
+      raise ValueError('Softmax Layer : parameter "temperature" must be > 0')
 
   def __str__(self):
     batch, out_width, out_height, out_channels = self.out_shape

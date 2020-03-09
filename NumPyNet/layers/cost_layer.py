@@ -5,27 +5,15 @@ from __future__ import division
 from __future__ import print_function
 
 import functools
-from enum import Enum
 
 import numpy as np
 from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
+from NumPyNet.utils import cost_type, _check_cost
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
-
-# Enum of cost_function, declarations inside class
-class cost_type(int, Enum):
-  mse = 0 # mean square error
-  masked = 1
-  mae = 2 # mean absolute error
-  seg = 3
-  smooth = 4
-  wgan = 5
-  hellinger = 6
-  hinge = 7
-  logcosh = 8
 
 class Cost_layer(object):
 
@@ -46,7 +34,7 @@ class Cost_layer(object):
     '''
 
     self.cost = 0.
-    self.cost_type = cost_type
+    self.cost_type = _check_cost(self, cost_type)
     self.scale = scale
     self.ratio = ratio
     self.noobject_scale = noobject_scale
@@ -93,7 +81,7 @@ class Cost_layer(object):
 
     if truth is not None:
 
-      if self.smoothing: self._smoothing(truth)                              # smooth is applied on truth
+      if self.smoothing: truth = self._smoothing(truth)                         # smooth is applied on truth
 
       if   self.cost_type == cost_type.smooth:    self._smooth_l1(inpt, truth)  # smooth_l1 if smooth not zero
       elif self.cost_type == cost_type.mae:       self._l1(inpt, truth)         # call for l1 if mae is cost
@@ -146,9 +134,9 @@ class Cost_layer(object):
     '''
 
     scale = 1. - self.smoothing
-    bias  = self.smoothing / self.loss.size
+    bias  = self.smoothing / np.prod(self.loss.shape[1:])
 
-    truth[:] = truth * scale + bias
+    return truth * scale + bias
 
   def _smooth_l1(self, inpt, truth):
     '''
@@ -300,12 +288,13 @@ class Cost_layer(object):
     abs_compare = lambda x, y: (abs(x) > abs(y)) ^ (abs(x) < abs(y))
     compare = functools.cmp_to_key(abs_compare)
 
-    self.delta = sorted(self.delta, key=compare)
+    ordered = sorted(self.delta.ravel(), key=compare)
+    self.delta = np.asarray(ordered).reshape(self.delta.shape)
 
     #index = int(1. - self.ratio) * len(delta)
     thr = 0 # np.abs(self.delta[index])
 
-    self.delta[ self.delta * self.delta < thr ] = 0.
+    self.delta[ (self.delta * self.delta) < thr ] = 0.
 
   def _threshold(self):
     '''
@@ -316,7 +305,7 @@ class Cost_layer(object):
     scale = self.threshold / self.loss.size
     scale *= scale
 
-    self.delta[ self.delta * self.delta < scale ] = 0.
+    self.delta[ (self.delta * self.delta) < scale ] = 0.
 
 
 if __name__ == '__main__':

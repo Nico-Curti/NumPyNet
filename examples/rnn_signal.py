@@ -52,11 +52,14 @@ if __name__ == '__main__':
 
   X = X.reshape(num_samples, 1, 1, size)
 
-  X_train, X_test = X[:train_size, ...], X[train_size:, ...]
-  y_train, y_test = y[:train_size, ...], y[train_size:, ...]
+  X_train, X_test = X[:train_size, ...], X[train_size:train_size+180, ...]
+  y_train, y_test = y[:train_size, ...], y[train_size:train_size+180, ...]
 
   batch = 20
-  step  = 1   # to be adjusted
+  step = batch
+
+  y_train = y_train.reshape(-1, 1, 1, 1)
+  y_test = y_test.reshape(-1, 1, 1, 1)
 
   # Create the model and training
   model = Network(batch=batch, input_shape=X_train.shape[1:])
@@ -99,7 +102,7 @@ if __name__ == '__main__':
 
   fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8, 6))
   ax.plot(time[:- window_size*2], noisy_signal[:- window_size*2], 'b-', alpha=.75, label='true noisy signal')
-  ax.plot(time[:predicted.shape[0]], predicted[:, 0, 0, 0], 'r-', alpha=.5, label='predicted signal')
+  ax.plot(time[:predicted.shape[0]], predicted[:, 0, 0, 0], '-', color='orange', alpha=1, label='predicted signal')
 
   ax.vlines(time[train_predicted.shape[0]], noisy_signal.min(), noisy_signal.max(), colors='k', linestyle='dashed')
 
