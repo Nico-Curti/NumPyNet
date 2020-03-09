@@ -132,7 +132,7 @@ def _check_cost (layer, cost):
     cost = cost_type(cost)
 
   else:
-    class_name = self.__class__.__name__
+    class_name = layer.__class__.__name__
     raise ValueError('{0}: incorrect value of Cost Function given'.format(class_name))
 
   return cost

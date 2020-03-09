@@ -28,7 +28,7 @@ class TestDataConfig:
   def test_constructor (self):
 
     here = os.path.dirname(__file__)
-    filename = os.path.join('..', 'data', 'yolov3.data')
+    filename = os.path.join(here, '..', 'data', 'yolov3.data')
 
     cfg = data_config(filename)
     assert len(cfg) == 7
@@ -40,7 +40,7 @@ class TestDataConfig:
   def test_getter (self):
 
     here = os.path.dirname(__file__)
-    filename = os.path.join('..', 'data', 'yolov3.data')
+    filename = os.path.join(here, '..', 'data', 'yolov3.data')
 
     cfg = data_config(filename)
 
@@ -60,7 +60,7 @@ class TestDataConfig:
   def test_print (self):
 
     here = os.path.dirname(__file__)
-    filename = os.path.join('..', 'data', 'yolov3.data')
+    filename = os.path.join(here, '..', 'data', 'yolov3.data')
 
     cfg = data_config(filename)
 
@@ -85,7 +85,7 @@ class TestNetConfig:
   def test_constructor (self):
 
     here = os.path.dirname(__file__)
-    filename = os.path.join('..', 'cfg', 'yolov3.cfg')
+    filename = os.path.join(here, '..', 'cfg', 'yolov3.cfg')
 
     cfg = net_config(filename)
     assert len(cfg) == 108
@@ -99,7 +99,7 @@ class TestNetConfig:
   def test_getter (self):
 
     here = os.path.dirname(__file__)
-    filename = os.path.join('..', 'cfg', 'yolov3.cfg')
+    filename = os.path.join(here, '..', 'cfg', 'yolov3.cfg')
 
     cfg = net_config(filename)
 
