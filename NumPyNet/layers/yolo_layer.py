@@ -314,7 +314,6 @@ class Yolo_layer(object):
 if __name__ == '__main__':
 
   import tensorflow as tf
-  import numpy as np
 
   num_classes = 5
   outputs = 10
@@ -335,4 +334,5 @@ if __name__ == '__main__':
 
   npvalues = x_entropy(y=softmax(pred_box_class), t=true_box_class)
 
-  assert np.allclose(npvalues, tfvalues)
+  if not np.allclose(npvalues, tfvalues):
+    raise ValueError()

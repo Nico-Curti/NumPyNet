@@ -36,17 +36,17 @@ def get_rnn_data (tokens, offsets, characters, lenght, batch, steps):
 
   for i, j in itertools.product(range(batch), range(steps)):
     offset = offsets[i]
-    curr = tokens[offset % lenght]
-    next = tokens[(offset + 1 ) % lenght]
+    _curr = tokens[offset % lenght]
+    _next = tokens[(offset + 1 ) % lenght]
 
     idx = (j * batch + i) * characters
 
-    x[idx + curr] = 1
-    y[idx + next] = 1
+    x[idx + _curr] = 1
+    y[idx + _next] = 1
 
     offsets[i] = (offset + 1) % lenght
 
-    if curr >= characters or curr < 0 or next >= characters or next < 0:
+    if _curr >= characters or _curr < 0 or _next >= characters or _next < 0:
       raise ValueError('Bad char')
 
   return (x, y)
@@ -67,7 +67,10 @@ def sample_array (arr):
 
 def print_symbol (n, tokens=None):
 
-  print('{} '.format(tokens[n]), end='', flush=True) if tokens is not None else print('{}'.format(n))
+  if tokens is not None:
+    print('{} '.format(tokens[n]), end='', flush=True)
+  else:
+    print('{}'.format(n))
 
 
 if __name__ == '__main__':

@@ -8,7 +8,6 @@ import argparse
 from os.path import splitext
 
 from NumPyNet.parser import data_config
-from NumPyNet.parser import net_config
 from NumPyNet.parser import get_labels
 
 from Pyron.image import Image
@@ -134,20 +133,16 @@ def main():
   args.netcfg    = data_cfg.get('cfg',       default=args.netcfg)
   args.weights   = data_cfg.get('weights',   default=args.weights)
   args.namesfile = data_cfg.get('names',     default=args.namesfile)
-  # means          = data_cfg.get('data_mean', default=[])
-  # variances      = data_cfg.get('data_var',  default=[])
-  scale          = data_cfg.get('scale',     default=1e1)
-  leaky_coeff    = data_cfg.get('leaky',     default=1e-1)
 
   if not args.netcfg or not args.weights:
     raise ValueError('Network config AND network weights must be given')
 
-  names = get_labels(args.namesfile, args.classes)
+  # names = get_labels(args.namesfile, args.classes)
 
   net = Network()
   net.load(args.netcfg, args.weights)
 
-  net_w, net_h, net_c = net.input_shape
+  net_w, net_h, _ = net.input_shape
 
   if not args.input:
     args.input = input('Enter Image Path: ')
