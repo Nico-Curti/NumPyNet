@@ -28,7 +28,6 @@ class TestL1normLayer :
     - backward against tensorflow.
 
   to be:
-    backward doesn't work
   '''
 
   def test_costructor (self):

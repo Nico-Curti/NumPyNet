@@ -44,7 +44,7 @@ class Yolo_layer(object):
 
     cell_x = np.broadcast_to(np.arange(max_grid_w), shape=(max_grid_h, max_grid_w)).T.reshape(1, max_grid_h, max_grid_w, 1, 1)
     cell_y = cell_x.transpose(0, 2, 1, 3, 4)
-    self.cell_grid = np.tile(np.concatenate((cell_x, cell_y), axis=-1), (batch, 1, 1, 3, 1))
+    self.cell_grid = np.tile(np.concatenate((cell_x, cell_y), axis=-1), (self.batch, 1, 1, 3, 1))
 
     self.cost = 0.
     self.output, self.delta = (None, None)
@@ -69,7 +69,7 @@ class Yolo_layer(object):
     '''
     return (self.batch, self.grid_w, self.grid_h, self.c)
 
-  def forward(self, inpt, truth, net_shape, index):
+  def forward(self, inpt, truth, net_shape, true_boxes):
     '''
     '''
     # NOTE: The input (probably) should be given in (c, h, w) fmt
@@ -77,7 +77,8 @@ class Yolo_layer(object):
     # y_pred is the previous output thus the input
 
     # adjust the shape of the y_predict [batch, grid_h, grid_w, 3, 4+1+nb_class]
-    inpt = inpt.reshape(inpt.shape[:3] + (3, -1))
+    # into [batch, grid_h, grid_w, 3, 4+1+nb_class] ???
+    # inpt = inpt.reshape(inpt.shape[:3] + (3, -1))
 
     # initialize the masks
     object_mask = np.expand_dims(truth[..., 4], axis=4)
@@ -86,14 +87,14 @@ class Yolo_layer(object):
     batch_seen = 0.
 
     # compute grid factor and net factor
-    self.grid_w, self.grid_h = truth.shape[:2]
+    self.grid_w, self.grid_h = truth.shape[1:3]
     grid_factor = np.array([self.grid_w, self.grid_h], dtype=float).reshape((1, 1, 1, 1, 2))
 
     net_w, net_h = net_shape
     net_factor   = np.array([net_w, net_h], dtype=float).reshape((1, 1, 1, 1, 2))
 
     # Adjust prediction
-    pred_box_xy    = (self.cell_grid[:, :grid_h, :grid_w, :, :] + Logistic.activate(inpt[..., :2]))
+    pred_box_xy    = (self.cell_grid[:, :self.grid_h, :self.grid_w, :, :] + Logistic.activate(inpt[..., :2], copy=True))
     pred_box_wh    = inpt[..., 2 : 4]
     pred_box_conf  = np.expand_dims(Logistic.activate(inpt[..., 4]), axis=4)
     pred_box_class = inpt[..., 5:]
@@ -137,8 +138,9 @@ class Yolo_layer(object):
     union_areas = pred_areas + true_areas - intersect_areas
     iou_scores  = np.divide(intersect_areas, union_areas)
 
-    best_ious   = np.max(iou_scores, axis=4)
-    conf_delta *= np.expand_dims(best_ious < self.ignore_thresh, axis=4)
+    best_ious  = np.max(iou_scores, axis=4)
+    # written like this for numpy broadcasting:
+    conf_delta = conf_delta*np.expand_dims(best_ious < self.ignore_thresh, axis=4)
 
     # Compute some online statistics
 
@@ -186,8 +188,8 @@ class Yolo_layer(object):
 
     if batch_seen < self.warmup_batches + 1:
 
-      true_box_xy = true_box_xy + (.5 + self.cell_grid[: , :grid_h, :grid_w, :, :]) * (1 - object_mask)
-      true_box_wh = true_box_wh + no.zeros_like(true_box_wh) * (1 - object_mask)
+      true_box_xy = true_box_xy + (.5 + self.cell_grid[: , :self.grid_h, :self.grid_w, :, :]) * (1 - object_mask)
+      true_box_wh = true_box_wh + np.zeros_like(true_box_wh) * (1 - object_mask)
       xywh_mask   = np.ones_like(object_mask)
 
     else:
@@ -202,7 +204,11 @@ class Yolo_layer(object):
     xy_delta    = xywh_mask   * (pred_box_xy   - true_box_xy) * wh_scale * self.xywh_scale
     wh_delta    = xywh_mask   * (pred_box_wh   - true_box_wh) * wh_scale * self.xywh_scale
     conf_delta  = object_mask * (pred_box_conf - true_box_conf) * self.obj_scale + (1 - object_mask) * conf_delta * self.noobj_scale
-    class_delta = object_mask# *   * self.class_scale # MISS (line 168)
+
+    softmax   = lambda x: np.exp(x) / np.sum(np.exp(x), axis=-1, keepdims=True)
+    x_entropy = lambda y, t: -1 * np.log(np.diag(y.reshape(np.prod(y.shape[:-1]), -1)[:,t.reshape(np.prod(t.shape))]).reshape(y.shape[:-1]))
+
+    class_delta = object_mask * np.expand_dims(x_entropy(softmax(pred_box_class), true_box_class), axis=4) * self.class_scale
 
     loss_xy    = np.sum(xy_delta * xy_delta,     axis=tuple(range(1, 5)))
     loss_wh    = np.sum(wh_delta * wh_delta,     axis=tuple(range(1, 5)))
@@ -211,8 +217,8 @@ class Yolo_layer(object):
 
     loss = loss_xy + loss_wh + loss_conf + loss_class
 
-    print('Yolo {:d} Avg IOU: {:.3f}, Class: {:.3f}, Obj: {:.3f}, No Obj: {:.3f}, .5R: {:.3f}, .75R: {:.3f}, count: {:d}'.format(
-          index, avg_iou, avg_cat, avg_obj, avg_noobj, recall50, recall75, count))
+    # print('Yolo {:d} Avg IOU: {:.3f}, Class: {:.3f}, Obj: {:.3f}, No Obj: {:.3f}, .5R: {:.3f}, .75R: {:.3f}, count: {:d}'.format(
+    #        index, avg_iou, avg_cat, avg_obj, avg_noobj, recall50, recall75, count))
 
     self.cost = loss * self.grid_scale
     self.delta = np.zeros(shape=self.out_shape, dtype=float)
@@ -307,4 +313,26 @@ class Yolo_layer(object):
 
 if __name__ == '__main__':
 
-  print('Insert testing here')
+  import tensorflow as tf
+  import numpy as np
+
+  num_classes = 5
+  outputs = 10
+
+  w, h, c = (10, 7, 4)
+
+  true_box_class=np.random.randint(low=0, high=num_classes, size=(w, h, c,))
+  pred_box_class=np.random.uniform(low=0., high=20., size=(w, h, c, num_classes))
+
+  tfvalues = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=true_box_class, logits=pred_box_class)
+
+  sess = tf.Session()
+
+  tfvalues = sess.run(tfvalues)
+
+  softmax   = lambda x: np.exp(x) / np.sum(np.exp(x), axis=-1, keepdims=True)
+  x_entropy = lambda y, t: -1 * np.log(np.diag(y.reshape(np.prod(y.shape[:-1]), -1)[:,t.reshape(np.prod(t.shape))]).reshape(y.shape[:-1]))
+
+  npvalues = x_entropy(y=softmax(pred_box_class), t=true_box_class)
+
+  assert np.allclose(npvalues, tfvalues)

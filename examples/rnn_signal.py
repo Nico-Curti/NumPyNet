@@ -13,7 +13,7 @@ from NumPyNet.layers.connected_layer import Connected_layer
 from NumPyNet.layers.cost_layer import Cost_layer
 from NumPyNet.layers.dropout_layer import Dropout_layer
 from NumPyNet.network import Network
-from NumPyNet.optimizer import Adam
+from NumPyNet.optimizer import Adam, SGD, RMSprop
 from NumPyNet.metrics import mean_absolute_error
 
 import numpy as np
@@ -72,7 +72,7 @@ if __name__ == '__main__':
   model.add(Connected_layer(outputs=1, activation='Linear'))
   model.add(Cost_layer(cost_type='mse'))
 
-  model.compile(optimizer=Adam(), metrics=[mean_absolute_error])
+  model.compile(optimizer=RMSprop(), metrics=[mean_absolute_error])
 
   print('*************************************')
   print('\n Total input dimension: {}'.format(X_train.shape), '\n')

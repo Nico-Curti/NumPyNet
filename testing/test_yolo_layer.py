@@ -4,6 +4,8 @@
 from __future__ import division
 from __future__ import print_function
 
+import tensorflow as tf
+from tensorflow.keras.layers import Layer
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input
 import tensorflow.keras.backend as K
@@ -20,14 +22,9 @@ from hypothesis import settings
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-# __package__ = 'Yolo Layer testing'
-
 
 # Tensorflow version of Yolo layer
 # Reference: https://github.com/experiencor/keras-yolo3/blob/master/yolo.py
-
-import tensorflow as tf
-from tensorflow.keras.layers import Layer
 
 class YoloLayer(Layer):
 
@@ -62,7 +59,7 @@ class YoloLayer(Layer):
       input_image, y_pred, y_true, true_boxes = x
 
       # adjust the shape of the y_predict [batch, grid_h, grid_w, 3, 4+1+nb_class]
-      y_pred = tf.reshape(y_pred, tf.concat([tf.shape(y_pred)[:3], tf.constant([3, -1])], axis=0))
+      # y_pred = tf.reshape(y_pred, tf.concat([tf.shape(y_pred)[:3], tf.constant([3, -1])], axis=0))
 
       # initialize the masks
       object_mask     = tf.expand_dims(y_true[..., 4], 4)
@@ -204,7 +201,8 @@ class YoloLayer(Layer):
 
       loss = loss_xy + loss_wh + loss_conf + loss_class
 
-      if debug:
+      # if debug:
+      if False:
           loss = tf.Print(loss, [grid_h, avg_obj], message='avg_obj \t\t', summarize=1000)
           loss = tf.Print(loss, [grid_h, avg_noobj], message='avg_noobj \t\t', summarize=1000)
           loss = tf.Print(loss, [grid_h, avg_iou], message='avg_iou \t\t', summarize=1000)
@@ -221,7 +219,61 @@ class YoloLayer(Layer):
       return loss*self.grid_scale
 
 class TestYoloLayer:
-  '''
 
-  '''
-  pass
+
+  def test_forward (self):
+
+    sess = tf.compat.v1.Session()
+
+    classes = 20
+    anchors = [1,2,3,4,5,6]
+    ignore_thresh = 0.9
+    warmup_batches = 3
+    grid_scale = 0.3
+    obj_scale = 0.7
+    noobj_scale = 0.5
+    xywh_scale = 3.1
+    class_scale = 1.3
+    max_grid = (11,11)
+    batch_size = 5
+    max_box = 15
+
+    grid_h = 7
+    grid_w = 7
+
+    n_anchors = 1 # If changed broadcast problems
+
+    input_image = np.random.uniform(size=(batch_size, 100, 101, 3)).astype(np.float32)
+    y_pred      = np.random.uniform(size=(batch_size, grid_h, grid_w, n_anchors, 5*2 + classes)).astype(np.float32)
+    y_true      = np.random.uniform(size=(batch_size, grid_h, grid_w, n_anchors, 5*2 + classes)).astype(np.float32)
+    true_boxes  = np.random.uniform(size=(1, 1, 1, max_box, 4)).astype(np.float32)
+
+    x = [input_image, y_pred, y_true, true_boxes]
+
+    tf_yolo = YoloLayer(anchors=anchors, max_grid=max_grid, batch_size=batch_size, warmup_batches=warmup_batches, ignore_thresh=ignore_thresh,
+                    grid_scale=grid_scale, obj_scale=obj_scale, noobj_scale=noobj_scale, xywh_scale=xywh_scale, class_scale=class_scale)
+    tf_yolo.build((batch_size, 100, 101, 3))
+
+    np_yolo = Yolo_layer(input_shape=(batch_size, 100, 101, 3), anchors=anchors, max_grid=max_grid, warmup_batches=warmup_batches, ignore_thresh=ignore_thresh,
+                    grid_scale=grid_scale, obj_scale=obj_scale, noobj_scale=noobj_scale, xywh_scale=xywh_scale, class_scale=class_scale)
+
+    out_np = np_yolo.forward(y_pred, y_true, (100, 101), true_boxes)
+    out_tf = tf_yolo.call(x)
+
+    init = tf.global_variables_initializer()
+    sess.run(init)
+
+    with sess.as_default():
+      outtf = out_tf.eval()
+
+    assert np.allclose(out_np.cost, outtf, rtol=1e-1)
+
+  def test_backwad (self):
+    pass
+
+
+if __name__ == '__main__':
+
+  test = TestYoloLayer()
+
+  test.test_forward()
