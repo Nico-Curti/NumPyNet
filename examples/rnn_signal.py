@@ -15,6 +15,8 @@ from NumPyNet.layers.dropout_layer import Dropout_layer
 from NumPyNet.network import Network
 from NumPyNet.optimizer import Adam, SGD, RMSprop
 from NumPyNet.metrics import mean_absolute_error
+from NumPyNet.utils import data_to_timesteps
+
 
 import numpy as np
 import pylab as plt
@@ -24,7 +26,6 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 np.random.seed(42)
 
-
 if __name__ == '__main__':
 
   Npoints = 1000
@@ -33,25 +34,21 @@ if __name__ == '__main__':
   time = np.arange(0, Npoints)
   noisy_signal = np.sin(0.02 * time) + 2 * np.random.rand(Npoints)
 
-  window_size = 4
-  shift = 1
+  steps = 4
+  window_size=steps
 
-  X = np.lib.stride_tricks.as_strided(noisy_signal,
-                                      shape=(Npoints - window_size + 1, window_size),
-                                      strides=(shift * 8, 8)) # 8 is the sizeof(float64)
 
-  y = X[window_size:, 0].copy()
-  X = X[: -window_size ].copy()
+  X = data_to_timesteps(noisy_signal, steps=steps)
+  y = np.concatenate([X[1:, 0, :], X[-1:, 0, :]], axis=0)
 
   # Reshape the data according to a 4D tensor
-  num_samples, size = X.shape
+  num_samples, size, _ = X.shape
 
-  if size != window_size:
-    raise ValueError('Something goes wrong with the stride trick!')
+  if size != steps:
+    raise ValueError('Something went wrong with the stride trick!')
 
   if X.max() > noisy_signal.max() or X.min() < noisy_signal.min():
-    raise ValueError('Something goes wrong with the stride trick!')
-
+    raise ValueError('Something went wrong with the stride trick!')
 
   X = X.reshape(num_samples, 1, 1, size)
 
@@ -67,12 +64,12 @@ if __name__ == '__main__':
   # Create the model and training
   model = Network(batch=batch, input_shape=X_train.shape[1:])
 
-  model.add(RNN_layer(outputs=32, steps=step, activation='Relu'))
-  model.add(Connected_layer(outputs=8, activation='Relu'))
-  model.add(Connected_layer(outputs=1, activation='Linear'))
+  model.add(RNN_layer(outputs=32, steps=step, activation='linear'))
+  model.add(Connected_layer(outputs=8, activation='relu'))
+  model.add(Connected_layer(outputs=1, activation='linear'))
   model.add(Cost_layer(cost_type='mse'))
-
-  model.compile(optimizer=RMSprop(), metrics=[mean_absolute_error])
+                          # keras standard arguments
+  model.compile(optimizer=RMSprop(lr=0.001, epsilon=1e-7))#, metrics=[mean_absolute_error])
 
   print('*************************************')
   print('\n Total input dimension: {}'.format(X_train.shape), '\n')
@@ -83,7 +80,7 @@ if __name__ == '__main__':
   print('\n***********START TRAINING***********\n')
 
   # Fit the model on the training set
-  model.fit(X=X_train, y=y_train, max_iter=10)
+  model.fit(X=X_train, y=y_train.reshape(-1, 1,1,1), max_iter=20)
 
   print('\n***********START TESTING**************\n')
 
