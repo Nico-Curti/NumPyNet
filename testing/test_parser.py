@@ -31,7 +31,7 @@ class TestDataConfig:
     filename = os.path.join(here, '..', 'data', 'yolov3.data')
 
     cfg = data_config(filename)
-    assert len(cfg) == 7
+    assert len(cfg) == 6
 
     with pytest.raises(FileNotFoundError):
       filename = ''

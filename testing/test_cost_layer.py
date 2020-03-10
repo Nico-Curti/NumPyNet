@@ -62,7 +62,7 @@ class TestCostLayer :
             deadline=None)
   def test_constructor (self, b, w, h, c, scale, ratio, nbj_scale, threshold, smoothing):
 
-    for cost in range(0,9):
+    for cost in range(0, 9):
 
       input_shape = choice([None, (b, w, h, c)])
 
@@ -87,7 +87,7 @@ class TestCostLayer :
     with pytest.raises(TypeError):
       print(layer)
 
-    layer._out_shape = (1,2,3,4)
+    layer._out_shape = (1, 2, 3, 4)
 
     print(layer)
 
@@ -144,8 +144,8 @@ class TestCostLayer :
 
       # recreate cost layer with default values foor testing against keras
       layer = Cost_layer(input_shape=inpt.shape, cost_type=cost,
-                                  scale=1., ratio=0., noobject_scale=1.,
-                                  threshold=0., smoothing=0.)
+                         scale=1., ratio=0., noobject_scale=1.,
+                         threshold=0., smoothing=0.)
       layer.forward(inpt, truth)
       loss = layer.cost
 
@@ -184,8 +184,8 @@ class TestCostLayer :
         raise ValuError()
 
       layer = Cost_layer(input_shape=inpt.shape, cost_type=cost,
-                                  scale=1., ratio=0., noobject_scale=1.,
-                                  threshold=0., smoothing=0.)
+                         scale=1., ratio=0., noobject_scale=1.,
+                         threshold=0., smoothing=0.)
 
       keras_loss_tf = keras_loss_type(truth_tf, inpt_tf)
 

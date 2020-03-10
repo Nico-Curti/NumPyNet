@@ -128,7 +128,7 @@ def _check_cost (layer, cost):
   elif isinstance(cost, cost_type):
     cost = cost.value
 
-  elif isinstance(cost, int) and cost < max(cost_type):
+  elif isinstance(cost, int) and cost <= max(cost_type):
     cost = cost_type(cost)
 
   else:

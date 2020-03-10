@@ -112,11 +112,12 @@ class TestDropoutLayer:
             deadline=None)
   def test_backward (self, b, w, h, c, prob):
 
+    prob = 0.
     # Random input
     inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
 
     # Initialize the numpy_net model
-    layer = Dropout_layer(prob)
+    layer = Dropout_layer(prob=prob)
 
     # Try to backward
     with pytest.raises(NotFittedError):

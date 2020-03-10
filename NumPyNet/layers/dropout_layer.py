@@ -36,6 +36,7 @@ class Dropout_layer(object):
 
     self.output = None
     self.delta  = None
+    self.rnd  = None
     self._out_shape = None
 
   def __str__(self):
@@ -101,7 +102,7 @@ class Dropout_layer(object):
     check_is_fitted(self, 'delta')
 
     if delta is not None:
-      self.delta = self.rnd * self.delta * self.scale
+      self.delta = self.rnd * delta[:] * self.scale
       delta[:] = self.delta.copy()
 
     return self
