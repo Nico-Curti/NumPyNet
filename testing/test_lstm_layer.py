@@ -66,7 +66,7 @@ class TestLSTMlayer :
     lstm  = LSTM(units=outputs, implementation=1)(inp)
     model = Model(inputs=[inp], outputs=[lstm])
 
-    model.set_weights([keras_weights1, keras_weights2, keras_bias])
+    model.set_weights([keras_weights1_concat, keras_weights2_concat, keras_bias])
 
     forward_out_keras = model.predict(inpt)
 

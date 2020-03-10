@@ -42,7 +42,7 @@ class data_config (object):
     if not os.path.isfile(filename):
       raise FileNotFoundError('Could not open or find the data file. Given: {}'.format(filename))
 
-    with open (filename, 'r', encoding='utf-8') as fp:
+    with open (filename, 'r') as fp:
       rows = fp.read().splitlines()
 
     rows = [x.strip(' ') for x in rows]           # remove redundant blank spaces
@@ -200,7 +200,7 @@ def read_map (filename):
   if not os.path.isfile(filename):
     raise FileNotFoundError('Could not open or find the map file. Given: {}'.format(filename))
 
-  with open(filename, 'r', encoding='utf-8') as fp:
+  with open(filename, 'r') as fp:
     rows = fp.read().splitlines()
 
   rows = list(map(int, rows))
@@ -227,7 +227,7 @@ def get_labels (filename, classes=-1):
   if not os.path.isfile(filename):
     raise FileNotFoundError('Could not open or find the label file. Given: {}'.format(filename))
 
-  with open(filename, 'r', encoding='utf-8') as fp:
+  with open(filename, 'r') as fp:
     labels = fp.read().splitlines()
 
   labels = labels[:classes]

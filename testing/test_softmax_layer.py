@@ -77,7 +77,7 @@ class TestSoftmaxLayer :
     with pytest.raises(TypeError):
       print(layer)
 
-    layer.batch, layer.w, layer.h, layer.c = (1,2,3,4)
+    layer.batch, layer.w, layer.h, layer.c = (1, 2, 3, 4)
 
     print(layer)
 
