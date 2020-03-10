@@ -10,9 +10,9 @@ from os.path import splitext
 from NumPyNet.parser import data_config
 from NumPyNet.parser import get_labels
 
-from Pyron.image import Image
+from NumPyNet.image import Image
 
-from Pyron.network import Network
+from NumPyNet.network import Network
 
 __author__  = ['Mattia Ceccarelli', 'Nico Curti']
 __email__   = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -139,7 +139,7 @@ def main():
 
   # names = get_labels(args.namesfile, args.classes)
 
-  net = Network()
+  net = Network(batch=32)
   net.load(args.netcfg, args.weights)
 
   net_w, net_h, _ = net.input_shape
@@ -179,4 +179,3 @@ def main():
 if __name__ == '__main__':
 
   main ()
-

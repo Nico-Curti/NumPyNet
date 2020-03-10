@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+  #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from __future__ import division
@@ -45,14 +45,14 @@ class LSTM_layer(object):
     if weights is None:
       weights = (None, None, None)
     else:
-      if np.shape(weights)[0] != 3:
-        raise ValueError('Wrong number of init "weights". There are 3 connected layers into the RNN cell.')
+      if np.shape(weights)[0] != 2:
+        raise ValueError('Wrong number of init "weights". There are 2 connected layers into the LSTM cell.')
 
     if bias is None:
       bias = (None, None, None)
     else:
-      if np.shape(bias)[0] != 3:
-        raise ValueError('Wrong number of init "biases". There are 3 connected layers into the RNN cell.')
+      if np.shape(bias)[0] != 2:
+        raise ValueError('Wrong number of init "biases". There are 2 connected layers into the LSTM cell.')
 
     # if input shape is passed, init of weights, else done in  __call__
     if input_shape is not None:
@@ -159,14 +159,6 @@ class LSTM_layer(object):
                            self.wg.bias.ravel(), self.wg.weights.ravel(),
                            self.wo.bias.ravel(), self.wo.weights.ravel()], axis=0).tolist()
 
-  def _internal_forward(self, layer, inpt, indices, copy=False):
-
-    _input = inpt[indices, ...]
-    _input = _input.reshape(_input.shape[0], -1)
-
-    z = np.einsum('ij, jk -> ik', _input, layer.weights, optimize=True) + layer.bias
-    layer.output[indices, ...] = layer.activation(z, copy=copy).reshape(-1, 1, 1, layer.outputs)
-
 
   def forward(self, inpt, copy=False):
     '''
@@ -198,16 +190,34 @@ class LSTM_layer(object):
     for idx in self.batches:
 
       h_slice = h[idx, ...]
+      h_slice = h_slice.reshape(h_slice.shape[0], -1)
 
-      self._internal_forward(layer=self.wf, inpt=h, indices=idx, copy=copy)
-      self._internal_forward(layer=self.wi, inpt=h, indices=idx, copy=copy)
-      self._internal_forward(layer=self.wg, inpt=h, indices=idx, copy=copy)
-      self._internal_forward(layer=self.wo, inpt=h, indices=idx, copy=copy)
+      z = np.einsum('ij, jk -> ik', h_slice, self.wf.weights, optimize=True) + self.wf.bias
+      self.wf.output[idx, ...] = self.wg.activation(z, copy=copy).reshape(-1, 1, 1, self.wg.outputs)
 
-      self._internal_forward(layer=self.uf, inpt=inpt, indices=idx, copy=copy)
-      self._internal_forward(layer=self.ui, inpt=inpt, indices=idx, copy=copy)
-      self._internal_forward(layer=self.ug, inpt=inpt, indices=idx, copy=copy)
-      self._internal_forward(layer=self.uo, inpt=inpt, indices=idx, copy=copy)
+      z = np.einsum('ij, jk -> ik', h_slice, self.wi.weights, optimize=True) + self.wi.bias
+      self.wi.output[idx, ...] = self.wi.activation(z, copy=copy).reshape(-1, 1, 1, self.wg.outputs)
+
+      z = np.einsum('ij, jk -> ik', h_slice, self.wg.weights, optimize=True) + self.wg.bias
+      self.wg.output[idx, ...] = self.wg.activation(z, copy=copy).reshape(-1, 1, 1, self.wg.outputs)
+
+      z = np.einsum('ij, jk -> ik', h_slice, self.wo.weights, optimize=True) + self.wo.bias
+      self.wo.output[idx, ...] = self.wo.activation(z, copy=copy).reshape(-1, 1, 1, self.wo.outputs)
+
+      _input = inpt[idx, ...]
+      _input = _input.reshape(len(idx), -1)
+
+      z = np.einsum('ij, jk -> ik', _input,self.uf.weights, optimize=True) + self.uf.bias
+      self.uf.output[idx, ...] = self.uf.activation(z, copy=copy).reshape(-1, 1, 1, self.uf.outputs)
+
+      z = np.einsum('ij, jk -> ik', _input, self.ui.weights, optimize=True) + self.ui.bias
+      self.ui.output[idx, ...] = self.ui.activation(z, copy=copy).reshape(-1, 1, 1, self.ui.outputs)
+
+      z = np.einsum('ij, jk -> ik', _input, self.ug.weights, optimize=True) + self.ug.bias
+      self.ug.output[idx, ...] = self.ug.activation(z, copy=copy).reshape(-1, 1, 1, self.ug.outputs)
+
+      z = np.einsum('ij, jk -> ik', _input, self.uo.weights, optimize=True) + self.uo.bias
+      self.uo.output[idx, ...] = self.uo.activation(z, copy=copy).reshape(-1, 1, 1, self.uo.outputs)
 
       f = Logistic.activate(self.wf.output[idx, ...] + self.uf.output[idx, ...])
       i = Logistic.activate(self.wi.output[idx, ...] + self.ui.output[idx, ...])

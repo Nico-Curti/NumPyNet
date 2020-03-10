@@ -77,8 +77,7 @@ class Yolo_layer(object):
     # y_pred is the previous output thus the input
 
     # adjust the shape of the y_predict [batch, grid_h, grid_w, 3, 4+1+nb_class]
-    # into [batch, grid_h, grid_w, 3, 4+1+nb_class] ???
-    # inpt = inpt.reshape(inpt.shape[:3] + (3, -1))
+    inpt = inpt.reshape(inpt.shape[:3] + (3, -1))
 
     # initialize the masks
     object_mask = np.expand_dims(truth[..., 4], axis=4)

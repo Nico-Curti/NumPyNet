@@ -113,7 +113,7 @@ class TestRNNLayer:
     inpt = np.random.uniform(size=(50, 6))
 
     # model = Sequential()
-    # model.add(SimpleRNN(units=32, input_shape=(50, 6), activation='linear'))
+    # model.add(SimpleRNN(units=32, input_shape=(None,1, 6), activation='linear'))
     #
     # forward_out_keras = model.predict(inpt)
 

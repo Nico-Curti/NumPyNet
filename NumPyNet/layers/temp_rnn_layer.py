@@ -17,6 +17,25 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 class RNN_layer(object):
 
   def __init__ (self, outputs, steps, activation1=Activations, activation2=Activations, input_shape=None, weights=None, bias=None):
+    '''
+    Recurrent Neural Network layer. Build a Recurrent fully connected architecture.
+
+    Parameters
+    ----------
+
+    outputs : integer, number of outputs of the layer.
+    steps   : integer, number of timesteps of the recurrency.
+    activation1 : activation function object. First activation function, applied to
+      every hidden state
+    activation2 : activation function object. Second activation function, applied to
+      the output of every timestep.
+    input_shape : tuple of int, default None. Used for a single layer model.
+      "None" is used when the layer is part of a network.
+    weights : list of numpy array, default None. List containing two numpy array of weights.
+      If None, the init is random.
+    bias : list of numpy array, default None. List containing two numpy array of bias.
+      If None, the init is random.
+    '''
 
     if isinstance(outputs, int) and outputs > 0:
       self.outputs = outputs
@@ -67,12 +86,12 @@ class RNN_layer(object):
       prev_name  = layer.__class__.__name__
       raise LayerError('Incorrect steps found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
 
-    self.weights1 = np.random.uniform(0, 1, size=(w*h*c, self.outputs))         # Wxh
-    self.weights2 = np.random.uniform(0, 1, size=(self.outputs, self.outputs))  # Whh
-    self.weights3 = np.random.uniform(0, 1, size=(self.outputs, self.outputs))  # Why
+    self.weights1 = np.random.uniform(-1, 1, size=(w*h*c, self.outputs))         # Wxh
+    self.weights2 = np.random.uniform(-1, 1, size=(self.outputs, self.outputs))  # Whh
+    self.weights3 = np.random.uniform(-1, 1, size=(self.outputs, self.outputs))  # Why
 
-    self.bias1  = np.random.uniform(0, 1, size=(self.outputs,))
-    self.bias2  = np.random.uniform(0, 1, size=(self.outputs,))
+    self.bias1  = np.random.uniform(-1, 1, size=(self.outputs,))
+    self.bias2  = np.random.uniform(-1, 1, size=(self.outputs,))
 
     self.weights_update3 = np.zeros(self.weights3.shape) # Why
     self.weights_update2 = np.zeros(self.weights2.shape) # Whh
@@ -92,8 +111,37 @@ class RNN_layer(object):
   def out_shape(self):
     return self._out_shape
 
+  def _as_Strided(self, inpt, shift=1):
+    '''
+    Generate a view on the inpt data with shape (batch, steps, features), then
+      swap the first two axis to ease the computation.
 
-  def forward (self, inpt, copy=True):
+    Parameters
+    ----------
+      inpt : numpy array, input data of the layer. The input should be (batch, features),
+        so two dimensional.
+      shift : integer, default one. shift of the window.
+
+    Returns
+    -------
+      A view on the input array
+    '''
+
+    if len(inpt.shape) != 2:
+      raise ValueError('RNN layer : shape of the input for _as_Strided must be two dimensionals but is {}'.format(inpt.shape))
+
+    batch, features  = inpt.shape
+    stride0, stride1 = inpt.strides
+
+    shape   = (batch - steps*shift + 1, self.steps, features)
+    strides = (shift*stride0, stride0, stride1)
+
+    view = np.lib.stride_tricks.as_strided(inpt, shape=shape, strides=strides)
+
+    return np.swapaxes(view, 0, 1)
+
+
+  def forward (self, inpt, copy=False):
     '''
     Forward of the RNN layer
     '''
@@ -153,9 +201,7 @@ class RNN_layer(object):
       self.weights_update3 += np.einsum('ij, ik -> jk', self.delta[idx, ...], self.states[idx, ...], optimize=True)
 
       dh = np.einsum('ij, kj -> ki', self.weights3, self.delta[idx, ...], optimize=True) + _delta_state
-
-      # first activation gradient
-      dh = self.activation1.gradient(dh, copy=copy)
+      dh *= self.activation1.gradient(dh, copy=copy)
 
       self.bias_update1    += dh.sum(axis=0)
       self.weights_update1 += np.einsum('ij, ik -> kj', dh, X[idx, ...], optimize=True)
@@ -164,7 +210,7 @@ class RNN_layer(object):
       _delta_state = np.einsum('ij, ki -> kj', self.weights2, dh, optimize=True)
 
       # TODO: don't know if this is correct
-      delta_r[idx, ...] = np.einsum('ij, kj -> ik' , dh, self.weights1, optimize=True)
+      delta_r[idx, ...] = np.einsum('ij, kj -> ik', dh, self.weights1, optimize=True)
 
 
   def update (self):
@@ -179,5 +225,4 @@ class RNN_layer(object):
                                               gradients= [self.bias_update1, self.bias_update2,
                                                           self.weights_update1, self.weights_update2, self.weights_update3]
                                               )
-
     return self

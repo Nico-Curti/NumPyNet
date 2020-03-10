@@ -59,7 +59,7 @@ class YoloLayer(Layer):
       input_image, y_pred, y_true, true_boxes = x
 
       # adjust the shape of the y_predict [batch, grid_h, grid_w, 3, 4+1+nb_class]
-      # y_pred = tf.reshape(y_pred, tf.concat([tf.shape(y_pred)[:3], tf.constant([3, -1])], axis=0))
+      y_pred = tf.reshape(y_pred, tf.concat([tf.shape(y_pred)[:3], tf.constant([3, -1])], axis=0))
 
       # initialize the masks
       object_mask     = tf.expand_dims(y_true[..., 4], 4)
@@ -220,32 +220,51 @@ class YoloLayer(Layer):
 
 class TestYoloLayer:
 
+  def test_constructor (self):
+    pass
 
-  def test_forward (self):
+  def test_printer (self):
+    pass
+
+
+  @given(grid_w   = st.integers(min_value=1, max_value=20),
+         max_grid = st.integers(min_value=1, max_value=20),
+         net_w = st.integers(min_value=21, max_value=100),
+         net_h = st.integers(min_value=21, max_value=100),
+         classes = st.integers(min_value=1, max_value=20),
+         ignore_thresh = st.floats(width=32, min_value=0., max_value=10),
+         warmup_batches = st.integers(1, 20),
+         batch_size = st.integers(1, 20),
+         grid_scale = st.floats(0, 10, width=32),
+         obj_scale = st.floats(0, 10, width=32),
+         noobj_scale = st.floats(0, 10, width=32),
+         xywh_scale = st.floats(0, 10, width=32),
+         class_scale = st.floats(0, 10, width=32),
+         max_box = st.integers(1, 20))
+  @settings(max_examples=10,
+            deadline=None)
+  def test_forward (self, grid_w, max_grid, net_w, net_h, classes, ignore_thresh, warmup_batches, batch_size, grid_scale, obj_scale, noobj_scale, xywh_scale, class_scale, max_box):
+
+    grid_h = grid_w # only equals grids
+
+    # max grid must be higher than grid
+    if max_grid < grid_w:
+      max_grid = (grid_w, grid_h)
+    else:
+      max_grid = (max_grid, max_grid)
+
+    if warmup_batches >= batch_size:
+      warmup_baches = batch_size / 2
 
     sess = tf.compat.v1.Session()
 
-    classes = 20
+    # TODO: don't know
     anchors = [1,2,3,4,5,6]
-    ignore_thresh = 0.9
-    warmup_batches = 3
-    grid_scale = 0.3
-    obj_scale = 0.7
-    noobj_scale = 0.5
-    xywh_scale = 3.1
-    class_scale = 1.3
-    max_grid = (11,11)
-    batch_size = 5
-    max_box = 15
+    n_anchors = 3 # If changed->broadcast problems
 
-    grid_h = 7
-    grid_w = 7
-
-    n_anchors = 1 # If changed broadcast problems
-
-    input_image = np.random.uniform(size=(batch_size, 100, 101, 3)).astype(np.float32)
-    y_pred      = np.random.uniform(size=(batch_size, grid_h, grid_w, n_anchors, 5*2 + classes)).astype(np.float32)
-    y_true      = np.random.uniform(size=(batch_size, grid_h, grid_w, n_anchors, 5*2 + classes)).astype(np.float32)
+    input_image = np.random.uniform(size=(batch_size, net_h, net_w, 3)).astype(np.float32)
+    y_pred      = np.random.uniform(size=(batch_size, grid_h, grid_w, n_anchors, 4+1 + classes)).astype(np.float32)
+    y_true      = np.random.uniform(size=(batch_size, grid_h, grid_w, n_anchors, 4+1 + classes)).astype(np.float32)
     true_boxes  = np.random.uniform(size=(1, 1, 1, max_box, 4)).astype(np.float32)
 
     x = [input_image, y_pred, y_true, true_boxes]
@@ -254,10 +273,10 @@ class TestYoloLayer:
                     grid_scale=grid_scale, obj_scale=obj_scale, noobj_scale=noobj_scale, xywh_scale=xywh_scale, class_scale=class_scale)
     tf_yolo.build((batch_size, 100, 101, 3))
 
-    np_yolo = Yolo_layer(input_shape=(batch_size, 100, 101, 3), anchors=anchors, max_grid=max_grid, warmup_batches=warmup_batches, ignore_thresh=ignore_thresh,
+    np_yolo = Yolo_layer(input_shape=input_image.shape, anchors=anchors, max_grid=max_grid, warmup_batches=warmup_batches, ignore_thresh=ignore_thresh,
                     grid_scale=grid_scale, obj_scale=obj_scale, noobj_scale=noobj_scale, xywh_scale=xywh_scale, class_scale=class_scale)
 
-    out_np = np_yolo.forward(y_pred, y_true, (100, 101), true_boxes)
+    out_np = np_yolo.forward(y_pred, y_true, (net_h, net_w), true_boxes)
     out_tf = tf_yolo.call(x)
 
     init = tf.global_variables_initializer()
@@ -267,6 +286,7 @@ class TestYoloLayer:
       outtf = out_tf.eval()
 
     assert np.allclose(out_np.cost, outtf, rtol=1e-1)
+
 
   def test_backwad (self):
     pass
