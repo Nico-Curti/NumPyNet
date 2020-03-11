@@ -24,6 +24,7 @@ from NumPyNet.layers.input_layer import Input_layer
 from NumPyNet.layers.l1norm_layer import L1Norm_layer
 from NumPyNet.layers.l2norm_layer import L2Norm_layer
 from NumPyNet.layers.logistic_layer import Logistic_layer
+from NumPyNet.layers.lstm_layer import LSTM_layer
 from NumPyNet.layers.maxpool_layer import Maxpool_layer
 from NumPyNet.layers.rnn_layer import RNN_layer
 from NumPyNet.layers.route_layer import Route_layer
@@ -58,6 +59,7 @@ class Network(object):
             'l1norm'        :  L1Norm_layer,
             'l2norm'        :  L2Norm_layer,
             'logistic'      :  Logistic_layer,
+            'lstm'          :  LSTM_layer,
             'maxpool'       :  Maxpool_layer,
             'rnn'           :  RNN_layer,
             'route'         :  Route_layer,
@@ -276,6 +278,16 @@ class Network(object):
         layer.input_layer.optimizer = copy(optimizer)
         layer.self_layer.optimizer = copy(optimizer)
         layer.output_layer.optimizer = copy(optimizer)
+
+      if isinstance(layer, LSTM_layer):
+        layer.uf.optimizer = copy(optimizer)
+        layer.ui.optimizer = copy(optimizer)
+        layer.ug.optimizer = copy(optimizer)
+        layer.uo.optimizer = copy(optimizer)
+        layer.wf.optimizer = copy(optimizer)
+        layer.wi.optimizer = copy(optimizer)
+        layer.wg.optimizer = copy(optimizer)
+        layer.wo.optimizer = copy(optimizer)
 
     if metrics is not None:
       self._check_metrics(metrics)

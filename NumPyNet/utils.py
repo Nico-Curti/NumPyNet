@@ -239,7 +239,6 @@ def data_to_timesteps (data, steps, shift=1):
    If 'data' has more than two dimension, it'll be reshaped.
    Pay attention to the final number of 'batch'
 
-
   Parameters
   ----------
   data : two or 4 dimensional numpy array, with shapes (Ndata, features) or (Ndata, w, h, c).

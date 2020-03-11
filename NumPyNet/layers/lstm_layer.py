@@ -58,11 +58,38 @@ class LSTM_layer(object):
     if input_shape is not None:
       self.input_shape = input_shape
 
-      self.batch = self.input_shape[0] // self.steps
-      self.batches = np.array_split(range(self.input_shape[0]), indices_or_sections=self.batch)
+      b, w, h, c = input_shape
+
+      self.batch = b // self.steps
+      # self.batches = np.array_split(range(self.input_shape[0]), indices_or_sections=self.steps)
+      indices = range(0,b)
+      self.batches = np.lib.stride_tricks.as_strided(indices, shape=(b - self.steps + 1, self.steps), strides=(8, 8)).T.copy()
+
+      print(self.batches)
 
       _, w, h, c = self.input_shape
       initial_shape = (self.batch, w, h, c)
+
+      self.uf = Connected_layer(outputs, activation='Linear', input_shape=initial_shape, weights=weights[0], bias=bias[0])
+      self.ui = Connected_layer(outputs, activation='Linear', input_shape=initial_shape, weights=weights[0], bias=bias[0])
+      self.ug = Connected_layer(outputs, activation='Linear', input_shape=initial_shape, weights=weights[0], bias=bias[0])
+      self.uo = Connected_layer(outputs, activation='Linear', input_shape=initial_shape, weights=weights[0], bias=bias[0])
+
+      self.wf = Connected_layer(outputs, activation='Linear', input_shape=(self.batch, 1, 1, self.outputs), weights=weights[1], bias=bias[1])
+      self.wi = Connected_layer(outputs, activation='Linear', input_shape=(self.batch, 1, 1, self.outputs), weights=weights[1], bias=bias[1])
+      self.wg = Connected_layer(outputs, activation='Linear', input_shape=(self.batch, 1, 1, self.outputs), weights=weights[1], bias=bias[1])
+      self.wo = Connected_layer(outputs, activation='Linear', input_shape=(self.batch, 1, 1, self.outputs), weights=weights[1], bias=bias[1])
+
+
+      self.uf.input_shape = (self.input_shape[0], w, h, c)
+      self.ui.input_shape = (self.input_shape[0], w, h, c)
+      self.ug.input_shape = (self.input_shape[0], w, h, c)
+      self.uo.input_shape = (self.input_shape[0], w, h, c)
+
+      self.wf.input_shape = (self.input_shape[0], w, h, self.outputs)
+      self.wi.input_shape = (self.input_shape[0], w, h, self.outputs)
+      self.wg.input_shape = (self.input_shape[0], w, h, self.outputs)
+      self.wo.input_shape = (self.input_shape[0], w, h, self.outputs)
 
     else:
       self.input_shape = None
@@ -72,30 +99,9 @@ class LSTM_layer(object):
       self.batches = None
       initial_shape = None
 
-    self.uf = Connected_layer(outputs, activation='Linear', input_shape=initial_shape, weights=weights[0], bias=bias[0])
-    self.ui = Connected_layer(outputs, activation='Linear', input_shape=initial_shape, weights=weights[0], bias=bias[0])
-    self.ug = Connected_layer(outputs, activation='Linear', input_shape=initial_shape, weights=weights[0], bias=bias[0])
-    self.uo = Connected_layer(outputs, activation='Linear', input_shape=initial_shape, weights=weights[0], bias=bias[0])
-
-    self.wf = Connected_layer(outputs, activation='Linear', input_shape=(self.batch, 1, 1, self.outputs), weights=weights[1], bias=bias[1])
-    self.wi = Connected_layer(outputs, activation='Linear', input_shape=(self.batch, 1, 1, self.outputs), weights=weights[1], bias=bias[1])
-    self.wg = Connected_layer(outputs, activation='Linear', input_shape=(self.batch, 1, 1, self.outputs), weights=weights[1], bias=bias[1])
-    self.wo = Connected_layer(outputs, activation='Linear', input_shape=(self.batch, 1, 1, self.outputs), weights=weights[1], bias=bias[1])
-
-    if input_shape is not None:
-      self.uf.input_shape  = (self.input_shape[0], w, h, c)
-      self.ui.input_shape  = (self.input_shape[0], w, h, c)
-      self.ug.input_shape  = (self.input_shape[0], w, h, c)
-      self.uo.input_shape  = (self.input_shape[0], w, h, c)
-
-      self.wf.input_shape   = (self.input_shape[0], w, h, self.outputs)
-      self.wi.input_shape   = (self.input_shape[0], w, h, self.outputs)
-      self.wg.input_shape   = (self.input_shape[0], w, h, self.outputs)
-      self.wo.input_shape   = (self.input_shape[0], w, h, self.outputs)
-
-    self.output = np.empty(shape=self.uf.out_shape, dtype=float)
-    self.cell = np.empty(shape=self.uf.out_shape, dtype=float)
-    self.delta = None
+    self.output = None
+    self.cell   = None
+    self.delta  = None
     self.optimizer = None
 
   def __str__(self):
@@ -111,8 +117,55 @@ class LSTM_layer(object):
                         ))
 
   def __call__(self, previous_layer):
-    raise NotImplementedError('Not yet supported')
-    # return self
+
+      if previous_layer.out_shape is None:
+        class_name = self.__class__.__name__
+        prev_name  = layer.__class__.__name__
+        raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
+
+      b, w, h, c = previous_layer.out_shape
+
+      if b < self.steps:
+        class_name = self.__class__.__name__
+        prev_name  = layer.__class__.__name__
+        raise LayerError('Incorrect steps found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
+
+      self.batch = b // self.steps
+      self.input_shape = (self.batch, w, h, c)
+      indices = np.arange(0, b)
+
+      self.batches = np.lib.stride_tricks.as_strided(indices, shape=(self.steps, self.batch), strides=(self.batch * 8, 8)).copy()
+
+      initial_shape = (self.batch, w, h, c)
+
+      self.uf = Connected_layer(self.outputs, activation='Linear', input_shape=initial_shape)
+      self.ui = Connected_layer(self.outputs, activation='Linear', input_shape=initial_shape)
+      self.ug = Connected_layer(self.outputs, activation='Linear', input_shape=initial_shape)
+      self.uo = Connected_layer(self.outputs, activation='Linear', input_shape=initial_shape)
+
+      self.wf = Connected_layer(self.outputs, activation='Linear', input_shape=(self.batch, 1, 1, self.outputs))
+      self.wi = Connected_layer(self.outputs, activation='Linear', input_shape=(self.batch, 1, 1, self.outputs))
+      self.wg = Connected_layer(self.outputs, activation='Linear', input_shape=(self.batch, 1, 1, self.outputs))
+      self.wo = Connected_layer(self.outputs, activation='Linear', input_shape=(self.batch, 1, 1, self.outputs))
+
+      self.uf.input_shape = (b, w, h, c)
+      self.ui.input_shape = (b, w, h, c)
+      self.ug.input_shape = (b, w, h, c)
+      self.uo.input_shape = (b, w, h, c)
+
+      self.wf.input_shape = (b, w, h, self.outputs)
+      self.wi.input_shape = (b, w, h, self.outputs)
+      self.wg.input_shape = (b, w, h, self.outputs)
+      self.wo.input_shape = (b, w, h, self.outputs)
+
+      self.state = np.zeros(shape=(self.batch, w, h, self.outputs), dtype=float)
+
+      self.output = np.empty(shape=self.uf.out_shape, dtype=float)
+      self.cell = np.empty(shape=self.uf.out_shape, dtype=float)
+      self.delta = None
+      self.optimizer = None
+
+      return self
 
   @property
   def inputs(self):
@@ -186,46 +239,34 @@ class LSTM_layer(object):
     self.wo.output = np.empty(shape=self.wo.out_shape, dtype=float)
 
     h = np.zeros(shape=self.out_shape, dtype=float)
+    c = 0.
 
     for idx in self.batches:
 
       h_slice = h[idx, ...]
       h_slice = h_slice.reshape(h_slice.shape[0], -1)
 
-      z = np.einsum('ij, jk -> ik', h_slice, self.wf.weights, optimize=True) + self.wf.bias
-      self.wf.output[idx, ...] = self.wg.activation(z, copy=copy).reshape(-1, 1, 1, self.wg.outputs)
-
-      z = np.einsum('ij, jk -> ik', h_slice, self.wi.weights, optimize=True) + self.wi.bias
-      self.wi.output[idx, ...] = self.wi.activation(z, copy=copy).reshape(-1, 1, 1, self.wg.outputs)
-
-      z = np.einsum('ij, jk -> ik', h_slice, self.wg.weights, optimize=True) + self.wg.bias
-      self.wg.output[idx, ...] = self.wg.activation(z, copy=copy).reshape(-1, 1, 1, self.wg.outputs)
-
-      z = np.einsum('ij, jk -> ik', h_slice, self.wo.weights, optimize=True) + self.wo.bias
-      self.wo.output[idx, ...] = self.wo.activation(z, copy=copy).reshape(-1, 1, 1, self.wo.outputs)
+      op = 'ij, jk -> ik'
+      self.wf.output[idx, ...] = (np.einsum(op, h_slice, self.wf.weights, optimize=True) + self.wf.bias).reshape(-1, 1, 1, self.outputs)
+      self.wi.output[idx, ...] = (np.einsum(op, h_slice, self.wi.weights, optimize=True) + self.wi.bias).reshape(-1, 1, 1, self.outputs)
+      self.wg.output[idx, ...] = (np.einsum(op, h_slice, self.wg.weights, optimize=True) + self.wg.bias).reshape(-1, 1, 1, self.outputs)
+      self.wo.output[idx, ...] = (np.einsum(op, h_slice, self.wo.weights, optimize=True) + self.wo.bias).reshape(-1, 1, 1, self.outputs)
 
       _input = inpt[idx, ...]
       _input = _input.reshape(len(idx), -1)
 
-      z = np.einsum('ij, jk -> ik', _input,self.uf.weights, optimize=True) + self.uf.bias
-      self.uf.output[idx, ...] = self.uf.activation(z, copy=copy).reshape(-1, 1, 1, self.uf.outputs)
+      self.uf.output[idx, ...] = (np.einsum(op, _input, self.uf.weights, optimize=True) + self.uf.bias).reshape(-1, 1, 1, self.outputs)  # xf
+      self.ui.output[idx, ...] = (np.einsum(op, _input, self.ui.weights, optimize=True) + self.ui.bias).reshape(-1, 1, 1, self.outputs)  # xi
+      self.ug.output[idx, ...] = (np.einsum(op, _input, self.ug.weights, optimize=True) + self.ug.bias).reshape(-1, 1, 1, self.outputs)  # xc
+      self.uo.output[idx, ...] = (np.einsum(op, _input, self.uo.weights, optimize=True) + self.uo.bias).reshape(-1, 1, 1, self.outputs)  # xo
 
-      z = np.einsum('ij, jk -> ik', _input, self.ui.weights, optimize=True) + self.ui.bias
-      self.ui.output[idx, ...] = self.ui.activation(z, copy=copy).reshape(-1, 1, 1, self.ui.outputs)
+      f = Logistic.activate(self.wf.output[idx, ...] + self.uf.output[idx, ...])  # xf + htm1 @ rec_f
+      i = Logistic.activate(self.wi.output[idx, ...] + self.ui.output[idx, ...])  # xi + htm1 @ rec_i
+      g = Tanh.activate(self.wg.output[idx, ...] + self.ug.output[idx, ...])      # xc + htm1 @ rec_c
+      o = Logistic.activate(self.wo.output[idx, ...] + self.uo.output[idx, ...])  # xo + htm1 @ rec_o
 
-      z = np.einsum('ij, jk -> ik', _input, self.ug.weights, optimize=True) + self.ug.bias
-      self.ug.output[idx, ...] = self.ug.activation(z, copy=copy).reshape(-1, 1, 1, self.ug.outputs)
-
-      z = np.einsum('ij, jk -> ik', _input, self.uo.weights, optimize=True) + self.uo.bias
-      self.uo.output[idx, ...] = self.uo.activation(z, copy=copy).reshape(-1, 1, 1, self.uo.outputs)
-
-      f = Logistic.activate(self.wf.output[idx, ...] + self.uf.output[idx, ...])
-      i = Logistic.activate(self.wi.output[idx, ...] + self.ui.output[idx, ...])
-      g = Tanh.activate(self.wg.output[idx, ...] + self.ug.output[idx, ...])
-      o = Logistic.activate(self.wo.output[idx, ...] + self.uo.output[idx, ...])
-
-      c  = i * g
       c *= f
+      c += i * g  # c = f * c_prev + i * g
       h_slice = Tanh.activate(c) * o
       self.cell[idx, ...] = c
       self.output[idx, ...] = h_slice

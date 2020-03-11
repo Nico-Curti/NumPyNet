@@ -8,7 +8,7 @@ Reference: https://www.datatechnotes.com/2018/12/rnn-example-with-keras-simplern
 '''
 
 # from NumPyNet.layers.input_layer import Input_layer
-from NumPyNet.layers.rnn_layer import RNN_layer
+from NumPyNet.layers.lstm_layer import LSTM_layer
 from NumPyNet.layers.connected_layer import Connected_layer
 from NumPyNet.layers.cost_layer import Cost_layer
 # from NumPyNet.layers.dropout_layer import Dropout_layer
@@ -16,7 +16,6 @@ from NumPyNet.network import Network
 from NumPyNet.optimizer import RMSprop
 from NumPyNet.metrics import mean_absolute_error
 from NumPyNet.utils import data_to_timesteps
-
 
 import numpy as np
 import pylab as plt
@@ -63,7 +62,7 @@ if __name__ == '__main__':
   # Create the model and training
   model = Network(batch=batch, input_shape=X_train.shape[1:])
 
-  model.add(RNN_layer(outputs=32, steps=step, activation='linear'))
+  model.add(LSTM_layer(outputs=32, steps=step))
   model.add(Connected_layer(outputs=8, activation='relu'))
   model.add(Connected_layer(outputs=1, activation='linear'))
   model.add(Cost_layer(cost_type='mse'))
