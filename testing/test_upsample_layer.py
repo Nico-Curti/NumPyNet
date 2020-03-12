@@ -43,7 +43,7 @@ def test_upsample_layer():
             inpt = np.random.uniform(low=0., high=1., size=(batch, w, h, c))
 
             # NumPyNet model
-            numpynet_layer = Upsample_layer(stride=stride, scale=scales)
+            numpynet_layer = Upsample_layer(input_shape=(batch, w, h, c), stride=stride, scale=scales)
 
             # Keras Model
             inp = Input(batch_shape=(batch, w, h, c))

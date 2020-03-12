@@ -50,8 +50,7 @@ class TestRouteLayer :
     if input_layers:
       layer = Route_layer(input_layers=input_layers, by_channels=by_channels)
 
-      assert layer.output.size == 0
-      assert layer._out_shape   == None
+      assert layer.output is None
       assert (layer.input_layers == input_layers or
               layer.input_layers == input_layers[0])
 
@@ -76,7 +75,7 @@ class TestRouteLayer :
     net = Network(batch=b, input_shape=(w, h, c))
     net.add(Activation_layer(activation='relu')) # layer 1
     net.add(Activation_layer(activation='tanh')) # layer 2
-    net.add(Route_layer(input_layers=(1,2), by_channels=True))
+    net.add(Route_layer(input_layers=(1, 2), by_channels=True))
     net.add(Cost_layer(cost_type='mse', scale=1., ratio=0., noobject_scale=1., threshold=0., smoothing=0.))
     net.compile(optimizer=SGD())
 
@@ -104,7 +103,7 @@ class TestRouteLayer :
     net = Network(batch=b, input_shape=(w, h, c))
     net.add(Activation_layer(activation='relu')) # layer 1
     net.add(Activation_layer(activation='tanh')) # layer 2
-    net.add(Route_layer(input_layers=(1,2), by_channels=True))
+    net.add(Route_layer(input_layers=(1, 2), by_channels=True))
     net.add(Cost_layer(cost_type='mse', scale=1., ratio=0., noobject_scale=1., threshold=0., smoothing=0.))
     net.compile(optimizer=SGD())
 
@@ -145,7 +144,7 @@ class TestRouteLayer :
     net = Network(batch=b, input_shape=(w, h, c))
     net.add(Activation_layer(activation='relu')) # layer 1
     net.add(Activation_layer(activation='tanh')) # layer 2
-    net.add(Route_layer(input_layers=(1,2), by_channels=True))
+    net.add(Route_layer(input_layers=(1, 2), by_channels=True))
     net.add(Cost_layer(cost_type='mse', scale=1., ratio=0., noobject_scale=1., threshold=0., smoothing=0.))
     net.compile(optimizer=SGD())
 

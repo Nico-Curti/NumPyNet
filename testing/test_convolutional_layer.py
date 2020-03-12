@@ -120,16 +120,7 @@ class TestConvolutionalLayer :
       assert layer.bias_update    == None
       assert layer.optimizer      == None
 
-      assert layer.batch == b
-      assert layer.w == w
-      assert layer.h == h
-      assert layer.c == c
-
       assert layer.pad        == pad
-      assert layer.pad_left   == 0
-      assert layer.pad_right  == 0
-      assert layer.pad_top    == 0
-      assert layer.pad_bottom == 0
 
 
   @given(b = st.integers(min_value=1,  max_value=10),
@@ -151,8 +142,7 @@ class TestConvolutionalLayer :
                                 input_shape=(b, w, h, c),
                                 activations=activ)
 
-    with pytest.raises(AttributeError):
-      print(layer)
+    print(layer)
 
 
   @given(b = st.integers(min_value=1,  max_value=10),

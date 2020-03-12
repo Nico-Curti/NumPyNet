@@ -7,42 +7,33 @@ from __future__ import print_function
 import numpy as np
 from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
+from NumPyNet.layers.base import BaseLayer
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class Logistic_layer(object):
+class Logistic_layer(BaseLayer):
 
-  def __init__(self, **kwargs):
+  def __init__(self, input_shape=None):
     '''
     Logistic Layer: performs a logistic transformation of the input and computes
       the binary cross entropy cost.
 
     Parameters:
+    ----------
+    input_shape : tuple of 4 integers: input shape of the layer.
     '''
-    self._out_shape = None
-    self.cost = 0
-    self.output, self.delta, self.loss  = (None, None, None)
+
+    super(Logistic_layer, self).__init__(input_shape=input_shape)
+
+    self.cost = 0.
+    self.loss = None
 
   def __str__(self):
     batch, out_width, out_height, out_channels = self.out_shape
     return 'logistic x entropy                                  {:>4d} x{:>4d} x{:>4d} x{:>4d}' .format(
            batch, out_width, out_height, out_channels)
-
-  def __call__(self, previous_layer):
-
-    if previous_layer.out_shape is None:
-      class_name = self.__class__.__name__
-      prev_name  = layer.__class__.__name__
-      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
-
-    self._out_shape = previous_layer.out_shape
-    return self
-
-  @property
-  def out_shape(self):
-    return self._out_shape
 
   def forward(self, inpt, truth=None) :
     '''
@@ -54,12 +45,14 @@ class Logistic_layer(object):
         if given, the function computes the binary cross entropy
     '''
 
-    self._out_shape = inpt.shape
+    self._check_dims(shape=self.out_shape, arr=inpt, func='Forward')
+
     # inpt = np.log(inpt/(1-inpt))
     self.output = 1. / (1. + np.exp(-inpt)) # as for darknet
     # self.output = inpt
 
     if truth is not None:
+      self._check_dims(shape=self.out_shape, arr=truth, func='Forward')
       out = np.clip(self.output, 1e-8, 1. - 1e-8)
       self.loss = -truth * np.log(out) - (1. - truth) * np.log(1. - out)
       out_upd = out * (1. - out)
@@ -68,7 +61,7 @@ class Logistic_layer(object):
       # self.cost = np.mean(self.loss)
       self.cost = np.sum(self.loss) # as for darknet
     else :
-      self.delta = np.zeros(shape=self._out_shape, dtype=float)
+      self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
     return self
 
@@ -81,6 +74,7 @@ class Logistic_layer(object):
     '''
 
     check_is_fitted(self, 'delta')
+    self._check_dims(shape=self.out_shape, arr=delta, func='Backward')
 
     if delta is not None:
       delta[:] += self.delta # as for darknet, probably an approx
@@ -113,7 +107,7 @@ if __name__ == '__main__':
   truth = np.random.choice([0., 1.], p=[.5, .5], size=(batch, w, h, c))
 
   # Model Initialization
-  layer = Logistic_layer()
+  layer = Logistic_layer(input_shape=inpt.shape)
 
   # FORWARD
 

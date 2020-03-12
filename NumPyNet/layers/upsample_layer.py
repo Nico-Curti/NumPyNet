@@ -8,24 +8,25 @@ import numpy as np
 from numpy.lib.stride_tricks import as_strided
 from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
+from NumPyNet.layers.base import BaseLayer
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class Upsample_layer(object):
+class Upsample_layer(BaseLayer):
 
-  def __init__(self, stride=(2, 2), scale=1., **kwargs):
+  def __init__(self, input_shape=None, stride=(2, 2), scale=1., **kwargs):
     '''
     Upsample / Downsample layer
 
     Parameters:
+      input_shape : tuple of 4 integers: input shape of the layer.
       stride : scaling factor of the input;
         Repeats the rows and columns of the data by stride[0] and stride[1] respectively.
       scale  : floating point scale factor of the input
     '''
 
-    self.batch, self.w, self.h, self.c = (0, 0, 0, 0)
     self.scale = float(scale)
     self.stride = stride
 
@@ -45,35 +46,27 @@ class Upsample_layer(object):
     else:
       raise NotImplementedError('Mixture upsample/downsample are not yet implemented')
 
-    self.output, self.delta = (None, None)
-    self._out_shape = None
+    super(Upsample_layer, self).__init__(input_shape=input_shape)
 
 
   def __str__(self):
-    out_w, out_h = self.out_shape[1:3]
+    _, w, h, c = self.input_shape
+    _, out_w, out_h, _ = self.out_shape
 
     if self.reverse: # downsample
-      return 'downsample         {0:>2d}/{1:>2d}x    {2:>4d} x{3:>4d} x{4:>4d}   ->        {5:>4d} x{6:>4d} x{7:4d}'.format(
-        self.stride[0], self.stride[1], self.w, self.h, self.c, out_w, out_h, self.c)
+      return 'downsample         {0:>2d}/{1:>2d}x    {2:>4d} x{3:>4d} x{4:>4d}   ->        {5:>4d} x{6:>4d} x{4:4d}'.format(
+        self.stride[0], self.stride[1], w, h, c, out_w, out_h)
     else:            # upsample
-      return 'upsample           {0:>2d}/{1:>2d}x    {2:>4d} x{3:>4d} x{4:>4d}   ->        {5:>4d} x{6:>4d} x{7:4d}'.format(
-        self.stride[0], self.stride[1], self.w, self.h, self.c, out_w, out_h, self.c)
+      return 'upsample           {0:>2d}/{1:>2d}x    {2:>4d} x{3:>4d} x{4:>4d}   ->        {5:>4d} x{6:>4d} x{4:4d}'.format(
+        self.stride[0], self.stride[1], w, h, c, out_w, out_h)
     return self
-
-  def __call__(self, previous_layer):
-
-    if previous_layer.out_shape is None:
-      class_name = self.__class__.__name__
-      prev_name  = layer.__class__.__name__
-      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
-
-    self.batch, self.w, self.h, self.c = previous_layer.out_shape
 
   @property
   def out_shape(self):
-    out_w = self.w // self.stride[0] if self.reverse else self.w * self.stride[0]
-    out_h = self.h // self.stride[1] if self.reverse else self.h * self.stride[1]
-    return (self.batch, out_w, out_h, self.c)
+    batch, w, h, c = self.input_shape
+    out_w = w // self.stride[0] if self.reverse else w * self.stride[0]
+    out_h = h // self.stride[1] if self.reverse else h * self.stride[1]
+    return (batch, out_w, out_h, c)
 
   def _downsample (self, inpt):
     # This function works only if the dimensions are perfectly divisible by strides
@@ -99,7 +92,7 @@ class Upsample_layer(object):
     Parameters:
       inpt: the input to be up-down sampled
     '''
-    self.batch, self.w, self.h, self.c = inpt.shape
+    self._check_dims(shape=self.input_shape, arr=inpt, func='Forward')
 
     if self.reverse: # Downsample
       self.output = self._downsample(inpt) * self.scale
@@ -121,6 +114,7 @@ class Upsample_layer(object):
     '''
 
     check_is_fitted(self, 'delta')
+    self._check_dims(shape=self.input_shape, arr=delta, func='Backward')
 
     if self.reverse: # Upsample
       delta[:] = self._upsample(self.delta) * (1. / self.scale)
@@ -156,7 +150,7 @@ if __name__ == '__main__':
   stride = -3
   scale = 1.5
 
-  layer = Upsample_layer(scale=scale, stride=stride)
+  layer = Upsample_layer(input_shape=inpt.shape, scale=scale, stride=stride)
 
   # FORWARD
 

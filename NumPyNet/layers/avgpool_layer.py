@@ -7,14 +7,15 @@ from __future__ import print_function
 import numpy as np
 from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
+from NumPyNet.layers.base import BaseLayer
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class Avgpool_layer(object):
+class Avgpool_layer(BaseLayer):
 
-  def __init__(self, size, stride=None, pad=False, **kwargs):
+  def __init__(self, size, stride=None, pad=False, input_shape=None, **kwargs):
 
     '''
     Avgpool layer
@@ -24,6 +25,7 @@ class Avgpool_layer(object):
       size    : tuple with two integers (kx, ky) or integer, size of the kernel to be slided over the input image.
       stride  : tuple of two integers, default None. Represents the horizontal and vertical stride of the kernel.
                 If None or 0, stride is assigned the values of size.
+      input_shape : tuple of 4 integers: input shape of the layer.
       pad     : boolean, default False. If False the image is cut to fit the size and stride dimensions, if True the
                 image is padded following keras SAME padding, as indicated here:
                 https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
@@ -48,42 +50,34 @@ class Avgpool_layer(object):
     if len(self.size) != 2 or len(self.stride) != 2:
       raise LayerError('Avgpool layer. Incompatible stride/size dimensions. They must be a 1D-2D tuple of values')
 
-    self.batch, self.w, self.h, self.c = (None, None, None, None)
-
     # for padding
     self.pad = pad
     self.pad_left, self.pad_right, self.pad_bottom, self.pad_top = (0, 0, 0, 0)
 
-    self.output, self.delta = (None, None)
+    super(Avgpool_layer, self).__init__(input_shape=input_shape)
+    self._build(input_shape)
 
+  def _build(self, input_shape=None):
+    if input_shape is not None:
+
+      if self.pad:
+        self._evaluate_padding()
 
   def __str__(self):
+    batch, w, h, c = self.input_shape
     _, out_width, out_height, out_channels = self.out_shape
     return 'avg         {} x {} / {}  {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d}'.format(
            self.size[0], self.size[1], self.stride[0],
-           self.batch, self.w, self.h, self.c,
+           batch, w, h, c,
            out_width, out_height, out_channels)
-
-  def __call__(self, previous_layer):
-
-    if previous_layer.out_shape is None:
-      class_name = self.__class__.__name__
-      prev_name  = layer.__class__.__name__
-      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
-
-    self.batch, self.w, self.h, self.c = previous_layer.out_shape
-
-    if self.pad:
-      self._evaluate_padding()
-
-    return self
 
   @property
   def out_shape(self):
-    out_height   = (self.h + self.pad_left + self.pad_right - self.size[1]) // self.stride[1] + 1
-    out_width    = (self.w + self.pad_top + self.pad_bottom - self.size[0]) // self.stride[0] + 1
-    out_channels = self.c
-    return (self.batch, out_width, out_height, out_channels)
+    batch, w, h, c = self.input_shape
+    out_height   = (h + self.pad_left + self.pad_right - self.size[1]) // self.stride[1] + 1
+    out_width    = (w + self.pad_top + self.pad_bottom - self.size[0]) // self.stride[0] + 1
+    out_channels = c
+    return (batch, out_width, out_height, out_channels)
 
   def _asStride(self, inpt):
     '''
@@ -103,8 +97,8 @@ class Avgpool_layer(object):
 
     batch_stride, s0, s1 = inpt.strides[:3]
     batch,        w,  h  = inpt.shape[:3]
-    kx, ky     = self.size
-    st1, st2   = self.stride
+    kx, ky   = self.size
+    st1, st2 = self.stride
 
     # Shape of the final view
     view_shape = (batch, 1 + (w - kx)//st1, 1 + (h - ky)//st2) + inpt.shape[3:] + (kx, ky)
@@ -121,17 +115,18 @@ class Avgpool_layer(object):
     Compute padding dimensions, following keras VALID and SAME criteria. See:
     https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
     '''
+    _, w, h, c = self.input_shape
     # Compute how many raws are needed to pad the image in the 'w' axis
-    if (self.w % self.stride[0] == 0):
+    if (w % self.stride[0] == 0):
       pad_w = max(self.size[0] - self.stride[0], 0)
     else:
-      pad_w = max(self.size[0] - (self.w % self.stride[0]), 0)
+      pad_w = max(self.size[0] - (w % self.stride[0]), 0)
 
     # Compute how many Columns are needed
-    if (self.h % self.stride[1] == 0):
+    if (h % self.stride[1] == 0):
       pad_h = max(self.size[1] - self.stride[1], 0)
     else:
-      pad_h = max(self.size[1] - (self.h % self.stride[1]), 0)
+      pad_h = max(self.size[1] - (h % self.stride[1]), 0)
 
     # Number of raws/columns to be added for every directons
     self.pad_top    = pad_w >> 1 # bit shift, integer division by two
@@ -173,18 +168,18 @@ class Avgpool_layer(object):
     ----------
     A Avgpool_layer object.
     '''
+    self._check_dims(shape=self.input_shape, arr=inpt, func='Forward')
 
-    self.batch, self.w, self.h, self.c = inpt.shape
     kx, ky = self.size
     sx, sy = self.stride
+    _, w, h, _ = self.input_shape
 
     # Padding
     if self.pad:
-      self._evaluate_padding()
       mat_pad = self._pad(inpt)
     else:
       # If padding false, it cuts images' raws/columns
-      mat_pad = inpt[:, : (self.w - kx) // sx*sx + kx, : (self.h - ky) // sy*sy + ky, ...]
+      mat_pad = inpt[:, : (w - kx) // sx*sx + kx, : (h - ky) // sy*sy + ky, ...]
 
     # 'view' is the strided input image, shape = (batch, out_w, out_h, out_c, kx, ky)
     view = self._asStride(mat_pad)
@@ -210,6 +205,7 @@ class Avgpool_layer(object):
     '''
 
     check_is_fitted(self, 'delta')
+    self._check_dims(shape=self.input_shape, arr=delta, func='Backward')
 
     # kx, ky = self.size
 
@@ -269,7 +265,7 @@ if __name__ == '__main__':
   stride = 2
 
   # Model initialization
-  layer = Avgpool_layer(size, stride, padding=pad)
+  layer = Avgpool_layer(input_shape=inpt.shape, size=size, stride=stride, padding=pad)
 
   # FORWARD
 

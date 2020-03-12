@@ -12,18 +12,16 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 class Activations (object):
 
-  BYRON_INDEX = -1
-
   def __init__ (self, name):
     self._name = name
 
   @staticmethod
   def activate (x, copy=False):
-    pass
+    raise NotImplementedError
 
   @staticmethod
   def gradient (x, copy=False):
-    pass
+    raise NotImplementedError
 
   @property
   def name (self):
@@ -34,8 +32,6 @@ class Activations (object):
 
 
 class Logistic (Activations):
-
-  BYRON_INDEX = 0
 
   def __init__ (self):
     super(Logistic, self).__init__('Logistic')
@@ -51,8 +47,6 @@ class Logistic (Activations):
 
 class Loggy (Activations):
 
-  BYRON_INDEX = 1
-
   def __init__ (self):
     super(Loggy, self).__init__('Loggy')
 
@@ -66,8 +60,6 @@ class Loggy (Activations):
 
 
 class Relu (Activations):
-
-  BYRON_INDEX = 2
 
   def __init__ (self):
     super(Relu, self).__init__('Relu')
@@ -92,8 +84,6 @@ class Relu (Activations):
 
 class Elu (Activations):
 
-  BYRON_INDEX = 3
-
   def __init__ (self):
     super(Elu, self).__init__('Elu')
 
@@ -116,8 +106,6 @@ class Elu (Activations):
 
 
 class Relie (Activations):
-
-  BYRON_INDEX = 4
 
   def __init__ (self):
     super(Relie, self).__init__('Relie')
@@ -142,8 +130,6 @@ class Relie (Activations):
 
 class Ramp (Activations):
 
-  BYRON_INDEX = 5
-
   def __init__ (self):
     super(Ramp, self).__init__('Ramp')
 
@@ -165,8 +151,6 @@ class Ramp (Activations):
 
 class Linear (Activations):
 
-  BYRON_INDEX = 6
-
   def __init__ (self):
     super(Linear, self).__init__('Linear')
 
@@ -181,8 +165,6 @@ class Linear (Activations):
 
 class Tanh (Activations):
 
-  BYRON_INDEX = 7
-
   def __init__ (self):
     super(Tanh, self).__init__('Tanh')
 
@@ -196,8 +178,6 @@ class Tanh (Activations):
 
 
 class Plse (Activations):
-
-  BYRON_INDEX = 8
 
   def __init__ (self):
     super(Plse, self).__init__('Plse')
@@ -225,7 +205,6 @@ class Plse (Activations):
 
 class Leaky (Activations):
 
-  BYRON_INDEX = 9
   LEAKY_COEF  = 1e-1
 
   def __init__ (self):
@@ -250,8 +229,6 @@ class Leaky (Activations):
 
 
 class Stair (Activations):
-
-  BYRON_INDEX = 10
 
   def __init__ (self):
     super(Stair, self).__init__('Stair')
@@ -281,8 +258,6 @@ class Stair (Activations):
 
 class Hardtan (Activations):
 
-  BYRON_INDEX = 11
-
   def __init__ (self):
     super(Hardtan, self).__init__('HardTan')
 
@@ -308,8 +283,6 @@ class Hardtan (Activations):
 
 
 class Lhtan (Activations):
-
-  BYRON_INDEX = 12
 
   def __init__ (self):
     super(Lhtan, self).__init__('LhTan')
@@ -338,8 +311,6 @@ class Lhtan (Activations):
 
 class Selu (Activations):
 
-  BYRON_INDEX = 13
-
   def __init__ (self):
     super(Selu, self).__init__('Selu')
 
@@ -360,7 +331,6 @@ class Selu (Activations):
 
 class Elliot (Activations):
 
-  BYRON_INDEX = 14
   STEEPNESS = 1.
 
   def __init__ (self):
@@ -384,7 +354,6 @@ class Elliot (Activations):
 
 class SymmElliot (Activations):
 
-  BYRON_INDEX = 15
   STEEPNESS = 1.
 
   def __init__ (self):
@@ -408,8 +377,6 @@ class SymmElliot (Activations):
 
 class SoftPlus (Activations):
 
-  BYRON_INDEX = 16
-
   def __init__ (self):
     super(SoftPlus, self).__init__('SoftPlus')
 
@@ -430,8 +397,6 @@ class SoftPlus (Activations):
 
 
 class SoftSign (Activations):
-
-  BYRON_INDEX = 17
 
   def __init__ (self):
     super(SoftSign, self).__init__('SoftSign')

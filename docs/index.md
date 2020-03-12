@@ -66,6 +66,7 @@ Some texts for introduction:
 * [L1norm Layer](./NumPyNet/layers/l1norm_layer.md)
 * [L2norm Layer](./NumPyNet/layers/l2norm_layer.md)
 * [Logistic Layer](./NumPyNet/layers/logistic_layer.md)
+* [LSTM Layer](./NumPyNet/layers/lstm_layer.md) : **TODO**
 * [MaxPool Layer](./NumPyNet/layers/maxpool_layer.md)
 * [RNN Layer](./docs/NumPyNet/layers/rnn_layer.md) : **TODO**
 * [Route Layer](./NumPyNet/layers/route_layer.md)

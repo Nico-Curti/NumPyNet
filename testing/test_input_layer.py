@@ -43,7 +43,7 @@ class TestInputLayer :
             deadline=None)
   def test_constructor (self, b, w, h, c):
 
-    input_shape = choice([(b, w, h,c), (b, w, h), b, None])
+    input_shape = choice([(b, w, h, c), (b, w, h), b, None])
 
     if input_shape != (b, w, h, c):
       with pytest.raises(ValueError):
@@ -52,10 +52,7 @@ class TestInputLayer :
     else:
       layer = Input_layer(input_shape=input_shape)
 
-      layer.batch == b
-      layer.w == w
-      layer.h == h
-      layer.c == c
+      layer.input_shape == (b, w, h, c)
 
       assert layer.output == None
       assert layer.delta  == None
@@ -74,7 +71,7 @@ class TestInputLayer :
 
     print(layer)
 
-    layer.batch = 3.14
+    layer.input_shape = (3.14, w, h, c)
 
     with pytest.raises(ValueError):
       print(layer)

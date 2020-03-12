@@ -54,10 +54,6 @@ class TestSoftmaxLayer :
       if t > 0:
         layer = Softmax_layer(groups=g, spatial=s, temperature=t)
 
-        assert layer.batch == None
-        assert layer.w == None
-        assert layer.h == None
-        assert layer.c == None
         assert layer.output == None
         assert layer.delta  == None
 
@@ -70,16 +66,22 @@ class TestSoftmaxLayer :
         with pytest.raises(ValueError):
           layer = Softmax_layer(groups=g, spatial=s, temperature=t)
 
-  def test_printer (self):
+  @given(b = st.integers(min_value=1, max_value=15 ),
+         w = st.integers(min_value=1, max_value=100),
+         h = st.integers(min_value=1, max_value=100),
+         c = st.integers(min_value=1, max_value=10 ))
+  @settings(max_examples=50,
+            deadline=None)
+  def test_printer (self, b, w, h, c):
 
-    layer = Softmax_layer()
-
-    with pytest.raises(TypeError):
-      print(layer)
-
-    layer.batch, layer.w, layer.h, layer.c = (1, 2, 3, 4)
+    layer = Softmax_layer(input_shape=(b, w, h, c))
 
     print(layer)
+
+    layer.input_shape = (3.14, w, h, c)
+
+    with pytest.raises(ValueError):
+      print(layer)
 
 
   @given(b = st.integers(min_value=1, max_value=10),
@@ -109,7 +111,7 @@ class TestSoftmaxLayer :
       truth = np.random.choice([0., 1.], p=[.5,.5], size=(batch,w,h,c))
       # truth = np.ones(shape=(batch, w, h, c))
 
-      layer = Softmax_layer(groups=1, temperature=1., spatial=spatial)
+      layer = Softmax_layer(input_shape=inpt.shape, groups=1, temperature=1., spatial=spatial)
 
       inp = Input(batch_shape=inpt.shape)
       if isinstance(axis, tuple):
@@ -164,7 +166,7 @@ class TestSoftmaxLayer :
       truth = np.random.choice([0., 1.], p=[.5,.5], size=(batch,w,h,c))
       # truth = np.ones(shape=(batch, w, h, c))
 
-      layer = Softmax_layer(groups=1, temperature=1., spatial=spatial)
+      layer = Softmax_layer(input_shape=inpt.shape, groups=1, temperature=1., spatial=spatial)
 
       inp = Input(batch_shape=inpt.shape)
       if isinstance(axis, tuple):

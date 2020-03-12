@@ -40,20 +40,21 @@ class TestL1normLayer :
       assert layer.scales == None
       assert layer.output == None
       assert layer.delta  == None
-      assert layer._out_shape == None
+      assert layer.out_shape == None
 
-  def test_printer (self):
+  @given(b = st.integers(min_value=1, max_value=15 ),
+         w = st.integers(min_value=1, max_value=100),
+         h = st.integers(min_value=1, max_value=100),
+         c = st.integers(min_value=1, max_value=10 ))
+  @settings(max_examples=50,
+            deadline=None)
+  def test_printer (self, b, w, h, c):
 
-    layer = L1Norm_layer(axis=1)
-
-    with pytest.raises(TypeError):
-      print(layer)
-
-    layer.forward(np.random.uniform(size=(1, 2, 3, 4)))
+    layer = L1Norm_layer(input_shape=(b, w, h, c))
 
     print(layer)
 
-    layer.forward(np.random.uniform(size=(1, 2)))
+    layer.input_shape = (3.14, w, h, c)
 
     with pytest.raises(ValueError):
       print(layer)
@@ -73,7 +74,7 @@ class TestL1normLayer :
       inpt_tf = tf.convert_to_tensor(inpt)
 
       # NumPyNet model
-      layer = L1Norm_layer(axis=axis)
+      layer = L1Norm_layer(input_shape=inpt.shape, axis=axis)
 
       sess = tf.Session()
 
@@ -106,7 +107,7 @@ class TestL1normLayer :
       inpt_tf = tf.convert_to_tensor(inpt)
 
       # NumPyNet model
-      layer = L1Norm_layer(axis=axis)
+      layer = L1Norm_layer(input_shape=inpt.shape, axis=axis)
 
       sess = tf.Session()
 

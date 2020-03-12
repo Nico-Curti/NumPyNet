@@ -5,14 +5,16 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+import operator as op
 from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
+from NumPyNet.layers.base import BaseLayer
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class Route_layer():
+class Route_layer(BaseLayer):
 
   def __init__(self, input_layers, by_channels=True, **kwargs):
     '''
@@ -36,10 +38,7 @@ class Route_layer():
         will be (b, w, h, c1 + c2) (YOLOv3 model)
     '''
 
-    if by_channels :
-      self.axis = 3  # axis for the concatenation
-    else:
-      self.axis = 0
+    self.axis = 3 if by_channels else 0
 
     if isinstance(input_layers, int):
       self.input_layer = (input_layers, )
@@ -50,47 +49,37 @@ class Route_layer():
     else :
       raise ValueError('Route Layer : parameter "input_layer" is neither iterable or an integer')
 
-    self.output     = np.array([], dtype=float)
-    self._out_shape = None
+    super(Route_layer, self).__init__()
 
   def __str__(self):
     return 'route   {}'.format(list(self.input_layers))
 
-  def __call__(self, previous_layer):
+  def _build(self, previous_layer):
 
-    self._out_shape = [0,0,0,0]
+    out_shapes = [x.out_shape for x in previous_layer]
+    self.input_shape = list(out_shapes[-1])
 
-    if self.axis:  # by channels
-      for prev in previous_layer:
+    if self.axis:
+      print(np.sum(map(op.itemgetter(self.axis), out_shapes)))
+      self.input_shape[-1] = np.sum(list(map(op.itemgetter(self.axis), out_shapes)))
+    else:
+      self.input_shape[0] = np.sum(list(map(op.itemgetter(self.axis), out_shapes)))
 
-        if prev.out_shape is None:
-          class_name = self.__class__.__name__
-          prev_name  = previous_layer.__class__.__name__
-          raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
-
-        c = prev.out_shape[3]
-        self._out_shape[3] += c
-        self._out_shape[0:3] = prev.out_shape[0:3]
-
-    else : # by batch
-      for prev in previous_layer:
-
-        if prev.out_shape is None:
-          class_name = self.__class__.__name__
-          prev_name  = previous_layer.__class__.__name__
-          raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
-
-        b = prev.out_shape[0]
-        self._out_shape[0] += b
-        self._out_shape[1:4] = prev.out_shape[1:4]
-
-
-    self._out_shape = tuple(self._out_shape)
+    self.input_shape = tuple(self.input_shape)
     return self
 
-  @property
-  def out_shape(self):
-    return self._out_shape
+
+  def __call__(self, previous_layer):
+
+    for prev in previous_layer:
+
+      if prev.out_shape is None:
+        class_name = self.__class__.__name__
+        prev_name  = prev.__class__.__name__
+        raise LayerError('Incorrect shapes found. Layer {0} cannot be connected to the previous {1} layer.'.format(class_name, prev_name))
+
+    self._build(previous_layer)
+    return self
 
   def forward(self, network):
     '''
@@ -132,14 +121,14 @@ class Route_layer():
       channels_sum = 0
       for idx in self.input_layers:
         channels = network[idx].out_shape[3]
-        network[idx].delta += self.delta[:,:,:, channels_sum : channels_sum + channels]
+        network[idx].delta += self.delta[..., channels_sum : channels_sum + channels]
         channels_sum += channels
 
     elif self.axis == 0:          # this works for concatenation by batch axis
       batch_sum = 0
       for idx in self.self.input_layers:
         batches = network[idx].out_shape[0]
-        network[idx].delta += self.delta[batch_sum : batch_sum + batches,:,:,:]
+        network[idx].delta += self.delta[batch_sum : batch_sum + batches, ...]
         batch_sum += batches
 
     return self
@@ -147,7 +136,7 @@ class Route_layer():
 
 if __name__ == '__main__':
 
-  layer = Route_layer((1,2))
+  layer = Route_layer((1, 2))
   print(layer)
 
   print(layer.out_shape)

@@ -7,19 +7,21 @@ from __future__ import print_function
 import numpy as np
 from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
+from NumPyNet.layers.base import BaseLayer
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class Softmax_layer():
+class Softmax_layer(BaseLayer):
 
-  def __init__(self, groups=1, spatial=False, temperature=1., **kwargs):
+  def __init__(self, input_shape=None, groups=1, spatial=False, temperature=1., **kwargs):
     '''
     Softmax layer: perfoms a Softmax transformation of its input
 
     Parameters
     ----------
+      input_shape : tuple of 4 integers: input shape of the layer.
       groups       : int, default is 1, indicates how many groups
         every images is divided into. Used only if spatial is False
       spatial      : boolean, default is False. if True performs the softmax
@@ -29,41 +31,25 @@ class Softmax_layer():
         used only is spatial is False
     '''
 
-    self.batch, self.w, self.h, self.c  = (None, None, None, None)
-    self.output, self.delta, self.loss  = (None, None, None)
-
     if isinstance(groups, int) and groups > 0:
        self.groups = groups
     else:
       raise ValueError('Softmax Layer : parameter "groups" must be an integer and > 0')
 
     self.spatial = spatial
-    self.cost = 0
+    self.cost = 0.
+    self.loss = None
 
     if temperature > 0:
       self.temperature = 1./temperature
     else :
       raise ValueError('Softmax Layer : parameter "temperature" must be > 0')
 
+    super(Softmax_layer, self).__init__(input_shape=input_shape)
+
   def __str__(self):
     batch, out_width, out_height, out_channels = self.out_shape
-    return 'softmax x entropy                                   {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(
-           batch, out_width, out_height, out_channels)
-
-  def __call__(self, previous_layer):
-
-    if previous_layer.out_shape is None:
-      class_name = self.__class__.__name__
-      prev_name  = layer.__class__.__name__
-      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
-
-    self.batch, self.w, self.h, self.c = previous_layer.out_shape
-    return self
-
-  @property
-  def out_shape(self):
-    return (self.batch, self.w, self.h, self.c)
-
+    return 'softmax x entropy                                   {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(batch, out_width, out_height, out_channels)
 
   def forward(self, inpt, truth=None) :
     '''
@@ -80,7 +66,7 @@ class Softmax_layer():
       Softmax layer object
     '''
 
-    self.batch, self.w, self.h, self.c = inpt.shape
+    self._check_dims(shape=self.out_shape, arr=inpt, func='Forward')
 
     if self.spatial:
       self.output = np.exp(inpt - inpt.max(axis=-1, keepdims=True))
@@ -89,11 +75,11 @@ class Softmax_layer():
 
     else : # first implementation with groups, inspired from darknet, mhe
       self.output = np.empty(inpt.shape)
-      inputs = self.w * self.h * self.c
+      inputs = np.prod(self.input_shape[1:])
       group_offset = inputs // self.groups
       flat_input = inpt.ravel()
       flat_outpt = self.output.ravel()
-      for b in range(self.batch):
+      for b in range(self.input_shape[0]):
         for g in range(self.groups):
           idx = b * inputs + g * group_offset
           inp = flat_input[idx : idx + group_offset]
@@ -111,6 +97,7 @@ class Softmax_layer():
     # self.delta = np.zeros(shape=self.out_shape, dtype=float)
 
     if truth is not None:
+      self._check_dims(shape=self.out_shape, arr=truth, func='Forward')
       out = self.output * (1. / self.output.sum())
       out = np.clip(out, 1e-8, 1. - 1e-8)
       self.cost = - np.sum(truth * np.log(out))
@@ -133,6 +120,7 @@ class Softmax_layer():
     '''
 
     check_is_fitted(self, 'output')
+    self._check_dims(shape=self.out_shape, arr=delta, func='Backward')
 
     # This is an approximation
     if delta is not None:
@@ -179,7 +167,7 @@ if __name__ == '__main__':
   truth = np.random.choice([0., 1.], p=[.5, .5], size=(batch, w, h, c))
 
   # Model initialization
-  layer = Softmax_layer(groups=groups, temperature=temperature, spatial=spatial)
+  layer = Softmax_layer(input_shape=inpt.shape, groups=groups, temperature=temperature, spatial=spatial)
 
   # FORWARD
 

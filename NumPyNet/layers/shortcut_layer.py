@@ -11,12 +11,13 @@ from NumPyNet.utils import check_is_fitted
 import numpy as np
 from itertools import product
 from NumPyNet.exception import LayerError
+from NumPyNet.layers.base import BaseLayer
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class Shortcut_layer(object):
+class Shortcut_layer(BaseLayer):
 
   def __init__(self, activation=Activations, alpha=1., beta=1., **kwargs):
     '''
@@ -40,13 +41,13 @@ class Shortcut_layer(object):
 
     self.alpha, self.beta = alpha, beta
 
-    self.output, self.delta = (None, None)
-    self._out_shape = None
-    self.ix, self.jx, self.kx = (None, None, None)
-    self.iy, self.jy, self.ky = (None, None, None)
+    self.ix, self.jx, self.kx = (None, ) * 3
+    self.iy, self.jy, self.ky = (None, ) * 3
+
+    super(Shortcut_layer, self).__init__()
 
   def __str__(self):
-    (b1, w1, h1, c1), (b2, w2, h2, c2) = self._out_shape
+    (b1, w1, h1, c1), (b2, w2, h2, c2) = self.input_shape
     return 'res                    {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}'.format(b2, w2, h2, c2, b1, w1, h1, c1)
 
   def __call__(self, previous_layer):
@@ -58,7 +59,7 @@ class Shortcut_layer(object):
       prev_name  = layer.__class__.__name__
       raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
 
-    self._out_shape = [prev1.out_shape, prev2.out_shape]
+    self.input_shape = [prev1.out_shape, prev2.out_shape]
 
     self._stride_index(prev1.out_shape, prev2.out_shape)
 
@@ -66,7 +67,7 @@ class Shortcut_layer(object):
 
   @property
   def out_shape(self):
-    return max(self._out_shape)
+    return max(self.input_shape)
 
   def _stride_index (self, shape1, shape2):
     '''
@@ -106,8 +107,9 @@ class Shortcut_layer(object):
       Shortcut layer object.
     '''
     # assert inpt.shape == prev_output.shape
+    # TODO: find a better solution to initialize the input shape in the constructor
 
-    self._out_shape = [inpt.shape, prev_output.shape]
+    self.input_shape = [inpt.shape, prev_output.shape]
 
     if inpt.shape == prev_output.shape:
       self.output = self.alpha * inpt[:] + self.beta * prev_output[:]

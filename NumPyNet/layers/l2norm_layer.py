@@ -7,12 +7,13 @@ from __future__ import print_function
 import numpy as np
 from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
+from NumPyNet.layers.base import BaseLayer
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class L2Norm_layer(object):
+class L2Norm_layer(BaseLayer):
 
   def __init__(self, axis=None, **kwargs):
     '''
@@ -25,29 +26,14 @@ class L2Norm_layer(object):
     '''
 
     self.axis = axis
-
     self.scales = None
-    self.output, self.delta = (None, None)
-    self._out_shape = None
+
+    super(L2Norm_layer, self).__init__(input_shape=input_shape)
 
   def __str__(self):
     batch, out_width, out_height, out_channels = self.out_shape
     return 'l2norm                 {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(
            batch, out_width, out_height, out_channels)
-
-  def __call__(self, previous_layer):
-
-    if previous_layer.out_shape is None:
-      class_name = self.__class__.__name__
-      prev_name  = layer.__class__.__name__
-      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
-
-    self._out_shape = previous_layer.out_shape
-    return self
-
-  @property
-  def out_shape(self):
-    return self._out_shape
 
   def forward(self, inpt):
     '''
@@ -62,7 +48,8 @@ class L2Norm_layer(object):
     -------
       L2norm_layer object
     '''
-    self._out_shape = inpt.shape
+
+    self._check_dims(shape=self.out_shape, arr=inpt, func='Forward')
 
     norm = (inpt * inpt).sum(axis=self.axis, keepdims=True)
     norm = 1. / np.sqrt(norm + 1e-8)
@@ -86,6 +73,7 @@ class L2Norm_layer(object):
     '''
 
     check_is_fitted(self, 'delta')
+    self._check_dims(shape=self.out_shape, arr=delta, func='Backward')
 
     self.delta += self.scales
     delta[:]   += self.delta
@@ -111,7 +99,7 @@ if __name__ == '__main__':
   # add batch = 1
   inpt = np.expand_dims(inpt, axis=0)
 
-  layer = L2Norm_layer()
+  layer = L2Norm_layer(input_shape=inpt.shape)
 
   # FORWARD
 

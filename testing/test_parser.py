@@ -33,7 +33,7 @@ class TestDataConfig:
     cfg = data_config(filename)
     assert len(cfg) == 6
 
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(IOError):
       filename = ''
       cfg = data_config(filename)
 
@@ -92,7 +92,7 @@ class TestNetConfig:
 
     print(cfg)
 
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(IOError):
       filename = ''
       cfg = net_config(filename)
 
