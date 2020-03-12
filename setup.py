@@ -83,7 +83,7 @@ VERSION_FILENAME = os.path.join(here, 'NumPyNet', '__version__.py')
 try:
   LONG_DESCRIPTION = read_description(README_FILENAME)
 
-except FileNotFoundError:
+except IOError:
   LONG_DESCRIPTION = DESCRIPTION
 
 
@@ -116,7 +116,7 @@ setup(
   download_url                  = URL,
   keywords                      = KEYWORDS,
   packages                      = find_packages(include=['NumPyNet', 'NumPyNet.*'], exclude=('test', 'testing')),
-  #include_package_data          = True, # no absolute paths are allowed
+  include_package_data          = True, # no absolute paths are allowed
   platforms                     = 'any',
   classifiers                   =[
                                    #'License :: OSI Approved :: GPL License',

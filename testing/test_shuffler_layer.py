@@ -46,10 +46,7 @@ class TestShuffleLayer :
       layer = Shuffler_layer(scale=scale)
       assert layer.scale      == scale
       assert layer.scale_step == scale * scale
-      assert layer.batch == None
-      assert layer.w     == None
-      assert layer.h     == None
-      assert layer.c     == None
+      assert layer.input_shape == None
       assert layer.output == None
       assert layer.delta  == None
 
@@ -63,12 +60,7 @@ class TestShuffleLayer :
     with pytest.raises(TypeError):
       print(layer)
 
-    layer.batch, layer.w, layer.h, layer.c = (1,1,1,1)
-    print(layer)
-
-    layer = Shuffler_layer(scale=scale)
-
-    layer.forward(np.random.uniform(size=(5,10,10,12)))
+    layer.input_shape = (1, 1, 1, 1)
     print(layer)
 
 
@@ -90,7 +82,7 @@ class TestShuffleLayer :
     inpt  = np.random.uniform(low=0., high=1., size=(b, w, h, channels))
 
     # numpynet model
-    layer = Shuffler_layer(scale=scale)
+    layer = Shuffler_layer(input_shape=inpt.shape, scale=scale)
 
     # FORWARD
 
@@ -116,7 +108,7 @@ class TestShuffleLayer :
             deadline=None)
   def test_backward (self, b, w, h, couple):
 
-    couples = choice([(2,12), (4,32), (4,48), (6,108), couple])
+    couples = choice([(2, 12), (4, 32), (4, 48), (6, 108), couple])
 
     scale, channels = couples
 
@@ -124,7 +116,7 @@ class TestShuffleLayer :
     inpt  = np.random.uniform(low=0., high=1., size=(b, w, h, channels))
 
     # numpynet model
-    layer = Shuffler_layer(scale=scale)
+    layer = Shuffler_layer(input_shape=inpt.shape, scale=scale)
 
     # FORWARD
 

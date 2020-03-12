@@ -75,7 +75,7 @@ class TestCostLayer :
       assert layer.threshold == threshold
       assert layer.smoothing == smoothing
 
-      assert layer._out_shape == input_shape
+      assert layer.out_shape == input_shape
       assert layer.output == None
       assert layer.delta  == None
 
@@ -87,7 +87,7 @@ class TestCostLayer :
     with pytest.raises(TypeError):
       print(layer)
 
-    layer._out_shape = (1, 2, 3, 4)
+    layer.input_shape = (1, 2, 3, 4)
 
     print(layer)
 

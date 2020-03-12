@@ -7,14 +7,15 @@ from __future__ import print_function
 import numpy as np
 from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
+from NumPyNet.layers.base import BaseLayer
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class Shuffler_layer(object):
+class Shuffler_layer(BaseLayer):
 
-  def __init__(self, scale, **kwargs):
+  def __init__(self, scale, input_shape=None, **kwargs):
     '''
     Shuffler Layer, performs a Pixel Shuffle.
 
@@ -24,6 +25,7 @@ class Shuffler_layer(object):
     ----------
       scale : int, scale of the shuffler. The number of channels bust be divisible
         for scale * scale
+      input_shape : tuple of 4 integers: input shape of the layer.
     '''
 
     if isinstance(scale, int) and scale > 1:
@@ -31,32 +33,22 @@ class Shuffler_layer(object):
       self.scale_step = scale * scale
 
     else:
-      raise ValueError('Shuffler Layer : scale must be an integer > 1, but is {}'.format(scale))
+      raise ValueError('Shuffler Layer : scale must be an integer > 1, but is {0}'.format(scale))
 
-    self.batch, self.w, self.h, self.c = (None, None, None, None)
-
-    self.output, self.delta = (None, None)
+    super(Shuffler_layer, self).__init__(input_shape=input_shape)
 
   def __str__(self):
+    batch, w, h, c = self.input_shape
     batch, out_width, out_height, out_channels = self.out_shape
-    return 'Shuffler x {:3d}         {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}'.format(
+    return 'Shuffler x {0:3d}         {1:>4d} x{2:>4d} x{3:>4d} x{4:>4d}   ->  {1:>4d} x{5:>4d} x{6:>4d} x{7:>4d}'.format(
            self.scale,
-           batch, self.w, self.h, self.c,
-           batch, out_width, out_height, out_channels)
-
-  def __call__(self, previous_layer):
-
-    if previous_layer.out_shape is None:
-      class_name = self.__class__.__name__
-      prev_name  = layer.__class__.__name__
-      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
-
-    self.batch, self.w, self.h, self.c = previous_layer.out_shape
-    return self
+           batch, w, h, c,
+           out_width, out_height, out_channels)
 
   @property
   def out_shape(self):
-    return (self.batch, self.w * self.scale, self.h * self.scale, self.c // (self.scale_step))
+    batch, w, h, c = self.input_shape
+    return (batch, w * self.scale, h * self.scale, c // (self.scale_step))
 
   def _phase_shift(self, inpt, scale):
     '''
@@ -95,12 +87,13 @@ class Shuffler_layer(object):
     '''
     # This function apply numpy.split as a reverse function to numpy.concatenate
     # along the same axis also
+    batch, w, h, _ = self.input_shape
 
     delta = delta.transpose(1, 2, 0)
 
-    delta = np.asarray(np.split(delta, self.h, axis=1))
-    delta = np.asarray(np.split(delta, self.w, axis=1))
-    delta = delta.reshape(self.w, self.h, scale * scale, self.batch)
+    delta = np.asarray(np.split(delta, h, axis=1))
+    delta = np.asarray(np.split(delta, w, axis=1))
+    delta = delta.reshape(w, h, scale * scale, batch)
 
     # It returns an output of the correct shape (batch, in_w, in_h, scale**2)
     # for the concatenate in the backward function
@@ -120,18 +113,15 @@ class Shuffler_layer(object):
     -------
       Shuffler_layer object
     '''
+    self._check_dims(shape=self.input_shape, arr=inpt, func='Forward')
 
-    self.batch, self.w, self.h, self.c = inpt.shape
-
-    if self.c % self.scale_step:
-      raise ValueError('Shuffler Layer forward : c % (step * step) must be 0. But values are {} and {}'.format(self.c, self.scale_step))
-
-    channel_out = self.c // self.scale_step # out_c
+    c = self.input_shape[-1]
+    channel_out = c // self.scale_step # out_c
 
     # The function phase shift receives only in_c // out_c channels at a time
     # the concatenate stitches together every output of the function.
 
-    self.output = np.concatenate([self._phase_shift(inpt[..., range(i, self.c, channel_out)], self.scale)
+    self.output = np.concatenate([self._phase_shift(inpt[..., range(i, c, channel_out)], self.scale)
                                   for i in range(channel_out)], axis=3)
 
     # output shape = (batch, in_w * scale, in_h * scale, in_c // scale**2)
@@ -153,8 +143,10 @@ class Shuffler_layer(object):
     '''
 
     check_is_fitted(self, 'delta')
+    self._check_dims(shape=self.input_shape, arr=delta, func='Backward')
 
-    channel_out = self.c // self.scale_step # out_c
+    c = self.input_shape[-1]
+    channel_out = c // self.scale_step # out_c
 
     # I apply the reverse function only for a single channel
     X = np.concatenate([self._reverse(self.delta[..., i], self.scale)
@@ -163,7 +155,7 @@ class Shuffler_layer(object):
 
     # The 'reverse' concatenate actually put the correct channels together but in a
     # weird order, so this part sorts the 'layers' correctly
-    idx = sum([list(range(i, self.c, channel_out)) for i in range(channel_out)], [])
+    idx = sum([list(range(i, c, channel_out)) for i in range(channel_out)], [])
     idx = np.argsort(idx)
 
     delta[:] = X[..., idx]

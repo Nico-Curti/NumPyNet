@@ -64,7 +64,6 @@ class TestActivationLayer:
 
       assert layer.output is None
       assert layer.delta is None
-      assert layer._out_shape is None
 
       assert layer.activation is not Activations.activate
       assert layer.gradient is not Activations.gradient
@@ -86,19 +85,19 @@ class TestActivationLayer:
       with pytest.raises(TypeError):
         print(layer)
 
-      layer._out_shape = 1
+      layer.input_shape = 1
       with pytest.raises(TypeError):
         print(layer)
 
-      layer._out_shape = (1, 2)
+      layer.input_shape = (1, 2)
       with pytest.raises(ValueError):
         print(layer)
 
-      layer._out_shape = (1, 2, 3)
+      layer.input_shape = (1, 2, 3)
       with pytest.raises(ValueError):
         print(layer)
 
-      layer._out_shape = (1, 2, 3, 4)
+      layer.input_shape = (1, 2, 3, 4)
       print(layer)
 
       assert layer.out_shape == (1, 2, 3, 4)
@@ -121,7 +120,7 @@ class TestActivationLayer:
     for act_fun in range(0, len(keras_activ)):
 
       # numpynet model init
-      numpynet = Activation_layer(activation=numpynet_activ[act_fun])
+      numpynet = Activation_layer(input_shape=inpt.shape, activation=numpynet_activ[act_fun])
 
       # Keras Model init
       inp = Input(batch_shape=(batch, w, h, c))
@@ -159,7 +158,7 @@ class TestActivationLayer:
     for act_fun in range(0, len(keras_activ)):
 
       # numpynet model init
-      numpynet = Activation_layer(activation=numpynet_activ[act_fun])
+      numpynet = Activation_layer(input_shape=inpt.shape, activation=numpynet_activ[act_fun])
 
       # Keras Model init
       inp   = Input(batch_shape=(batch, w, h, c))

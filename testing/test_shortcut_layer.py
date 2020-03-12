@@ -55,7 +55,6 @@ class TestShortcutLayer :
     assert layer.beta  == beta
     assert layer.output == None
     assert layer.delta  == None
-    assert layer._out_shape == None
 
     assert (layer.ix, layer.jx, layer.kx) == (None, None, None)
     assert (layer.iy, layer.jy, layer.ky) == (None, None, None)

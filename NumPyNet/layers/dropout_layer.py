@@ -7,20 +7,22 @@ from __future__ import print_function
 import numpy as np
 from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
+from NumPyNet.layers.base import BaseLayer
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class Dropout_layer(object):
+class Dropout_layer(BaseLayer):
 
-  def __init__(self, prob, **kwargs):
+  def __init__(self, prob, input_shape=None, **kwargs):
     '''
     Dropout Layer: drop a random selection of Inputs. This helps avoid overfitting.
 
     Parameters
     ----------
       prob : float between 0. and 1., probability for every entry to be set to zero.
+      input_shape : tuple of 4 integers: input shape of the layer.
     '''
 
     if prob >= 0. and prob <= 1.:
@@ -34,31 +36,14 @@ class Dropout_layer(object):
     else:
       self.scale = 1. # it doesn't matter anyway, since everything is zero
 
-    self.output = None
-    self.delta  = None
     self.rnd  = None
-    self._out_shape = None
+    super(Dropout_layer, self).__init__(input_shape=input_shape)
 
   def __str__(self):
     batch, out_width, out_height, out_channels = self.out_shape
-    return 'dropout       p = {:.2f} {:4d} x{:4d} x{:4d} x{:4d}   ->  {:4d} x{:4d} x{:4d} x{:4d}'.format(
+    return 'dropout       p = {0:.2f} {1:4d} x{2:4d} x{3:4d} x{4:4d}   ->  {1:4d} x{2:4d} x{3:4d} x{4:4d}'.format(
            self.probability,
-           batch, out_width , out_height , out_channels,
            batch, out_width , out_height , out_channels)
-
-  def __call__(self, previous_layer):
-
-    if previous_layer.out_shape is None:
-      class_name = self.__class__.__name__
-      prev_name  = layer.__class__.__name__
-      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
-
-    self._out_shape = previous_layer.out_shape
-    return self
-
-  @property
-  def out_shape(self):
-    return self._out_shape
 
   def forward(self, inpt):
     '''
@@ -74,8 +59,7 @@ class Dropout_layer(object):
     ----------
       Dropout layer object
     '''
-
-    self._out_shape = inpt.shape
+    self._check_dims(shape=self.out_shape, arr=inpt, func='Forward')
 
     self.rnd = np.random.uniform(low=0., high=1., size=self.out_shape) >= self.probability
     self.output = self.rnd * inpt * self.scale
@@ -100,6 +84,7 @@ class Dropout_layer(object):
     '''
 
     check_is_fitted(self, 'delta')
+    self._check_dims(shape=self.out_shape, arr=delta, func='Backward')
 
     if delta is not None:
       self.delta = self.rnd * delta[:] * self.scale
@@ -129,7 +114,7 @@ if __name__ == '__main__':
 
   prob = 0.1
 
-  layer = Dropout_layer(prob)
+  layer = Dropout_layer(input_shape=inpt.shape, prob=prob)
 
   # FORWARD
 

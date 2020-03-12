@@ -9,13 +9,15 @@ import functools
 import numpy as np
 from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
-from NumPyNet.utils import cost_type, _check_cost
+from NumPyNet.utils import cost_type
+from NumPyNet.utils import _check_cost
+from NumPyNet.layers.base import BaseLayer
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class Cost_layer(object):
+class Cost_layer(BaseLayer):
 
   SECRET_NUM = 12345
 
@@ -41,29 +43,12 @@ class Cost_layer(object):
     self.threshold = threshold
     self.smoothing = smoothing
 
-    self._out_shape = input_shape
     # Need an empty initialization to work out _smooth_l1 and _wgan
-    self.loss   = np.empty(shape=self._out_shape)
-    self.output = None
-    self.delta  = None # np.empty(shape=self._out_shape)
+    super(Cost_layer, self).__init__(input_shape=input_shape)
+    self.loss   = np.empty(shape=self.out_shape)
 
   def __str__(self):
     return 'cost                   {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(*self.out_shape)
-
-  def __call__(self, previous_layer):
-
-    self._out_shape = previous_layer.out_shape
-
-    if previous_layer.out_shape is None or self.out_shape != previous_layer.out_shape:
-      class_name = self.__class__.__name__
-      prev_name  = previous_layer.__class__.__name__
-      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
-
-    return self
-
-  @property
-  def out_shape(self):
-    return self._out_shape
 
   def forward(self, inpt, truth=None):
     '''
@@ -75,8 +60,9 @@ class Cost_layer(object):
       truth: truth values, it should have the same
         dimension as inpt.
     '''
-    self.delta  = np.empty(shape=self._out_shape)
-    self._out_shape = inpt.shape
+    self._check_dims(shape=self.input_shape, arr=inpt, func='Forward')
+
+    self.delta  = np.empty(shape=self.out_shape)
     self.output = inpt[:]
 
     if truth is not None:
@@ -120,6 +106,7 @@ class Cost_layer(object):
       delta: array, error of the network, to be backpropagated
     '''
     check_is_fitted(self, 'delta')
+    self._check_dims(shape=self.input_shape, arr=delta, func='Backward')
 
     delta[:] += self.scale * self.delta
 

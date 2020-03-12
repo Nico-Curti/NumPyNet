@@ -50,7 +50,7 @@ def test_batchnorm_layer(b, w, h, c):
   inpt_tf = tf.convert_to_tensor(inpt.astype('float32'))
 
   # Numpy_net model
-  numpynet = BatchNorm_layer(scales=scales, bias=bias)
+  numpynet = BatchNorm_layer(input_shape=inpt.shape, scales=scales, bias=bias)
 
   # initializers must be callable with this syntax, I need those for dimensionality problems
   def bias_init(shape, **kwargs):

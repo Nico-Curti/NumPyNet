@@ -7,6 +7,7 @@ from __future__ import print_function
 from NumPyNet.activations import Activations
 from NumPyNet.utils import _check_activation
 from NumPyNet.utils import check_is_fitted
+from NumPyNet.layers.base import BaseLayer
 
 import numpy as np
 from NumPyNet.exception import LayerError
@@ -15,7 +16,7 @@ __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class Convolutional_layer(object):
+class Convolutional_layer(BaseLayer):
 
   def __init__(self, filters, size, stride=None, input_shape=None,
                weights=None, bias=None,
@@ -74,16 +75,6 @@ class Convolutional_layer(object):
     self.weights = weights
     self.bias    = bias
 
-    if input_shape is not None:
-      self.batch, self.w, self.h, self.c = input_shape
-
-      if weights is None:
-        scale = np.sqrt(2 / (self.size[0] * self.size[1] * self.c))
-        self.weights = np.random.normal(loc=scale, scale=1., size=(self.size[0], self.size[1], self.c, self.channels_out))
-
-      if bias is None:
-        self.bias = np.zeros(shape=(self.channels_out, ), dtype=float)
-
     # Activation function
     activation = _check_activation(self, activation)
 
@@ -95,33 +86,22 @@ class Convolutional_layer(object):
     self.pad_left, self.pad_right, self.pad_bottom, self.pad_top = (0, 0, 0, 0)
 
     # Output, Delta and Updates
-    self.output = None
-    self.delta  = None
     self.weights_update = None
     self.bias_update    = None
     self.optimizer      = None
 
+    if input_shape is not None:
+      super(Convolutional_layer, self).__init__(input_shape=input_shape)
+      self._build()
 
-  def __str__(self):
-    batch, out_w, out_h, out_c = self.out_shape
-    return 'conv   {:>4d} {} x {} / {}  {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}  {:>5.3f} BFLOPs'.format(
-           out_c, self.size[0], self.size[1], self.stride[0],
-           self.batch, self.w, self.h, self.c,
-           batch, out_w, out_h, out_c,
-           (2 * self.weights.size * out_h * out_w) * 1e-9)
 
-  def __call__(self, previous_layer):
+  def _build(self):
 
-    if previous_layer.out_shape is None:
-      class_name = self.__class__.__name__
-      prev_name  = layer.__class__.__name__
-      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
-
-    self.batch, self.w, self.h, self.c = previous_layer.out_shape
+    _, w, h, c = self.input_shape
 
     if self.weights is None:
-      scale = np.sqrt(2 / (self.size[0] * self.size[1] * self.c))
-      self.weights = np.random.normal(loc=scale, scale=1., size=(self.size[0], self.size[1], self.c, self.channels_out))
+      scale = np.sqrt(2 / (self.size[0] * self.size[1] * c))
+      self.weights = np.random.normal(loc=scale, scale=1., size=(self.size[0], self.size[1], c, self.channels_out))
 
     if self.bias is None:
       self.bias = np.zeros(shape=(self.channels_out, ), dtype=float)
@@ -129,14 +109,28 @@ class Convolutional_layer(object):
     if self.pad:
       self._evaluate_padding()
 
-    self.out_w = 1 + (self.w + self.pad_top + self.pad_bottom - self.size[0]) // self.stride[0]
-    self.out_h = 1 + (self.h + self.pad_left + self.pad_right - self.size[1]) // self.stride[1]
+    self.out_w = 1 + (w + self.pad_top + self.pad_bottom - self.size[0]) // self.stride[0]
+    self.out_h = 1 + (h + self.pad_left + self.pad_right - self.size[1]) // self.stride[1]
+
+  def __str__(self):
+    batch, out_w, out_h, out_c = self.out_shape
+    _, w, h, c = self.input_shape
+    return 'conv   {0:>4d} {1:d} x {2:d} / {3:d}  {4:>4d} x{5:>4d} x{6:>4d} x{7:>4d}   ->  {5:>4d} x{8:>4d} x{9:>4d} x{10:>4d}  {11:>5.3f} BFLOPs'.format(
+           out_c, self.size[0], self.size[1], self.stride[0],
+           batch, w, h, c,
+           out_w, out_h, out_c,
+           (2 * self.weights.size * out_h * out_w) * 1e-9)
+
+  def __call__(self, previous_layer):
+
+    super(Convolutional_layer, self).__call__(previous_layer)
+    self._build()
 
     return self
 
   @property
   def out_shape(self):
-    return (self.batch, self.out_w, self.out_h, self.channels_out)
+    return (self.input_shape[0], self.out_w, self.out_h, self.channels_out)
 
   def load_weights(self, chunck_weights, pos=0):
     '''
@@ -151,11 +145,12 @@ class Convolutional_layer(object):
     ----------
     pos
     '''
+    c = self.input_shape[-1]
     self.bias = chunck_weights[pos : pos + self.channels_out]
     pos += self.channels_out
 
     self.weights = chunck_weights[pos : pos + self.weights.size]
-    self.weights = self.weights.reshape(self.size[0], self.size[1], self.c, self.channels_out)
+    self.weights = self.weights.reshape(self.size[0], self.size[1], c, self.channels_out)
     pos += self.weights.size
 
     return pos
@@ -210,18 +205,18 @@ class Convolutional_layer(object):
       See also:
       https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
     '''
-
+    _, w, h, c = self.input_shape
     # Compute how many Raws are needed to pad the image in the 'w' axis
-    if (self.w % self.stride[0] == 0):
+    if (w % self.stride[0] == 0):
       pad_w = max(self.size[0] - self.stride[0], 0)
     else:
-      pad_w = max(self.size[0] - (self.w % self.stride[0]), 0)
+      pad_w = max(self.size[0] - (w % self.stride[0]), 0)
 
     # Compute how many Columns are needed to pad the image in 'h' axis
-    if (self.h % self.stride[1] == 0):
+    if (h % self.stride[1] == 0):
       pad_h = max(self.size[1] - self.stride[1], 0)
     else:
-      pad_h = max(self.size[1] - (self.h % self.stride[1]), 0)
+      pad_h = max(self.size[1] - (h % self.stride[1]), 0)
 
     # Number of raws/columns to be added for every directons
     self.pad_top    = pad_w >> 1 # bit shift, integer division by two
@@ -264,16 +259,18 @@ class Convolutional_layer(object):
     Convolutional_layer object
     '''
 
+    self._check_dims(shape=self.input_shape, arr=inpt, func='Forward')
+
     kx, ky = self.size
     sx, sy = self.stride
+    _, w, h, _ = self.input_shape
 
     # Padding
     if self.pad :
-      self._evaluate_padding()
       mat_pad = self._pad(inpt)
     else :
       # If no pad, every image in the batch is cut
-      mat_pad = inpt[:, : (self.w - kx) // sx*sx + kx, : (self.h - ky) // sy*sy + ky, ...]
+      mat_pad = inpt[:, : (w - kx) // sx*sx + kx, : (h - ky) // sy*sy + ky, ...]
 
     # Create the view of the array with shape (batch, out_w ,out_h, kx, ky, in_c)
     self.view = self._asStride(mat_pad)
@@ -303,6 +300,7 @@ class Convolutional_layer(object):
     '''
 
     check_is_fitted(self, 'delta')
+    self._check_dims(shape=self.input_shape, arr=delta, func='Backward')
 
     # delta padding to match dimension with padded input when computing the view
     if self.pad:

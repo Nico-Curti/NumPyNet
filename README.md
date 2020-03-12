@@ -65,6 +65,7 @@ The full list of available layers is the following:
 - [L1norm Layer](./docs/NumPyNet/layers/l1norm_layer.md)
 - [L2norm Layer](./docs/NumPyNet/layers/l2norm_layer.md)
 - [Logistic Layer](./docs/NumPyNet/layers/logistic_layer.md)
+- [LSTM Layer](./docs/NumPyNet/layers/lstm_layer.md) : **TODO**
 - [MaxPool Layer](./docs/NumPyNet/layers/maxpool_layer.md)
 - [RNN Layer](./docs/NumPyNet/layers/rnn_layer.md) : **TODO**
 - [Route Layer](./docs/NumPyNet/layers/route_layer.md)

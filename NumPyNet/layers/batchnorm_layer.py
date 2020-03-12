@@ -7,14 +7,15 @@ from __future__ import print_function
 import numpy as np
 from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
+from NumPyNet.layers.base import BaseLayer
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class BatchNorm_layer(object):
+class BatchNorm_layer(BaseLayer):
 
-  def __init__(self, scales=None, bias=None, **kwargs):
+  def __init__(self, scales=None, bias=None, input_shape=None, **kwargs):
 
     '''
     BatchNormalization Layer: It performs a Normalization over the Batch axis
@@ -25,35 +26,20 @@ class BatchNorm_layer(object):
     Parameters:
       scales : scale to be multiplied to the normalized input, of shape (w, h, c)
       bias   : bias to be added to the multiplication of scale and normalized input of shape (w, h, c)
+      input_shape : tuple of 4 integers: input shape of the layer.
     '''
 
     self.scales = scales
     self.bias = bias
 
-    self.output, self.delta = (None, None)
-
     #Updates
     self.scales_updates, self.bias_updates = (None, None)
-    self._out_shape = None
     self.optimizer = None
 
+    super(BatchNorm_layer, self).__init__(input_shape=input_shape)
 
   def __str__(self):
-    return 'batchnorm                    {:4d} x{:4d} x{:4d} image'.format(*self._out_shape[1:])
-
-  def __call__(self, previous_layer):
-
-    if previous_layer.out_shape is None:
-      class_name = self.__class__.__name__
-      prev_name  = layer.__class__.__name__
-      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
-
-    self._out_shape = previous_layer.out_shape
-    return self
-
-  @property
-  def out_shape(self):
-    return self._out_shape
+    return 'batchnorm                    {0:4d} x{1:4d} x{2:4d} image'.format(*self.out_shape[1:])
 
   def load_weights(self, chunck_weights, pos=0):
     '''
@@ -100,7 +86,7 @@ class BatchNorm_layer(object):
       epsil : float, used to avoi division by zero when computing 1. / var
     '''
 
-    self._out_shape = inpt.shape
+    self._check_dims(shape=self.input_shape, arr=inpt, func='Forward')
 
     # Copy input, compute mean and inverse variance with respect the batch axis
     self.x    = inpt.copy()
@@ -139,6 +125,7 @@ class BatchNorm_layer(object):
     '''
 
     check_is_fitted(self, 'delta')
+    self._check_dims(shape=self.input_shape, arr=delta, func='Forward')
 
     invN = 1. / np.prod(self.mean.shape)
 

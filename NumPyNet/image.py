@@ -105,7 +105,7 @@ class Image (object):
     '''
 
     if not os.path.isfile(filename):
-      raise FileNotFoundError('Could not open or find the data file. Given: {}'.format(filename))
+      raise IOError('Could not open or find the data file. Given: {}'.format(filename))
 
     # read image from file
     img = cv2.imread(filename,  cv2.IMREAD_COLOR)

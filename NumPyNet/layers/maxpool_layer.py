@@ -7,26 +7,28 @@ from __future__ import print_function
 import numpy as np
 from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
+from NumPyNet.layers.base import BaseLayer
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class Maxpool_layer(object):
+class Maxpool_layer(BaseLayer):
 
-  def __init__(self, size, stride=None, pad=None, **kwargs):
+  def __init__(self, size, stride=None, pad=False, input_shape=None, **kwargs):
 
     '''
-    MaxPool Layer: perfmors a downsample of the image through the slide of a kernel
-    of shape equal to size = (kx, ky) with step stride = (st1, st2)
+    Maxpool layer
 
     Parameters
     ----------
-      size   : int or tuple of int. Size of the kernel with shape (kx, ky)
-      stride : int or tuple of int, default None. Step of the kernel with shape (st1, st2).
-              If None, stride is set equal to size.
-      pad    : boolean, default None. If True pad the image following keras SAME
-        padding. If False the image is not padded
+      size    : tuple with two integers (kx, ky) or integer, size of the kernel to be slided over the input image.
+      stride  : tuple of two integers, default None. Represents the horizontal and vertical stride of the kernel.
+                If None or 0, stride is assigned the values of size.
+      input_shape : tuple of 4 integers: input shape of the layer.
+      pad     : boolean, default False. If False the image is cut to fit the size and stride dimensions, if True the
+                image is padded following keras SAME padding, as indicated here:
+                https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
     '''
 
     self.size = size
@@ -48,42 +50,35 @@ class Maxpool_layer(object):
     if len(self.size) != 2 or len(self.stride) != 2:
       raise LayerError('Maxpool layer. Incompatible stride/size dimensions. They must be a 1D-2D tuple of values')
 
-    self.batch, self.w, self.h, self.c = (None, None, None, None)
-
     # for padding
     self.pad = pad
     self.pad_left, self.pad_right, self.pad_bottom, self.pad_top = (0, 0, 0, 0)
 
-    self.output, self.indexes, self.delta = (None, None, None)
+    super(Maxpool_layer, self).__init__(input_shape=input_shape)
+    self._build(input_shape)
 
+
+  def _build(self, input_shape=None):
+    if input_shape is not None:
+
+      if self.pad:
+        self._evaluate_padding()
 
   def __str__(self):
+    batch, w, h, c = self.input_shape
     batch, out_width, out_height, out_channels = self.out_shape
     return 'max         {} x {} / {}  {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d} x{:>4d}'.format(
            self.size[0], self.size[1], self.stride[0],
-           self.batch, self.w, self.h, self.c,
+           batch, w, h, c,
            batch, out_width, out_height, out_channels)
-
-  def __call__(self, previous_layer):
-
-    if previous_layer.out_shape is None:
-      class_name = self.__class__.__name__
-      prev_name  = layer.__class__.__name__
-      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
-
-    self.batch, self.w, self.h, self.c = previous_layer.out_shape
-
-    if self.pad:
-      self._evaluate_padding()
-
-    return self
 
   @property
   def out_shape(self):
-    out_height   = (self.h + self.pad_left + self.pad_right - self.size[1]) // self.stride[1] + 1
-    out_width    = (self.w + self.pad_top + self.pad_bottom - self.size[0]) // self.stride[0] + 1
-    out_channels = self.c
-    return (self.batch, out_width, out_height, out_channels)
+    batch, w, h, c = self.input_shape
+    out_height   = (h + self.pad_left + self.pad_right - self.size[1]) // self.stride[1] + 1
+    out_width    = (w + self.pad_top + self.pad_bottom - self.size[0]) // self.stride[0] + 1
+    out_channels = c
+    return (batch, out_width, out_height, out_channels)
 
   def _asStride(self, inpt):
     '''
@@ -117,7 +112,7 @@ class Maxpool_layer(object):
     view_shape = (batch, out_w , out_h, c) + (kx, ky)
 
     # strides of the final view
-    strides = (batch_stride, s0*st1, s1*st2, s3) + (s0, s1)
+    strides = (batch_stride, s0 * st1, s1 * st2, s3) + (s0, s1)
 
     subs = np.lib.stride_tricks.as_strided(inpt, view_shape, strides=strides)
     return subs
@@ -126,18 +121,19 @@ class Maxpool_layer(object):
     '''
     Compute padding dimensions
     '''
+    _, w, h, c = self.input_shape
 
     # Compute how many raws are needed to pad the image in the 'w' axis
-    if (self.w % self.stride[0] == 0):
+    if (w % self.stride[0] == 0):
       pad_w = max(self.size[0] - self.stride[0], 0)
     else:
-      pad_w = max(self.size[0] - (self.w % self.stride[0]), 0)
+      pad_w = max(self.size[0] - (w % self.stride[0]), 0)
 
     # Compute how many Columns are needed
-    if (self.h % self.stride[1] == 0):
+    if (h % self.stride[1] == 0):
       pad_h = max(self.size[1] - self.stride[1], 0)
     else:
-      pad_h = max(self.size[1] - (self.h % self.stride[1]), 0)
+      pad_h = max(self.size[1] - (h % self.stride[1]), 0)
 
     # Number of raws/columns to be added for every directons
     self.pad_top    = pad_w >> 1 # bit shift, integer division by two
@@ -181,16 +177,17 @@ class Maxpool_layer(object):
       Maxpool layer object
     '''
 
-    self.batch, self.w, self.h, self.c = inpt.shape
+    self._check_dims(shape=self.input_shape, arr=inpt, func='Forward')
+
     kx , ky  = self.size
     st1, st2 = self.stride
+    _, w, h, _ = self.input_shape
 
     if self.pad:
-      self._evaluate_padding()
       mat_pad = self._pad(inpt)
     else:
       # If no padding, cut the last raws/columns in every image in the batch
-      mat_pad = inpt[:, : (self.w - kx) // st1*st1 + kx, : (self.h - ky) // st2*st2 + ky, ...]
+      mat_pad = inpt[:, : (w - kx) // st1*st1 + kx, : (h - ky) // st2*st2 + ky, ...]
 
     # Return a strided view of the input array, shape: (batch, 1+(w-kx)//st1,1+(h-ky)//st2 ,c, kx, ky)
     view = self._asStride(mat_pad)
@@ -231,6 +228,7 @@ class Maxpool_layer(object):
     '''
 
     check_is_fitted(self, 'delta')
+    self._check_dims(shape=self.input_shape, arr=delta, func='Backward')
 
     # Padding delta in order to create another view
     if self.pad:

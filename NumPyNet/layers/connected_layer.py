@@ -7,6 +7,7 @@ from __future__ import print_function
 from NumPyNet.activations import Activations
 from NumPyNet.utils import _check_activation
 from NumPyNet.utils import check_is_fitted
+from NumPyNet.layers.base import BaseLayer
 
 import numpy as np
 from NumPyNet.exception import LayerError
@@ -15,7 +16,7 @@ __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class Connected_layer(object):
+class Connected_layer(BaseLayer):
 
   def __init__(self, outputs, activation=Activations, input_shape=None, weights=None, bias=None, **kwargs):
     '''
@@ -46,25 +47,11 @@ class Connected_layer(object):
     self.activation = activation.activate
     self.gradient   = activation.gradient
 
-    # if input shape is passed, init of weights, else done in  __call__
+    super(Connected_layer, self).__init__(input_shape=input_shape)
+
     if input_shape is not None:
-      self.input_shape = input_shape
+      self._build()
 
-      if weights is None:
-        scale = np.sqrt(2. / self.inputs)
-        self.weights = np.random.uniform(low=-scale, high=scale, size=(self.inputs, self.outputs))
-      else:
-        self.weights = np.asarray(weights)
-
-      if bias is None:
-        self.bias = np.zeros(shape=(self.outputs,), dtype=float)
-      else:
-        self.bias = np.asarray(bias)
-
-    else:
-      self.input_shape = None
-
-    self.output, self.delta = (None, None)
     self.weights_update = None
     self.bias_update    = None
     self.optimizer      = None
@@ -73,21 +60,16 @@ class Connected_layer(object):
   def inputs(self):
     return np.prod(self.input_shape[1:])
 
+  @property
+  def out_shape(self):
+    return (self.input_shape[0], 1, 1, self.outputs)
+
   def __str__(self):
     b, w, h, c = self.input_shape
-    return 'connected              {:4d} x{:4d} x{:4d} x{:4d}   ->  {:4d} x{:4d}'.format(
-            b, w, h, c, b, self.outputs)
+    return 'connected              {0:4d} x{1:4d} x{2:4d} x{3:4d}   ->  {0:4d} x{4:4d}'.format(
+            b, w, h, c, self.outputs)
 
-  def __call__(self, previous_layer):
-
-    if previous_layer.out_shape is None:
-      class_name = self.__class__.__name__
-      prev_name  = layer.__class__.__name__
-      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
-
-    self.input_shape = previous_layer.out_shape
-    self._out_shape = (self.inputs, self.outputs)
-
+  def _build(self):
     if self.weights is None:
       scale = np.sqrt(2. / self.inputs)
       self.weights = np.random.uniform(low=-scale, high=scale, size=(self.inputs, self.outputs))
@@ -95,11 +77,12 @@ class Connected_layer(object):
     if self.bias is None:
       self.bias = np.zeros(shape=(self.outputs,), dtype=float)
 
-    return self
+  def __call__(self, previous_layer):
 
-  @property
-  def out_shape(self):
-    return (self.input_shape[0], 1, 1, self.outputs)
+    super(Connected_layer, self).__call__(previous_layer)
+    self._build()
+
+    return self
 
   def load_weights(self, chunck_weights, pos=0):
     '''
@@ -149,6 +132,7 @@ class Connected_layer(object):
 
     # shape (batch, w*h*c)
     inpt = inpt.reshape(inpt.shape[0], -1)
+    self._check_dims(shape=(self.input_shape[0], self.inputs), arr=inpt, func='Forward')
 
     # shape (batch, outputs)
     z = np.einsum('ij, jk -> ik', inpt, self.weights, optimize=True) + self.bias
@@ -180,6 +164,7 @@ class Connected_layer(object):
 
     # reshape to (batch , w * h * c)
     inpt = inpt.reshape(inpt.shape[0], -1)
+    self._check_dims(shape=(self.input_shape[0], self.inputs), arr=inpt, func='Backward')
     # out  = self.output.reshape(-1, self.outputs)
 
     self.delta *= self.gradient(self.output, copy=copy)
@@ -192,6 +177,7 @@ class Connected_layer(object):
 
     if delta is not None:
       delta_shaped = delta.reshape(inpt.shape[0], -1)  # it's a reshaped VIEW
+      self._check_dims(shape=(self.input_shape[0], self.inputs), arr=delta_shaped, func='Backward')
 
       # shapes : (batch , w * h * c) = (batch , w * h * c) + (batch, outputs) @ (outputs, w * h * c)
 

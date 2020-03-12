@@ -47,23 +47,24 @@ class TestDropoutLayer:
 
       assert layer.output == None
       assert layer.delta  == None
-      assert layer._out_shape == None
 
-  @given(prob=st.floats(min_value=0., max_value=1.))
-  @settings(max_examples=20,
+  @given(b = st.integers(min_value=1, max_value=15 ),
+         w = st.integers(min_value=1, max_value=100),
+         h = st.integers(min_value=1, max_value=100),
+         c = st.integers(min_value=1, max_value=10 ),
+         prob = st.floats(min_value=0., max_value=1.))
+  @settings(max_examples=50,
             deadline=None)
-  def test_printer (self, prob):
+  def test_printer (self, b, w, h, c, prob):
 
-    layer = Dropout_layer(prob)
-
-    with pytest.raises(TypeError):
-      print(layer)
-
-    inpt = np.random.uniform(size=(10,100,100,5))
-
-    layer.forward(inpt)
+    layer = Dropout_layer(input_shape=(b, w, h, c), prob=prob)
 
     print(layer)
+
+    layer.input_shape = (3.14, w, h, c)
+
+    with pytest.raises(ValueError):
+      print(layer)
 
 
   @given(b = st.integers(min_value=1, max_value=15 ),
@@ -79,7 +80,7 @@ class TestDropoutLayer:
     inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
 
     # Initialize the numpy_net model
-    layer = Dropout_layer(prob)
+    layer = Dropout_layer(input_shape=inpt.shape, prob=prob)
 
     # Tensor Flow dropout, just to see if it works
     # forward_out_keras = K.eval(tf.nn.dropout(inpt, seed=None, keep_prob=prob))
@@ -117,7 +118,7 @@ class TestDropoutLayer:
     inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
 
     # Initialize the numpy_net model
-    layer = Dropout_layer(prob=prob)
+    layer = Dropout_layer(input_shape=inpt.shape, prob=prob)
 
     # Try to backward
     with pytest.raises(NotFittedError):

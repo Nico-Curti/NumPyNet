@@ -61,11 +61,6 @@ class TestAvgpoolLayer:
       assert layer.delta   == None
       assert layer.output  == None
 
-      assert layer.batch == None
-      assert layer.w == None
-      assert layer.h == None
-      assert layer.c == None
-
       assert layer.pad        == pad
       assert layer.pad_left   == 0
       assert layer.pad_right  == 0
@@ -85,7 +80,7 @@ class TestAvgpoolLayer:
     with pytest.raises(TypeError):
       print(layer)
 
-    layer.batch, layer.w, layer.h, layer.c = (1, 2, 3, 4)
+    layer.input_shape = (1, 2, 3, 4)
 
     print(layer)
 
@@ -103,7 +98,7 @@ class TestAvgpoolLayer:
     inpt = np.random.uniform(low=0., high=1., size=(batch, w, h, c))
 
     # Numpy_net model
-    numpynet = Avgpool_layer(size=size, stride=stride, pad=pad)
+    numpynet = Avgpool_layer(input_shape=inpt.shape, size=size, stride=stride, pad=pad)
 
     if pad:
       keras_pad = 'same'
@@ -141,7 +136,7 @@ class TestAvgpoolLayer:
     inpt = np.random.uniform(low=0., high=1., size=(batch, w, h, c))
 
     # Numpy_net model
-    numpynet = Avgpool_layer(size=size, stride=stride, pad=pad)
+    numpynet = Avgpool_layer(input_shape=inpt.shape, size=size, stride=stride, pad=pad)
 
     if pad:
       keras_pad = 'same'

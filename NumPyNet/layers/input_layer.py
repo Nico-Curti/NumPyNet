@@ -6,12 +6,13 @@ from __future__ import print_function
 
 import numpy as np
 from NumPyNet.utils import check_is_fitted
+from NumPyNet.layers.base import BaseLayer
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class Input_layer(object):
+class Input_layer(BaseLayer):
 
   def __init__(self, input_shape, **kwargs):
     '''
@@ -22,21 +23,14 @@ class Input_layer(object):
     input_shape : tuple of 4 integers: input shape of the layer.
     '''
 
-    try:
-      self.batch, self.w, self.h, self.c = input_shape
-
-    except:
+    if sum(np.shape(input_shape)) != 4:
       raise ValueError('Input layer error. Incorrect input_shape. Expected a 4D array (batch, width, height, channel). Given {}'.format(input_shape))
 
-    self.output = None
-    self.delta  = None
+    super(Input_layer, self).__init__(input_shape=input_shape)
 
   def __str__(self):
-    return 'input                  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(self.batch, self.w, self.h, self.c)
-
-  @property
-  def out_shape(self):
-    return (self.batch, self.w, self.h, self.c)
+    batch, w, h, c = self.input_shape
+    return 'input                  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(batch, w, h, c)
 
   def forward(self, inpt):
     '''
@@ -51,8 +45,7 @@ class Input_layer(object):
       Input layer object.
     '''
 
-    if self.out_shape[1:] != inpt.shape[1:]:
-      raise ValueError('Forward Input layer. Incorrect input shape. Expected {} and given {}'.format(self.out_shape, inpt.shape))
+    self._check_dims(shape=self.out_shape, arr=inpt, func='Forward')
 
     self.output = inpt
     self.delta  = np.zeros(shape=self.out_shape, dtype=float)
@@ -73,9 +66,7 @@ class Input_layer(object):
     '''
 
     check_is_fitted(self, 'delta')
-
-    if self.out_shape != delta.shape:
-      raise ValueError('Forward Input layer. Incorrect delta shape. Expected {} and given {}'.format(self.out_shape, delta.shape))
+    self._check_dims(shape=self.out_shape, arr=delta, func='Backward')
 
     delta[:] = self.delta
 
