@@ -378,7 +378,7 @@ if __name__ == '__main__':
   inpt = np.expand_dims(inpt, axis=0) # shape from (w, h, c) to (1, w, h, c)
 
   channels_out = 10
-  size         = (3, 3)
+  size         = (4, 4)
   stride       = (1, 1)
   pad          = False
 

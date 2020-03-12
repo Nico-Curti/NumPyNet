@@ -4,6 +4,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import os
 import re
 import configparser
 from collections import OrderedDict
@@ -37,6 +38,9 @@ class data_config (object):
     The data configuration stores the global parameters for a given model (ex. cfg filename, weight filename, ...)
     The file must be saved in a dictionary format like "cfg = config_filename.cfg"
     '''
+
+    if not os.path.isfile(filename):
+      raise IOError('Could not open or find the data file. Given: {}'.format(filename))
 
     with open (filename, 'r') as fp:
       rows = fp.read().splitlines()
@@ -112,6 +116,9 @@ class net_config (object):
     Since multiple layers can have the same type the dictionary must be overloaded by a
     custom OrderedDict
     '''
+
+    if not os.path.isfile(filename):
+      raise IOError('Could not open or find the network config file. Given: {}'.format(filename))
 
     self._data = configparser.ConfigParser(defaults=None, dict_type=self.multidict, strict=False)
     self._data.read(filename)

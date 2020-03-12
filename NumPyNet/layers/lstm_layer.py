@@ -91,8 +91,11 @@ class LSTM_layer(object):
       self.wg.input_shape = (self.input_shape[0], w, h, self.outputs)
       self.wo.input_shape = (self.input_shape[0], w, h, self.outputs)
 
+      self.cell = np.empty(shape=self.uf.out_shape, dtype=float)
+
     else:
       self.input_shape = None
+      self.cell = None
 
       # TODO: remember to overwrite this layer when the input_shape is known!
       self.batch = None
@@ -100,7 +103,6 @@ class LSTM_layer(object):
       initial_shape = None
 
     self.output = None
-    self.cell   = None
     self.delta  = None
     self.optimizer = None
 

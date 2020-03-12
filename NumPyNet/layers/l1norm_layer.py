@@ -22,7 +22,6 @@ class L1Norm_layer(BaseLayer):
     Parameters
     ----------
       input_shape : tuple of 4 integers: input shape of the layer.
-
       axis : integer, default None. Axis along which the L1Normalization
         is performed. If None, normalize the entire array.
     '''
@@ -32,9 +31,9 @@ class L1Norm_layer(BaseLayer):
     super(L1Norm_layer, self).__init__(input_shape=input_shape)
 
   def __str__(self):
-    batch, out_width, out_height, out_channels = self.out_shape
+    batch, w, h, c = self.input_shape
     return 'l1norm                 {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(
-           batch, out_width, out_height, out_channels)
+           batch, w, h, c)
 
   def forward(self, inpt):
     '''
@@ -50,7 +49,7 @@ class L1Norm_layer(BaseLayer):
       L1norm_layer object
     '''
 
-    self._check_dims(shape=self.out_shape, arr=inpt, func='Forward')
+    self._check_dims(shape=self.input_shape, arr=inpt, func='Forward')
 
     norm = np.abs(inpt).sum(axis=self.axis, keepdims=True)
     norm = 1. / (norm + 1e-8)
@@ -74,7 +73,7 @@ class L1Norm_layer(BaseLayer):
     '''
 
     check_is_fitted(self, 'delta')
-    self._check_dims(shape=self.out_shape, arr=delta, func='Backward')
+    self._check_dims(shape=self.input_shape, arr=delta, func='Backward')
 
     self.delta += self.scales
     delta[:]   += self.delta

@@ -94,7 +94,7 @@ install:
   - python setup.py install
 
 script:
-  - pytest
+  - python -m pytest --cov=testing --cov-config=.coveragerc
 
 after_succes:
   - codecov

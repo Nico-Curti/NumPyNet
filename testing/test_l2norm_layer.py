@@ -41,7 +41,7 @@ class TestL2normLayer :
       assert layer.scales == None
       assert layer.output == None
       assert layer.delta  == None
-      assert layer._out_shape == None
+      assert layer.out_shape == None
 
   @given(b = st.integers(min_value=1, max_value=15 ),
          w = st.integers(min_value=1, max_value=100),
@@ -51,7 +51,7 @@ class TestL2normLayer :
             deadline=None)
   def test_printer (self, b, w, h, c):
 
-    layer = L1Norm_layer(input_shape=(b, w, h, c))
+    layer = L2Norm_layer(input_shape=(b, w, h, c))
 
     print(layer)
 

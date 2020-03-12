@@ -15,12 +15,13 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 class L2Norm_layer(BaseLayer):
 
-  def __init__(self, axis=None, **kwargs):
+  def __init__(self, input_shape=None, axis=None, **kwargs):
     '''
     L2Norm layer
 
     Parameters
     ----------
+      input_shape : tuple of 4 integers: input shape of the layer.
       axis : integer, default None. Axis along which the vector is normalized.
         If None, the norm is computed along the whole vector.
     '''
@@ -31,9 +32,9 @@ class L2Norm_layer(BaseLayer):
     super(L2Norm_layer, self).__init__(input_shape=input_shape)
 
   def __str__(self):
-    batch, out_width, out_height, out_channels = self.out_shape
+    batch, w, h, c = self.out_shape
     return 'l2norm                 {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}'.format(
-           batch, out_width, out_height, out_channels)
+           batch, w, h, c)
 
   def forward(self, inpt):
     '''
@@ -49,7 +50,7 @@ class L2Norm_layer(BaseLayer):
       L2norm_layer object
     '''
 
-    self._check_dims(shape=self.out_shape, arr=inpt, func='Forward')
+    self._check_dims(shape=self.input_shape, arr=inpt, func='Forward')
 
     norm = (inpt * inpt).sum(axis=self.axis, keepdims=True)
     norm = 1. / np.sqrt(norm + 1e-8)
@@ -73,7 +74,7 @@ class L2Norm_layer(BaseLayer):
     '''
 
     check_is_fitted(self, 'delta')
-    self._check_dims(shape=self.out_shape, arr=delta, func='Backward')
+    self._check_dims(shape=self.input_shape, arr=delta, func='Backward')
 
     self.delta += self.scales
     delta[:]   += self.delta
