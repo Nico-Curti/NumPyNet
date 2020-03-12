@@ -96,9 +96,9 @@ class TestLSTMlayer :
     layer.forward(inpt_numpynet)
     forward_out_numpynet = layer.output.reshape(batch, outputs)
 
-    np.allclose(forward_out_numpynet, forward_out_keras)
+    # np.allclose(forward_out_numpynet, forward_out_keras)
 
-    np.abs(forward_out_keras - forward_out_numpynet).max()
+    # np.abs(forward_out_keras - forward_out_numpynet).max()
 
 
   def test_backward (self):

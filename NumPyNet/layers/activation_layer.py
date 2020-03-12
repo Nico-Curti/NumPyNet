@@ -9,7 +9,6 @@ from NumPyNet.utils import _check_activation
 from NumPyNet.utils import check_is_fitted
 
 import numpy as np
-from NumPyNet.exception import LayerError
 from NumPyNet.layers.base import BaseLayer
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']

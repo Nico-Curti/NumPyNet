@@ -5,7 +5,6 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
 from NumPyNet.layers.base import BaseLayer
 
@@ -166,6 +165,7 @@ class Shuffler_layer(BaseLayer):
 if __name__ == '__main__':
 
   import pylab as plt
+  from NumPyNet.exception import LayerError
 
   img_2_float = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 1.)).astype(float)
   float_2_img = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 255.)).astype(np.uint8)

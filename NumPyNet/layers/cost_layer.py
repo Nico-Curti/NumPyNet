@@ -7,7 +7,6 @@ from __future__ import print_function
 import functools
 
 import numpy as np
-from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
 from NumPyNet.utils import cost_type
 from NumPyNet.utils import _check_cost

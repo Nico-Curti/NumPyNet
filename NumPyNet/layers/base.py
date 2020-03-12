@@ -4,9 +4,6 @@
 from __future__ import division
 from __future__ import print_function
 
-from NumPyNet.utils import check_is_fitted
-
-import numpy as np
 from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
@@ -28,7 +25,7 @@ class BaseLayer (object):
     '''
     raise NotImplementedError
 
-  def _build (self):
+  def _build (self, *args, **kwargs):
     '''
     Build layer parameters
     '''
@@ -66,13 +63,13 @@ class BaseLayer (object):
     '''
     return self.input_shape
 
-  def forward (self, *args, **kwargs):
+  def forward (self, input, *args, **kwargs):
     '''
     Forward function
     '''
     raise NotImplementedError
 
-  def backward (self, *args, **kwargs):
+  def backward (self, delta, input=None, *args, **kwargs):
     '''
     Backward function
     '''

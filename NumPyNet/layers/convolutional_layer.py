@@ -205,7 +205,7 @@ class Convolutional_layer(BaseLayer):
       See also:
       https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
     '''
-    _, w, h, c = self.input_shape
+    _, w, h, _ = self.input_shape
     # Compute how many Raws are needed to pad the image in the 'w' axis
     if (w % self.stride[0] == 0):
       pad_w = max(self.size[0] - self.stride[0], 0)
@@ -378,7 +378,7 @@ if __name__ == '__main__':
   inpt = np.expand_dims(inpt, axis=0) # shape from (w, h, c) to (1, w, h, c)
 
   channels_out = 10
-  size         = (4, 4)
+  size         = (3, 3)
   stride       = (1, 1)
   pad          = False
 
@@ -429,7 +429,7 @@ if __name__ == '__main__':
   ax1.set_title('Original image')
   ax1.axis('off')
   # here every filter effect on the image can be shown
-  ax2.imshow(float_2_img(forward_out[0, :, :,1]))
+  ax2.imshow(float_2_img(forward_out[0, :, :, 1]))
   ax2.set_title('Forward')
   ax2.axis('off')
 

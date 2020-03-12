@@ -137,7 +137,7 @@ def main():
   if not args.netcfg or not args.weights:
     raise ValueError('Network config AND network weights must be given')
 
-  # names = get_labels(args.namesfile, args.classes)
+  names = get_labels(args.namesfile, args.classes)
 
   net = Network(batch=32)
   net.load(args.netcfg, args.weights)

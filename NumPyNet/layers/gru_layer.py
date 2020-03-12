@@ -45,8 +45,7 @@ class GRU_layer (object):
 
 
   def __call__ (self, prev_layer):
-    raise ValueError('Not implemented')
-    pass
+    raise NotImplementedError
 
   @property
   def out_shape(self):

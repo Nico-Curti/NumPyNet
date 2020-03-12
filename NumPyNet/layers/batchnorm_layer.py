@@ -5,7 +5,6 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
 from NumPyNet.layers.base import BaseLayer
 
@@ -14,6 +13,8 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
 class BatchNorm_layer(BaseLayer):
+
+  epsil = 1e-8
 
   def __init__(self, scales=None, bias=None, input_shape=None, **kwargs):
 
@@ -67,7 +68,7 @@ class BatchNorm_layer(BaseLayer):
     '''
     return np.concatenate([self.bias.ravel(), self.scales.ravel()], axis=0).tolist()
 
-  def forward(self, inpt, epsil=1e-8):
+  def forward(self, inpt):
     '''
     Forward function of the BatchNormalization layer. It computes the output of
     the layer, the formula is :
@@ -83,15 +84,14 @@ class BatchNorm_layer(BaseLayer):
 
     Parameters:
       inpt  : numpy array, batch of input images in the format (batch, w, h, c)
-      epsil : float, used to avoi division by zero when computing 1. / var
     '''
 
     self._check_dims(shape=self.input_shape, arr=inpt, func='Forward')
 
     # Copy input, compute mean and inverse variance with respect the batch axis
     self.x    = inpt.copy()
-    self.mean = self.x.mean(axis=0)                        # shape = (w, h, c)
-    self.var  = 1. / np.sqrt((self.x.var(axis=0)) + epsil) # shape = (w, h, c)
+    self.mean = self.x.mean(axis=0)                             # shape = (w, h, c)
+    self.var  = 1. / np.sqrt((self.x.var(axis=0)) + self.epsil) # shape = (w, h, c)
     # epsil is used to avoid divisions by zero
 
     # Compute the normalized input

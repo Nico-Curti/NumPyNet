@@ -5,7 +5,6 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
 from NumPyNet.layers.base import BaseLayer
 

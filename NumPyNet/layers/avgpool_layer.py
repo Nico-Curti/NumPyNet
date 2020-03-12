@@ -115,7 +115,7 @@ class Avgpool_layer(BaseLayer):
     Compute padding dimensions, following keras VALID and SAME criteria. See:
     https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
     '''
-    _, w, h, c = self.input_shape
+    _, w, h, _ = self.input_shape
     # Compute how many raws are needed to pad the image in the 'w' axis
     if (w % self.stride[0] == 0):
       pad_w = max(self.size[0] - self.stride[0], 0)
