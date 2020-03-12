@@ -276,7 +276,7 @@ if __name__ == '__main__':
   stride = (2, 2)
   pad = False
 
-  layer = Maxpool_layer(size=size, stride=stride, padding=pad)
+  layer = Maxpool_layer(input_shape=inpt.shape, size=size, stride=stride, padding=pad)
 
   # FORWARD
 

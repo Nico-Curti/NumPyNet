@@ -306,12 +306,12 @@ if __name__ == '__main__':
   float_2_img = lambda im : ((im - im.min()) * (1. / (im.max() - im.min()) * 255.)).astype(np.uint8)
 
   filename = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'dog.jpg')
-  input = np.asarray(Image.open(filename), dtype=float)
-  input.setflags(write=1)
-  input = img_2_float(input)
+  inpt = np.asarray(Image.open(filename), dtype=float)
+  inpt.setflags(write=1)
+  inpt = img_2_float(inpt)
 
   # batch == 1
-  input = np.expand_dims(input, axis=0)
+  inpt = np.expand_dims(inpt, axis=0)
 
   cost_type = cost_type.mse
   scale = 1.
@@ -320,17 +320,17 @@ if __name__ == '__main__':
   threshold = 0.
   smoothing = 0.
 
-  truth = np.random.uniform(low=0., high=1., size=input.shape)
+  truth = np.random.uniform(low=0., high=1., size=inpt.shape)
 
-  layer = Cost_layer(input_shape=input.shape, cost_type=cost_type, scale=scale, ratio=ratio, noobject_scale=noobject_scale, threshold=threshold, smoothing=smoothing, trainable=True)
+  layer = Cost_layer(input_shape=inpt.shape, cost_type=cost_type, scale=scale, ratio=ratio, noobject_scale=noobject_scale, threshold=threshold, smoothing=smoothing, trainable=True)
   print(layer)
 
-  layer.forward(input, truth)
+  layer.forward(inpt, truth)
   forward_out = layer.output
 
   print('Cost: {:.3f}'.format(layer.cost))
 
-  delta = np.zeros(shape=input.shape, dtype=float)
+  delta = np.zeros(shape=inpt.shape, dtype=float)
   layer.backward(delta)
 
   fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
@@ -338,7 +338,7 @@ if __name__ == '__main__':
 
   fig.suptitle('Cost Layer:\n{0}'.format(cost_type))
 
-  ax1.imshow(float_2_img(input[0]))
+  ax1.imshow(float_2_img(inpt[0]))
   ax1.axis('off')
   ax1.set_title('Original Image')
 

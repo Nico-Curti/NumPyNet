@@ -183,7 +183,7 @@ if __name__ == '__main__':
 
   batch, w, h, c = inpt.shape
 
-  layer = Shuffler_layer(scale)
+  layer = Shuffler_layer(input_shape=inpt.shape, scale=scale)
 
   # FORWARD
 

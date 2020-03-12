@@ -150,7 +150,7 @@ if __name__ == '__main__':
   stride = -3
   scale = 1.5
 
-  layer = Upsample_layer(scale=scale, stride=stride)
+  layer = Upsample_layer(input_shape=inpt.shape, scale=scale, stride=stride)
 
   # FORWARD
 

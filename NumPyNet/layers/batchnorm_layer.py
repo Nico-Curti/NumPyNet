@@ -205,7 +205,7 @@ if __name__ == '__main__':
   scales = np.ones(shape=(w, h, c), dtype=float)
 
   # Model Initialization
-  layer = BatchNorm_layer(scales=scales, bias=bias)
+  layer = BatchNorm_layer(input_shape=inpt.shape, scales=scales, bias=bias)
 
   # FORWARD
 

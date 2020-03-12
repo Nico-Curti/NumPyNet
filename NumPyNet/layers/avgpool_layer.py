@@ -265,7 +265,7 @@ if __name__ == '__main__':
   stride = 2
 
   # Model initialization
-  layer = Avgpool_layer(size, stride, padding=pad)
+  layer = Avgpool_layer(input_shape=inpt.shape, size=size, stride=stride, padding=pad)
 
   # FORWARD
 
