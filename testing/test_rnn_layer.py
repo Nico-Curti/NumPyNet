@@ -5,18 +5,14 @@ from __future__ import division
 from __future__ import print_function
 
 from tensorflow.keras.models import Model, Sequential
-from tensorflow.keras.layers import SimpleRNN
+from tensorflow.keras.layers import SimpleRNN, Input
+from tensorflow.keras.layers import RNN
 import tensorflow.keras.backend as K
 
-from NumPyNet.activations import Activations
-from NumPyNet.activations import Relu
-from NumPyNet.activations import Logistic
-from NumPyNet.activations import Linear
-from NumPyNet.activations import Tanh
 from NumPyNet.exception import LayerError
 from NumPyNet.exception import NotFittedError
-from NumPyNet.layers.rnn_layer import RNN_layer
-from tensorflow.keras.layers import RNN
+from NumPyNet.layers.temp_rnn_layer import RNN_layer
+from NumPyNet.utils import data_to_timesteps
 
 import numpy as np
 import pytest
@@ -50,7 +46,7 @@ class TestRNNLayer:
          c      = st.integers(min_value=1, max_value=10))
   @settings(max_examples=20,
             deadline=None)
-  def test_constructor (self, outputs, steps, b, w, h, c):
+  def _constructor (self, outputs, steps, b, w, h, c):
 
     numpynet_activ = [Relu, Logistic, Tanh, Linear]
 
@@ -96,7 +92,7 @@ class TestRNNLayer:
          c      = st.integers(min_value=1, max_value=10))
   @settings(max_examples=20,
             deadline=None)
-  def test_printer (self, outputs, steps, b, w, h, c):
+  def _printer (self, outputs, steps, b, w, h, c):
 
     layer = RNN_layer(outputs=outputs, steps=steps, activation=Linear)
 
@@ -108,21 +104,130 @@ class TestRNNLayer:
     print(layer)
 
 
-  def _forward (self):
+  @given(steps    = st.integers(min_value=1, max_value=10),
+         outputs  = st.integers(min_value=1, max_value=50),
+         features = st.integers(min_value=1, max_value=50),
+         batch    = st.integers(min_value=20, max_value=100),
+         return_seq = st.booleans())
+  @settings(max_examples=10,
+            deadline=None)
+  def test_forward (self, steps, outputs, features, batch, return_seq):
 
-    inpt = np.random.uniform(size=(50, 6))
+    activation = 'tanh'
 
-    # model = Sequential()
-    # model.add(SimpleRNN(units=32, input_shape=(None,1, 6), activation='linear'))
-    #
-    # forward_out_keras = model.predict(inpt)
+    inpt = np.random.uniform(size=(batch, features))
+    inpt_keras, _ = data_to_timesteps(inpt, steps=steps)
 
-    layer = RNN_layer(outputs=32, steps=1, input_shape=(300, 1, 1, 1), activation='linear')
+    assert inpt_keras.shape == (batch - steps, steps, features)
 
+    # weights init
+    kernel           = np.random.uniform(low=-1, high=1, size=(features, outputs))
+    recurrent_kernel = np.random.uniform(low=-1, high=1, size=(outputs, outputs))
+    bias             = np.random.uniform(low=-1, high=1, size=(outputs,))
 
+    # create keras model
+    inp   = Input(shape=inpt_keras.shape[1:])
+    rnn   = SimpleRNN(units=outputs, activation=activation, return_sequences=return_seq)(inp)
+    model = Model(inputs=inp, outputs=rnn)
+
+    # set weights for the keras model
+    model.set_weights([kernel, recurrent_kernel, bias])
+
+    # create NumPyNet layer
+    layer = RNN_layer(outputs=outputs, steps=steps, input_shape=(50, 1, 1, 6), activation=activation, return_sequence=return_seq)
+
+    # set NumPyNet weights
+    layer.set_weights([kernel, recurrent_kernel, bias])
+
+    # FORWARD
+
+    # forward for keras
+    forward_out_keras = model.predict(inpt_keras)
+    forward_out_keras.shape
+
+    # forward NumPyNet
     layer.forward(inpt)
-    forward_out_numpynet = layer.output
+    forward_out_numpynet = layer.output.reshape(forward_out_keras.shape)
 
-    # np.allclose(forward_out_numpynet, forward_out_keras)
+    assert np.allclose(forward_out_numpynet, forward_out_keras, atol=1e-4)
 
-    # forward_out_keras - forward_out_numpynet
+
+  @given(steps    = st.integers(min_value=1, max_value=10),
+         outputs  = st.integers(min_value=1, max_value=50),
+         features = st.integers(min_value=1, max_value=50),
+         batch    = st.integers(min_value=20, max_value=100),
+         # return_seq = st.booleans()
+         )
+  @settings(max_examples=1,
+            deadline=None)
+  def test_backward (self, steps, outputs, features, batch):
+
+    return_seq = True
+    activation = 'linear'
+
+    batch=20
+    outputs=10
+    features=6
+    steps=4
+
+    inpt = np.random.uniform(size=(batch, features))
+    inpt_keras, _ = data_to_timesteps(inpt, steps=steps)
+
+    assert inpt_keras.shape == (batch - steps, steps, features)
+
+    # weights init
+    kernel           = np.random.uniform(low=-1, high=1, size=(features, outputs))
+    recurrent_kernel = np.random.uniform(low=-1, high=1, size=(outputs, outputs))
+    bias             = np.random.uniform(low=-1, high=1, size=(outputs,))
+
+    # create keras model
+    inp   = Input(shape=inpt_keras.shape[1:])
+    rnn   = SimpleRNN(units=outputs, activation=activation, return_sequences=return_seq)(inp)
+    model = Model(inputs=inp, outputs=rnn)
+
+    # set weights for the keras model
+    model.set_weights([kernel, recurrent_kernel, bias])
+
+    # create NumPyNet layer
+    layer = RNN_layer(outputs=outputs, steps=steps, input_shape=(50, 1, 1, 6), activation=activation, return_sequence=return_seq)
+
+    # set NumPyNet weights
+    layer.set_weights([kernel, recurrent_kernel, bias])
+
+    # FORWARD
+
+    # forward for keras
+    forward_out_keras = model.predict(inpt_keras)
+    forward_out_keras.shape
+
+    # forward NumPyNet
+    layer.forward(inpt)
+    forward_out_numpynet = layer.output.reshape(forward_out_keras.shape)
+
+    assert np.allclose(forward_out_numpynet, forward_out_keras, atol=1e-4)
+
+    # BACKWARD
+
+    # Compute the gradient of output w.r.t input
+    gradient1 = K.gradients(model.output, [model.input])
+    gradient2 = K.gradients(model.output, model.trainable_weights)
+
+    # Define a function to evaluate the gradient
+    func1 = K.function(model.inputs + [model.output], gradient1)
+    func2 = K.function(model.inputs + model.trainable_weights + model.outputs, gradient2)
+
+    # Compute delta for Keras
+    delta_keras = func1([inpt_keras])[0]
+    updates     = func2([inpt_keras])
+
+    weights_update_keras           = updates[0]
+    recurrent_weights_update_keras = updates[1]
+    bias_update_keras              = updates[2]
+
+    layer.delta = np.zeros(shape=forward_out_keras.shape)
+    delta = np.zeros(shape=inpt_keras.shape)
+    layer.backward(inpt, delta, copy=True)
+
+    np.allclose(delta,                delta_keras,           atol=1e-3, rtol=1e-2)
+    np.allclose(layer.weights_update, weights_updates_keras, atol=1e-3, rtol=1e-3)
+    np.allclose(layer.bias_update,    bias_updates_keras,    atol=1e-5, rtol=1e-3)

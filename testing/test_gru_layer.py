@@ -34,7 +34,7 @@ class TestGRUlayer :
 
   def test_forward (self):
     outputs = 30
-    steps   = 4
+    steps   = 1
     features = 10
     batch = 16
 
@@ -71,6 +71,8 @@ class TestGRUlayer :
     forward_out_numpynet = layer.output
 
     np.allclose(forward_out_keras, forward_out_numpynet)
+
+    
 
     forward_out_keras
     forward_out_numpynet
