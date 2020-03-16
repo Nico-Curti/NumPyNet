@@ -37,7 +37,7 @@ if __name__ == '__main__':
   steps = 4
   window_size=steps
 
-  X = data_to_timesteps(noisy_signal, steps=steps)
+  X, _ = data_to_timesteps(noisy_signal, steps=steps)
   y = np.concatenate([X[1:, 0, :], X[-1:, 0, :]], axis=0)
 
   # Reshape the data according to a 4D tensor

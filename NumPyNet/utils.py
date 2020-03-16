@@ -243,7 +243,7 @@ def data_to_timesteps (data, steps, shift=1):
   ----------
   data : two or 4 dimensional numpy array, with shapes (Ndata, features) or (Ndata, w, h, c).
   steps : integer, number of timesteps considered for the Recurrent layer
-  shift : integer, defaults is 1. TODO
+  shift : integer, default is 1. TODO
 
   Returns
   -------
@@ -255,9 +255,10 @@ def data_to_timesteps (data, steps, shift=1):
   Npoints, features = X.shape
   stride0, stride1  = X.strides
 
-  shape   = (Npoints - steps*shift + 1, steps, features)
+  shape   = (Npoints - steps*shift, steps, features)
   strides = (shift*stride0, stride0, stride1)
 
   X = np.lib.stride_tricks.as_strided(data, shape=shape, strides=strides)
+  y = data[steps:]
 
-  return X
+  return X, y

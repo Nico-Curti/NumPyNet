@@ -16,7 +16,7 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 class RNN_layer(object):
 
-  def __init__ (self, outputs, steps, activation1=Activations, activation2=Activations, input_shape=None, weights=None, bias=None):
+  def __init__ (self, outputs, steps, activation=Activations, input_shape=None, weights=None, bias=None, return_sequence=False):
     '''
     Recurrent Neural Network layer. Build a Recurrent fully connected architecture.
 
@@ -27,8 +27,6 @@ class RNN_layer(object):
     steps   : integer, number of timesteps of the recurrency.
     activation1 : activation function object. First activation function, applied to
       every hidden state
-    activation2 : activation function object. Second activation function, applied to
-      the output of every timestep.
     input_shape : tuple of int, default None. Used for a single layer model.
       "None" is used when the layer is part of a network.
     weights : list of numpy array, default None. List containing two numpy array of weights.
@@ -47,28 +45,27 @@ class RNN_layer(object):
     else :
       raise ValueError('Parameter "steps" must be an integer and > 0')
 
-    self.activation1 = _check_activation(layer=self, activation_func=activation1)
-    self.activation2 = _check_activation(layer=self, activation_func=activation2)
+    b, w, h, c = input_shape
 
-    self.weights1 = None
-    self.weights2 = None
-    self.weights3 = None
+    self.activation = _check_activation(layer=self, activation_func=activation)
+    self.return_sequence = return_sequence
 
-    self.bias  = None
+    self.weights = None
+    self.recurrent_weights = None
+    self.bias = None
 
-    self.weights_update1 = None
-    self.weights_update2 = None
-    self.weights_update3 = None
-    self.bias_update1 = None
-    self.bias_update2 = None
+    self.weights_update = np.zeros(shape=(w*h*c, self.outputs)) # Why
+    self.recurrent_weights_update = np.zeros(shape=(self.outputs, self.outputs))
+    self.bias_update = np.zeros(shape=(self.outputs,))
 
     self.output = None
     self.delta = None
+    self.states = None
 
     self.optimizer = None
 
   def __str__ (self):
-    return 'very good rnn '
+    return 'very good rnn'
 
   def __call__(self, previous_layer):
 
@@ -86,30 +83,31 @@ class RNN_layer(object):
       prev_name  = layer.__class__.__name__
       raise LayerError('Incorrect steps found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
 
-    self.weights1 = np.random.uniform(-1, 1, size=(w*h*c, self.outputs))         # Wxh
-    self.weights2 = np.random.uniform(-1, 1, size=(self.outputs, self.outputs))  # Whh
-    self.weights3 = np.random.uniform(-1, 1, size=(self.outputs, self.outputs))  # Why
+    self.weights = np.random.uniform(low=-1, high=1, size=(w*h*c, self.outputs))
+    self.recurrent_weights = np.random.uniform(low=-1, high=1, size=(self.outputs, self.outputs))
+    self.bias = np.random.uniform(-1, 1, size=(self.outputs,))
 
-    self.bias1  = np.random.uniform(-1, 1, size=(self.outputs,))
-    self.bias2  = np.random.uniform(-1, 1, size=(self.outputs,))
+    self.weights_update = np.zeros(self.weights3.shape) # Why
+    self.recurrent_weights_update = np.zeros(self.recurrent_weights.shape)
+    self.bias_update = np.zeros(self.bias.shape)
 
-    self.weights_update3 = np.zeros(self.weights3.shape) # Why
-    self.weights_update2 = np.zeros(self.weights2.shape) # Whh
-    self.weights_update1 = np.zeros(self.weights1.shape) # Wxh
-    self.bias_update1 = np.zeros(self.bias1.shape)
-    self.bias_update2 = np.zeros(self.bias2.shape)
-
-    self.batch = b // self.steps
-    self.input_shape = (self.batch, w, h, c)
-    indices = np.arange(0, b)
-    self.batches = np.lib.stride_tricks.as_strided(indices, shape=(self.steps, self.batch), strides=(self.batch * 8, 8)).copy()
     self.output, self.delta = (None, None)
+    self.states = None
 
     return self
 
   @property
   def out_shape(self):
     return self._out_shape
+
+  def set_weights(self, weights):
+
+    if len(weights) != 3:
+      raise ValueError('RNN layer : parameters weights must have 3 set of weights, but has {}'.format(len(weights)))
+
+    self.weights = weights[0]
+    self.recurrent_weights = weights[1]
+    self.bias = weights[2]
 
   def _as_Strided(self, inpt, shift=1):
     '''
@@ -133,7 +131,7 @@ class RNN_layer(object):
     batch, features  = inpt.shape
     stride0, stride1 = inpt.strides
 
-    shape   = (batch - steps*shift + 1, self.steps, features)
+    shape   = (batch - self.steps*shift, self.steps, features)
     strides = (shift*stride0, stride0, stride1)
 
     view = np.lib.stride_tricks.as_strided(inpt, shape=shape, strides=strides)
@@ -146,31 +144,31 @@ class RNN_layer(object):
     Forward of the RNN layer
     '''
 
-    X = inpt.reshape(inpt.shape[0], -1)
+    X = self._as_Strided(inpt.reshape(-1, np.prod(inpt.shape[1:])))
+    self.output = np.zeros(X.shape[:2] + (self.outputs,))
+    self.states = np.zeros(shape=(self.output.shape))
 
-    _state = np.zeros(shape=(self.batch, self.outputs))
-    self.states = np.empty(shape=(X.shape[0], self.outputs))
-    self.output = np.empty(shape=(X.shape[0], self.outputs))   # (steps, outputs)
+    for i, _input in enumerate(X) :
 
-    for idx in self.batches:
+      if i :
+        prev_output = self.states[i-1]
+      else :
+        prev_output = np.zeros_like(self.states[i])
 
-      # final shape (steps, inputs)*(inputs, hidden) -> (steps, hidden)
-      out1 = np.einsum('ij, jk -> ik', X[idx, ...], self.weights1, optimize=True)
+      op = 'ij, jk -> ik'
+      h = np.einsum(op, _input, self.weights, optimize=True) + self.bias
+      r = np.einsum(op, prev_output, self.recurrent_weights, optimize=True)
 
-      # final shape (steps, hidden)*(hidden, hidden) -> (steps, hidden)
-      out2 = np.einsum('ij, jk -> ik', _state, self.weights2, optimize=True)
+      self.states[i] = self.activation.activate(h + r, copy=copy)
 
-      # update of state at time T -> (steps, hidden)
-      _state = self.activation1.activate(out1 + out2 + self.bias1, copy=copy)
+    if not self.return_sequence:
+      self.output = self.states[-1, ...]
 
-      self.states[idx, ...] = _state.copy()
+    else :
+      self.output = np.swapaxes(self.states, 0, 1)
 
-      # final output of the timestep T -> (steps, hidden)
-      outT = np.einsum('ij, jk -> ik', _state, self.weights3) + self.bias2
-      self.output[idx, ...] = self.activation2.activate(outT, copy=copy)
-
-    self.output = self.output.reshape(-1, 1, 1, self.outputs)
-    self.delta  = np.zeros(shape=self.output.shape)
+    self.output = self.output.reshape(X.shape[1], 1, 1, -1)
+    self.delta  = np.zeros_like(self.output)
 
     return self
 
@@ -180,37 +178,45 @@ class RNN_layer(object):
     backward of the RNN layer
     '''
 
-    X = inpt.reshape(inpt.shape[0], -1)
+    X = self._as_Strided(inpt.reshape(-1, np.prod(inpt.shape[1:])))
 
-    delta_r = delta.reshape(X.shape)
+    if self.return_sequence:
+      self.delta = self.delta.reshape(self.steps, -1, self.outputs)
+    else:
+      self.delta.reshape(-1, self.outputs)
 
-    # gradient of the second activation function
-    self.delta *= self.activation2.gradient(self.output, copy=copy)
-    self.delta  = self.delta.reshape(-1, self.outputs)
+    delta = delta.reshape(X.shape)
 
-    _delta_state = 0.
+    _delta = np.zeros(shape=(X.shape[1], self.outputs))
 
-    for i, idx in reversed(list(enumerate(self.batches))):
+    for i, _input in reversed(list(enumerate(X))):
 
-      if i > 0:
-        _prev_state = self.states[self.batches[i-1]].copy()
+      if self.return_sequence:
+        _delta += self.delta[i]
+        _delta *= self.activation.gradient(self.states[i], copy=copy)
+
+      elif i == X.shape[0]-1:
+        _delta += self.delta
+        _delta *= self.activation.gradient(self.states[i], copy=copy)
+
       else :
-        _prev_state = np.zeros(shape=self.states[idx,...].shape)
+        _delta *= self.activation.gradient(self.states[i], copy=copy)
 
-      self.bias_update2    += self.delta[idx, ...].sum(axis=0)
-      self.weights_update3 += np.einsum('ij, ik -> jk', self.delta[idx, ...], self.states[idx, ...], optimize=True)
+      if i :
+        _prev_output = self.states[i-1]
+      else :
+        _prev_output = np.zeros_like(self.states[i])
 
-      dh = np.einsum('ij, kj -> ki', self.weights3, self.delta[idx, ...], optimize=True) + _delta_state
-      dh *= self.activation1.gradient(dh, copy=copy)
+      self.bias_update += _delta.sum(axis=0)
 
-      self.bias_update1    += dh.sum(axis=0)
-      self.weights_update1 += np.einsum('ij, ik -> kj', dh, X[idx, ...], optimize=True)
-      self.weights_update2 += np.einsum('ij, ik -> jk', dh, _prev_state, optimize=True)
+      op = 'ij, ik -> kj'
+      self.weights_update += np.einsum(op, _delta, _input, optimize=True)
+      self.recurrent_weights_update += np.einsum(op, _delta, _prev_output, optimize=True)
 
-      _delta_state = np.einsum('ij, ki -> kj', self.weights2, dh, optimize=True)
+      _delta   = np.einsum('ij, jk -> ik', _delta, self.recurrent_weights, optimize=True) # passed back in timesteps
+      delta_view[i] = np.einsum('ij, kj -> ik', _delta, self.weights, optimize=True) # delta to be backprop.
 
-      # TODO: don't know if this is correct
-      delta_r[idx, ...] = np.einsum('ij, kj -> ik', dh, self.weights1, optimize=True)
+    return self
 
 
   def update (self):
@@ -220,9 +226,11 @@ class RNN_layer(object):
     '''
     check_is_fitted(self, 'delta')
 
-    self.bias1, self.bias2, self.weights1, self.weights2, self.weights3 = \
-                        self.optimizer.update(params   = [self.bias1, self.bias2, self.weights1, self.weights2, self.weights3],
-                                              gradients= [self.bias_update1, self.bias_update2,
-                                                          self.weights_update1, self.weights_update2, self.weights_update3]
+    self.bias, self.weights, self.recurrent_weights = \
+                        self.optimizer.update(params    = [self.bias, self.weights, self.recurrent_weights],
+                                              gradients = [self.bias_update, self.weights_update, self.recurrent_weights_update]
                                               )
     return self
+
+if __name__ == '__main__':
+  pass
