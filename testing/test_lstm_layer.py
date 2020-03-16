@@ -54,9 +54,9 @@ class TestLSTMlayer :
 
     data = np.random.uniform(size=(batch, features))
 
-    inpt_keras = data_to_timesteps(data, timesteps)
+    inpt_keras, _ = data_to_timesteps(data, timesteps)
 
-    assert inpt_keras.shape == (batch - timesteps + 1, timesteps, features)
+    assert inpt_keras.shape == (batch - timesteps, timesteps, features)
 
     weights = [np.random.uniform(size=(features, outputs)), np.random.uniform(size=(outputs,outputs))]
     bias    = [np.zeros(shape=(outputs,)), np.zeros(shape=outputs)]

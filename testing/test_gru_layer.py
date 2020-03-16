@@ -54,10 +54,12 @@ class TestGRUlayer :
     keras_weights2 = np.concatenate([weights[i] for i in range(3, 6)], axis=1)
     keras_bias     = np.concatenate([bias[0] for i in range(4)])
 
-    inpt_keras = data_to_timesteps(data, steps)
+    inpt_keras, _ = data_to_timesteps(data, steps)
 
-    inp = Input(shape=(steps, features))
-    gru = GRU(units=outputs, use_bias=False)(inp)
+    assert inpt_keras.shape == (batch - steps, steps, features)
+
+    inp   = Input(shape=(steps, features))
+    gru   = GRU(units=outputs, use_bias=False)(inp)
     model = Model(inputs=inp, outputs=gru)
 
     model.set_weights([keras_weights1, keras_weights2])
@@ -71,8 +73,6 @@ class TestGRUlayer :
     forward_out_numpynet = layer.output
 
     np.allclose(forward_out_keras, forward_out_numpynet)
-
-    
 
     forward_out_keras
     forward_out_numpynet

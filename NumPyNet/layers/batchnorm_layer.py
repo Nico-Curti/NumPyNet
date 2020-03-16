@@ -33,8 +33,8 @@ class BatchNorm_layer(BaseLayer):
     self.scales = scales
     self.bias = bias
 
-    #Updates
-    self.scales_updates, self.bias_updates = (None, None)
+    # Updates
+    self.scales_update, self.bias_update = (None, None)
     self.optimizer = None
 
     super(BatchNorm_layer, self).__init__(input_shape=input_shape)
@@ -50,6 +50,7 @@ class BatchNorm_layer(BaseLayer):
       chunck_weights : numpy array of model weights
       pos : current position of the array
     '''
+    
     outputs = np.prod(self.out_shape)
 
     self.bias = chunck_weights[pos : pos + outputs]
@@ -132,8 +133,8 @@ class BatchNorm_layer(BaseLayer):
     # Those are the explicit computation of every derivative involved in BackPropagation
     # of the batchNorm layer, where dbeta = dout / dbeta, dgamma = dout / dgamma etc...
 
-    self.bias_updates = self.delta.sum(axis=0)                   # dbeta
-    self.scales_updates = (self.delta * self.x_norm).sum(axis=0) # dgamma
+    self.bias_update = self.delta.sum(axis=0)                   # dbeta
+    self.scales_update = (self.delta * self.x_norm).sum(axis=0) # dgamma
 
     self.delta *= self.scales                                    # self.delta = dx_norm from now on
 
@@ -163,7 +164,7 @@ class BatchNorm_layer(BaseLayer):
     check_is_fitted(self, 'delta')
 
     self.bias, self.scales = self.optimizer.update(params=[self.bias, self.scales],
-                                                   gradients=[self.bias_updates, self.scales_updates]
+                                                   gradients=[self.bias_update, self.scales_update]
                                                   )
 
     return self

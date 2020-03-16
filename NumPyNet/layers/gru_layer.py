@@ -61,7 +61,7 @@ class GRU_layer (object):
     Npoints, features = X.shape
     stride0, stride1  = X.strides
 
-    shape   = (Npoints - self.steps*shift + 1, self.steps, features)
+    shape   = (Npoints - self.steps*shift, self.steps, features)
     strides = (shift*stride0, stride0, stride1)
 
     X = np.lib.stride_tricks.as_strided(arr, shape=shape, strides=strides)
