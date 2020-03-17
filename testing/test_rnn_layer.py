@@ -44,7 +44,7 @@ class TestRNNLayer:
          w      = st.integers(min_value=15, max_value=100),
          h      = st.integers(min_value=15, max_value=100),
          c      = st.integers(min_value=1, max_value=10))
-  @settings(max_examples=20,
+  @settings(max_examples=10,
             deadline=None)
   def _constructor (self, outputs, steps, b, w, h, c):
 
@@ -90,7 +90,7 @@ class TestRNNLayer:
          w      = st.integers(min_value=15, max_value=100),
          h      = st.integers(min_value=15, max_value=100),
          c      = st.integers(min_value=1, max_value=10))
-  @settings(max_examples=20,
+  @settings(max_examples=10,
             deadline=None)
   def _printer (self, outputs, steps, b, w, h, c):
 
@@ -109,9 +109,8 @@ class TestRNNLayer:
          features = st.integers(min_value=1, max_value=50),
          batch    = st.integers(min_value=20, max_value=100),
          return_seq = st.booleans())
-  @settings(max_examples=10,
-            deadline=None)
-  def test_forward (self, steps, outputs, features, batch, return_seq):
+  @settings(max_examples=10, deadline=None)
+  def test_forward(self, steps, outputs, features, batch, return_seq):
 
     activation = 'tanh'
 
@@ -156,19 +155,12 @@ class TestRNNLayer:
          outputs  = st.integers(min_value=1, max_value=50),
          features = st.integers(min_value=1, max_value=50),
          batch    = st.integers(min_value=20, max_value=100),
-         # return_seq = st.booleans()
-         )
-  @settings(max_examples=1,
-            deadline=None)
-  def test_backward (self, steps, outputs, features, batch):
+         return_seq = st.booleans())
+  @settings(max_examples=10, deadline=None)
+  def test_backward(self, steps, outputs, features, batch, return_seq):
 
-    return_seq = True
+    return_seq = False # fixed to "many_to_one" for now
     activation = 'linear'
-
-    batch=20
-    outputs=10
-    features=6
-    steps=4
 
     inpt = np.random.uniform(size=(batch, features))
     inpt_keras, _ = data_to_timesteps(inpt, steps=steps)
@@ -189,16 +181,19 @@ class TestRNNLayer:
     model.set_weights([kernel, recurrent_kernel, bias])
 
     # create NumPyNet layer
-    layer = RNN_layer(outputs=outputs, steps=steps, input_shape=(50, 1, 1, 6), activation=activation, return_sequence=return_seq)
+    layer = RNN_layer(outputs=outputs, steps=steps, input_shape=(batch, 1, 1, features), activation=activation, return_sequence=return_seq)
 
     # set NumPyNet weights
     layer.set_weights([kernel, recurrent_kernel, bias])
+
+    assert np.allclose(layer.weights, model.get_weights()[0])
+    assert np.allclose(layer.recurrent_weights, model.get_weights()[1])
+    assert np.allclose(layer.bias, model.get_weights()[2])
 
     # FORWARD
 
     # forward for keras
     forward_out_keras = model.predict(inpt_keras)
-    forward_out_keras.shape
 
     # forward NumPyNet
     layer.forward(inpt)
@@ -224,11 +219,12 @@ class TestRNNLayer:
     recurrent_weights_update_keras = updates[1]
     bias_update_keras              = updates[2]
 
-    layer.delta = np.zeros(shape=forward_out_keras.shape)
-    delta = np.zeros(shape=inpt_keras.shape)
-    # layer.backward(inpt, delta, copy=True)
+    # backward pass for NumPyNet
+    delta       = np.zeros(shape=inpt_keras.shape, dtype=float)
+    layer.delta = np.ones(shape=layer.output.shape, dtype=float)
+    layer.backward(inpt, delta, copy=True)
 
-    np.allclose(delta,                delta_keras,           atol=1e-3, rtol=1e-2)
-    np.allclose(layer.weights_update, weights_update_keras,  atol=1e-3, rtol=1e-3)
-    np.allclose(layer.recurrent_weights_update, recurrent_weights_update_keras, atol=1e-3, rtol=1e-3)
-    np.allclose(layer.bias_update,    bias_update_keras,     atol=1e-5, rtol=1e-3)
+    assert np.allclose(layer.bias_update,    bias_update_keras,     atol=1e-8, rtol=1e-5)
+    assert np.allclose(layer.weights_update, weights_update_keras,  atol=1e-8, rtol=1e-5)
+    assert np.allclose(delta,                delta_keras,           atol=1e-8, rtol=1e-5)
+    assert np.allclose(layer.recurrent_weights_update, recurrent_weights_update_keras, atol=1e-8, rtol=1e-5)

@@ -54,7 +54,7 @@ class RNN_layer(object):
     self.recurrent_weights = None
     self.bias = None
 
-    self.weights_update = np.zeros(shape=(w*h*c, self.outputs)) # Why
+    self.weights_update = np.zeros(shape=(w*h*c, self.outputs))
     self.recurrent_weights_update = np.zeros(shape=(self.outputs, self.outputs))
     self.bias_update = np.zeros(shape=(self.outputs,))
 
@@ -87,7 +87,7 @@ class RNN_layer(object):
     self.recurrent_weights = np.random.uniform(low=-1, high=1, size=(self.outputs, self.outputs))
     self.bias = np.random.uniform(-1, 1, size=(self.outputs,))
 
-    self.weights_update = np.zeros(self.weights3.shape) # Why
+    self.weights_update = np.zeros(self.weights3.shape)
     self.recurrent_weights_update = np.zeros(self.recurrent_weights.shape)
     self.bias_update = np.zeros(self.bias.shape)
 
@@ -180,44 +180,45 @@ class RNN_layer(object):
 
     X = self._as_Strided(inpt.reshape(-1, np.prod(inpt.shape[1:])))
 
-    if self.return_sequence:
-      self.delta = self.delta.reshape(self.steps, -1, self.outputs)
-    else:
-      self.delta.reshape(-1, self.outputs)
+    # if self.return_sequence:
+    #   self.delta = self.delta.reshape(self.steps, -1, self.outputs)
+    # else:
+    #   self.delta.reshape(-1, self.outputs)
 
-    delta = delta.reshape(X.shape)
+    delta_view = np.swapaxes(delta, 0, 1)
 
-    _delta = np.zeros(shape=(X.shape[1], self.outputs))
+    self.delta *= self.activation.gradient(self.output, copy=copy)
+
+    _delta_state = self.delta.reshape(-1, self.outputs)
 
     for i, _input in reversed(list(enumerate(X))):
 
-      if self.return_sequence:
-        _delta += self.delta[i]
-        _delta *= self.activation.gradient(self.states[i], copy=copy)
+      # if self.return_sequence:
+      #   _delta_state += self.delta[i]
+      #   _delta_state *= self.activation.gradient(self.states[i], copy=copy)
 
-      elif i == X.shape[0]-1:
-        _delta += self.delta
-        _delta *= self.activation.gradient(self.states[i], copy=copy)
-
-      else :
-        _delta *= self.activation.gradient(self.states[i], copy=copy)
+      # elif i == X.shape[0]-1:
+      #   _delta_state += self.delta
+      #   _delta_state *= self.activation.gradient(self.states[i], copy=copy)
+      #
+      # else :
+      #   _delta_state *= self.activation.gradient(self.states[i], copy=copy)
 
       if i :
         _prev_output = self.states[i-1]
       else :
         _prev_output = np.zeros_like(self.states[i])
 
-      self.bias_update += _delta.sum(axis=0)
+      self.bias_update += _delta_state.sum(axis=0)
 
       op = 'ij, ik -> kj'
-      self.weights_update += np.einsum(op, _delta, _input, optimize=True)
-      self.recurrent_weights_update += np.einsum(op, _delta, _prev_output, optimize=True)
+      self.weights_update += np.einsum(op, _delta_state, _input, optimize=True)
+      self.recurrent_weights_update += np.einsum(op, _delta_state, _prev_output, optimize=True)
 
-      _delta   = np.einsum('ij, jk -> ik', _delta, self.recurrent_weights, optimize=True) # passed back in timesteps
-      delta_view[i] = np.einsum('ij, kj -> ik', _delta, self.weights, optimize=True) # delta to be backprop.
+      delta_view[i, ...] += np.einsum('ij, kj -> ik', _delta_state, self.weights, optimize=True)    # delta to be backprop.
+      _delta_state = np.einsum('ij, kj -> ik', _delta_state, self.recurrent_weights, optimize=True) # passed back in timesteps
 
     return self
-
 
   def update (self):
     '''
