@@ -27,7 +27,7 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 class TestBatchnormLayer:
   '''
   Tests:
-    - costructor of RNN_layer object
+    - costructor of Batchnorm_layer object
     - print function
     - forward function against tf.keras
     - backward function against tf.keras

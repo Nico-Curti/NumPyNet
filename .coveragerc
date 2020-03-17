@@ -4,7 +4,6 @@ omit =
     */NumPyNet/__init__.py
     */NumPyNet/__version__.py
     */NumPyNet/layers/__init__.py
-    */NumPyNet/testing/*
 [report]
 # Regexes for lines to exclude from consideration
 exclude_lines =

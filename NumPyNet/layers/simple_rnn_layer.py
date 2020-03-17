@@ -14,7 +14,7 @@ __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class RNN_layer(object):
+class SimpleRNN_layer(object):
 
   def __init__ (self, outputs, steps, activation=Activations, input_shape=None, weights=None, bias=None, return_sequence=False):
     '''

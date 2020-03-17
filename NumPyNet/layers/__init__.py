@@ -19,6 +19,7 @@ from .maxpool_layer import Maxpool_layer
 from .rnn_layer import RNN_layer
 from .route_layer import Route_layer
 from .shortcut_layer import Shortcut_layer
+from .simple_rnn_layer import SimpleRNN_layer
 from .shuffler_layer import Shuffler_layer
 from .softmax_layer import Softmax_layer
 from .upsample_layer import Upsample_layer
@@ -38,6 +39,7 @@ MaxPool2D = Maxpool_layer
 concatenate = Route_layer
 RNN = RNN_layer
 Add = Shortcut_layer
+SimpleRNN = SimpleRNN_layer
 SoftMax = Softmax_layer
 UpSampling2D = Upsample_layer
 

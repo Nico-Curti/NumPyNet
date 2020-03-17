@@ -11,7 +11,7 @@ import tensorflow.keras.backend as K
 
 from NumPyNet.exception import LayerError
 from NumPyNet.exception import NotFittedError
-from NumPyNet.layers.temp_rnn_layer import RNN_layer
+from NumPyNet.layers.simple_rnn_layer import SimpleRNN_layer
 from NumPyNet.utils import data_to_timesteps
 
 import numpy as np
@@ -26,10 +26,10 @@ __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class TestRNNLayer:
+class TestSimpleRNNLayer:
   '''
   Tests:
-    - costructor of RNN_layer object
+    - costructor of SimpleRNN_layer object
     - print function
     - forward function against tf.keras
     - backward function against tf.keras
@@ -56,7 +56,7 @@ class TestRNNLayer:
 
     else :
       with pytest.raises(ValueError):
-        layer = RNN_layer(outputs=outputs, steps=steps)
+        layer = SimpleRNN_layer(outputs=outputs, steps=steps)
 
       outputs += 10
       weights_choice = [[np.random.uniform(low=-1, high=1., size=(w * h * c, outputs))]*3, None]
@@ -67,7 +67,7 @@ class TestRNNLayer:
 
     for numpynet_act in numpynet_activ:
 
-      layer = RNN_layer(outputs=outputs, steps=steps, activation=numpynet_act,
+      layer = SimpleRNN_layer(outputs=outputs, steps=steps, activation=numpynet_act,
                         input_shape=(b, w, h, c),
                         weights=weights, bias=bias)
 
@@ -94,12 +94,12 @@ class TestRNNLayer:
             deadline=None)
   def _printer (self, outputs, steps, b, w, h, c):
 
-    layer = RNN_layer(outputs=outputs, steps=steps, activation=Linear)
+    layer = SimpleRNN_layer(outputs=outputs, steps=steps, activation=Linear)
 
     with pytest.raises(TypeError):
       print(layer)
 
-    layer = RNN_layer(outputs=outputs, steps=steps, activation=Linear, input_shape=(b, w, h, c))
+    layer = SimpleRNN_layer(outputs=outputs, steps=steps, activation=Linear, input_shape=(b, w, h, c))
 
     print(layer)
 
@@ -133,7 +133,7 @@ class TestRNNLayer:
     model.set_weights([kernel, recurrent_kernel, bias])
 
     # create NumPyNet layer
-    layer = RNN_layer(outputs=outputs, steps=steps, input_shape=(50, 1, 1, 6), activation=activation, return_sequence=return_seq)
+    layer = SimpleRNN_layer(outputs=outputs, steps=steps, input_shape=(50, 1, 1, 6), activation=activation, return_sequence=return_seq)
 
     # set NumPyNet weights
     layer.set_weights([kernel, recurrent_kernel, bias])
@@ -156,7 +156,7 @@ class TestRNNLayer:
          features = st.integers(min_value=1, max_value=50),
          batch    = st.integers(min_value=20, max_value=100),
          return_seq = st.booleans())
-  @settings(max_examples=10, deadline=None)
+  @settings(max_examples=2, deadline=None)
   def test_backward(self, steps, outputs, features, batch, return_seq):
 
     return_seq = False # fixed to "many_to_one" for now
@@ -181,7 +181,7 @@ class TestRNNLayer:
     model.set_weights([kernel, recurrent_kernel, bias])
 
     # create NumPyNet layer
-    layer = RNN_layer(outputs=outputs, steps=steps, input_shape=(batch, 1, 1, features), activation=activation, return_sequence=return_seq)
+    layer = SimpleRNN_layer(outputs=outputs, steps=steps, input_shape=(batch, 1, 1, features), activation=activation, return_sequence=return_seq)
 
     # set NumPyNet weights
     layer.set_weights([kernel, recurrent_kernel, bias])
