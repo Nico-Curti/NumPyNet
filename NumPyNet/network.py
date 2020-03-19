@@ -30,6 +30,7 @@ from NumPyNet.layers.rnn_layer import RNN_layer
 from NumPyNet.layers.route_layer import Route_layer
 from NumPyNet.layers.shortcut_layer import Shortcut_layer
 from NumPyNet.layers.shuffler_layer import Shuffler_layer
+from NumPyNet.layers.simple_rnn_layer import SimpleRNN_layer
 from NumPyNet.layers.softmax_layer import Softmax_layer
 from NumPyNet.layers.upsample_layer import Upsample_layer
 from NumPyNet.layers.yolo_layer import Yolo_layer
@@ -65,6 +66,7 @@ class Network(object):
             'route'         :  Route_layer,
             'shortcut'      :  Shortcut_layer,
             'shuffler'      :  Shuffler_layer,
+            'simplernn'     :  SimpleRNN_layer,
             'softmax'       :  Softmax_layer,
             'upsample'      :  Upsample_layer,
             'yolo'          :  Yolo_layer,

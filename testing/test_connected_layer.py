@@ -28,8 +28,6 @@ from random import choice
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-# __package__ = 'Connected Layer testing'
-
 
 class TestConnectedLayer:
   '''
@@ -200,7 +198,7 @@ class TestConnectedLayer:
     forward_out_numpynet = layer.output
 
     # Forward output Test
-    assert np.allclose(forward_out_numpynet[:, 0, 0, :], forward_out_keras, atol=1e-4)
+    assert np.allclose(forward_out_numpynet[:, 0, 0, :], forward_out_keras, atol=1e-2)
 
     # BACKWARD
 

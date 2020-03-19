@@ -20,7 +20,8 @@ class Upsample_layer(BaseLayer):
     '''
     Upsample / Downsample layer
 
-    Parameters:
+    Parameters
+    ----------
       input_shape : tuple of 4 integers: input shape of the layer.
       stride : scaling factor of the input;
         Repeats the rows and columns of the data by stride[0] and stride[1] respectively.
@@ -89,9 +90,15 @@ class Upsample_layer(BaseLayer):
     Forward of the upsample layer, apply a bilinear upsample/downsample to
     the input according to the sign of stride
 
-    Parameters:
-      inpt: the input to be up-down sampled
+    Parameters
+    ----------
+      inpt: numpy array. Input image to be up/down-sampled
+
+    Returns
+    -------
+      UpSample_layer object
     '''
+
     self._check_dims(shape=self.input_shape, arr=inpt, func='Forward')
 
     if self.reverse: # Downsample
@@ -107,10 +114,15 @@ class Upsample_layer(BaseLayer):
   def backward(self, delta):
     '''
     Compute the inverse transformation of the forward function
-    on the gradient
+    on the gradient.
 
-    Parameters:
-      delta : global error to be backpropagated
+    Parameters
+    ----------
+      delta : numpy array. Global error to be backpropagated
+
+    Returns
+    -------
+      UpSample_layer object
     '''
 
     check_is_fitted(self, 'delta')

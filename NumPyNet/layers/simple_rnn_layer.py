@@ -8,31 +8,33 @@ from NumPyNet.activations import Activations
 from NumPyNet.utils import _check_activation
 from NumPyNet.utils import check_is_fitted
 
+from NumPyNet.layers.base import BaseLayer
+
 import numpy as np
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
-class SimpleRNN_layer(object):
+class SimpleRNN_layer(BaseLayer):
 
-  def __init__ (self, outputs, steps, activation=Activations, input_shape=None, weights=None, bias=None, return_sequence=False):
+  def __init__ (self, outputs, steps, activation=Activations, input_shape=None, weights=None, recurrent_weights=None, bias=None, return_sequence=False):
     '''
     Recurrent Neural Network layer. Build a Recurrent fully connected architecture.
 
     Parameters
     ----------
-
     outputs : integer, number of outputs of the layer.
     steps   : integer, number of timesteps of the recurrency.
-    activation1 : activation function object. First activation function, applied to
-      every hidden state
+    activation : activation function object. activation function, applied to every hidden state
     input_shape : tuple of int, default None. Used for a single layer model.
       "None" is used when the layer is part of a network.
-    weights : list of numpy array, default None. List containing two numpy array of weights.
-      If None, the init is random.
-    bias : list of numpy array, default None. List containing two numpy array of bias.
-      If None, the init is random.
+    weights : numpy array, default None. numpy array of weights
+      of shapes (inputs, outputs). If None, the init is random.
+    recurrent_weights : numpy array, default None. numpy array of weights
+      of shapes (outputs, outputs). If None, the init is random.
+    bias : numpy array, default None. shape (outputs, )
+      If None, the init is zeros.
     '''
 
     if isinstance(outputs, int) and outputs > 0:
@@ -45,54 +47,59 @@ class SimpleRNN_layer(object):
     else :
       raise ValueError('Parameter "steps" must be an integer and > 0')
 
-    b, w, h, c = input_shape
-
     self.activation = _check_activation(layer=self, activation_func=activation)
     self.return_sequence = return_sequence
 
-    self.weights = None
-    self.recurrent_weights = None
-    self.bias = None
+    self.weights = weights
+    self.recurrent_weights = recurrent_weights
+    self.bias = bias
 
-    self.weights_update = np.zeros(shape=(w*h*c, self.outputs))
-    self.recurrent_weights_update = np.zeros(shape=(self.outputs, self.outputs))
-    self.bias_update = np.zeros(shape=(self.outputs,))
+    self.weights_update = None
+    self.recurrent_weights_update = None
+    self.bias_update = None
+    self.states      = None
+    self.optimizer   = None
 
-    self.output = None
-    self.delta = None
-    self.states = None
+    if input_shape is not None:
+      super(SimpleRNN_layer, self).__init__(input_shape=input_shape)
+      self._build()
 
-    self.optimizer = None
+  def _build(self):
+
+    b, w, h, c = self.input_shape
+
+    if self.weights is None:
+      scale = np.sqrt(2 / (w * h * c * self.outputs))
+      self.weights = np.random.normal(loc=scale, scale=1., size=(w * h * c, self.outputs))
+
+    if self.recurrent_weights is None:
+      scale = np.sqrt(2 / (self.outputs * self.outputs))
+      self.recurrent_weights = np.random.normal(loc=scale, scale=1., size=(self.outputs, self.outputs))
+
+    if self.bias is None:
+      self.bias = np.zeros(shape=(self.outputs, ), dtype=float)
+
+    if self.return_sequence:
+      self._out_shape = (b - self.steps, 1, 1, self.outputs * self.steps)
+    else :
+      self._out_shape = (b - self.steps, 1, 1, self.outputs)
+
+    # init to zeros because of += in backward
+    self.weights_update = np.zeros_like(self.weights)
+    self.recurrent_weights_update = np.zeros_like(self.recurrent_weights)
+    self.bias_update = np.zeros_like(self.bias)
+
 
   def __str__ (self):
-    return 'very good rnn'
+    batch, w, h, c = self.input_shape
+    out_b, out_w, out_h, out_c = self.out_shape
+    return 'srnn                   {0:>4d} x{1:>4d} x{2:>4d} x{3:>4d}   ->  {4:>4d} x{5:>4d} x{6:>4d} x{7:>4d}'.format(
+           batch, w, h, c, out_b, out_w, out_h, out_c)
 
   def __call__(self, previous_layer):
 
-    if previous_layer.out_shape is None:
-      class_name = self.__class__.__name__
-      prev_name  = layer.__class__.__name__
-      raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
-
-    b, w, h, c = previous_layer.out_shape
-
-    self._out_shape = (b, 1, 1, self.outputs)
-
-    if b < self.steps:
-      class_name = self.__class__.__name__
-      prev_name  = layer.__class__.__name__
-      raise LayerError('Incorrect steps found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
-
-    self.weights = np.random.uniform(low=-1, high=1, size=(w*h*c, self.outputs))
-    self.recurrent_weights = np.random.uniform(low=-1, high=1, size=(self.outputs, self.outputs))
-    self.bias = np.random.uniform(-1, 1, size=(self.outputs,))
-
-    self.weights_update = np.zeros(self.weights3.shape)
-    self.recurrent_weights_update = np.zeros(self.recurrent_weights.shape)
-    self.bias_update = np.zeros(self.bias.shape)
-
-    self.output, self.delta = (None, None)
-    self.states = None
+    super(SimpleRNN_layer, self).__call__(previous_layer)
+    self._build()
 
     return self
 
@@ -100,16 +107,41 @@ class SimpleRNN_layer(object):
   def out_shape(self):
     return self._out_shape
 
-  def set_weights(self, weights):
+  def load_weights(self, chunck_weights, pos=0):
+    '''
+    Load weights from full array of model weights
 
-    if len(weights) != 3:
-      raise ValueError('RNN layer : parameters weights must have 3 set of weights, but has {}'.format(len(weights)))
+    Parameters
+    ----------
+      chunck_weights : numpy array of model weights
+      pos : current position of the array
 
-    self.weights = weights[0]
-    self.recurrent_weights = weights[1]
-    self.bias = weights[2]
+    Returns
+    ----------
+      pos
+    '''
 
-  def _as_Strided(self, inpt, shift=1):
+    w, h, c = self.input_shape[1:]
+    self.bias = chunck_weights[pos : pos + self.outputs]
+    pos += self.outputs
+
+    self.weights = chunck_weights[pos : pos + self.weights.size]
+    self.weights = self.weights.reshape(w*h*c, self.outputs)
+    pos += self.weights.size
+
+    self.recurrent_weights = chunck_weights[pos : pos + self.recurrent_weights.size]
+    self.recurrent_weights = self.recurrent_weights.reshape(self.outputs, self.outputs)
+    pos += self.recurrent_weights.size
+
+    return pos
+
+  def save_weights(self):
+    '''
+    Return the biases and weights in a single ravel fmt to save in binary file
+    '''
+    return np.concatenate([self.bias.ravel(), self.weights.ravel(), self.recurrent_weights.ravel()], axis=0).tolist()
+
+  def _asStride(self, inpt, shift=1):
     '''
     Generate a view on the inpt data with shape (batch, steps, features), then
       swap the first two axis to ease the computation.
@@ -122,11 +154,11 @@ class SimpleRNN_layer(object):
 
     Returns
     -------
-      A view on the input array
+      A view on the input array of shape (steps, batch, features)
     '''
 
     if len(inpt.shape) != 2:
-      raise ValueError('RNN layer : shape of the input for _as_Strided must be two dimensionals but is {}'.format(inpt.shape))
+      raise ValueError('RNN layer : shape of the input for _asStrid must be two dimensionals but is {}'.format(inpt.shape))
 
     batch, features  = inpt.shape
     stride0, stride1 = inpt.strides
@@ -138,17 +170,15 @@ class SimpleRNN_layer(object):
 
     return np.swapaxes(view, 0, 1)
 
-
   def forward (self, inpt, copy=False):
     '''
     Forward of the RNN layer
     '''
 
-    X = self._as_Strided(inpt.reshape(-1, np.prod(inpt.shape[1:])))
-    self.output = np.zeros(X.shape[:2] + (self.outputs,))
-    self.states = np.zeros(shape=(self.output.shape))
+    self.X = self._asStride(inpt.reshape(-1, np.prod(inpt.shape[1:])))
+    self.states = np.zeros(shape=(self.steps, self.X.shape[1], self.outputs))
 
-    for i, _input in enumerate(X) :
+    for i, _input in enumerate(self.X) :
 
       if i :
         prev_output = self.states[i-1]
@@ -167,7 +197,7 @@ class SimpleRNN_layer(object):
     else :
       self.output = np.swapaxes(self.states, 0, 1)
 
-    self.output = self.output.reshape(X.shape[1], 1, 1, -1)
+    self.output = self.output.reshape(self.X.shape[1], 1, 1, -1)
     self.delta  = np.zeros_like(self.output)
 
     return self
@@ -177,8 +207,6 @@ class SimpleRNN_layer(object):
     '''
     backward of the RNN layer
     '''
-
-    X = self._as_Strided(inpt.reshape(-1, np.prod(inpt.shape[1:])))
 
     # if self.return_sequence:
     #   self.delta = self.delta.reshape(self.steps, -1, self.outputs)
@@ -191,7 +219,7 @@ class SimpleRNN_layer(object):
 
     _delta_state = self.delta.reshape(-1, self.outputs)
 
-    for i, _input in reversed(list(enumerate(X))):
+    for i, _input in reversed(list(enumerate(self.X))):
 
       # if self.return_sequence:
       #   _delta_state += self.delta[i]
@@ -217,6 +245,8 @@ class SimpleRNN_layer(object):
 
       delta_view[i, ...] += np.einsum('ij, kj -> ik', _delta_state, self.weights, optimize=True)    # delta to be backprop.
       _delta_state = np.einsum('ij, kj -> ik', _delta_state, self.recurrent_weights, optimize=True) # passed back in timesteps
+      _delta_state *= self.activation.gradient(_prev_output, copy=copy)
+
 
     return self
 

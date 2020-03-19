@@ -46,9 +46,9 @@ class TestSimpleRNNLayer:
          c      = st.integers(min_value=1, max_value=10))
   @settings(max_examples=10,
             deadline=None)
-  def _constructor (self, outputs, steps, b, w, h, c):
+  def test_constructor (self, outputs, steps, b, w, h, c):
 
-    numpynet_activ = [Relu, Logistic, Tanh, Linear]
+    numpynet_activ = ['relu', 'logistic', 'tanh', 'linear']
 
     if outputs > 0:
       weights_choice = [np.random.uniform(low=-1, high=1., size=( w * h * c, outputs)), None]
@@ -92,14 +92,14 @@ class TestSimpleRNNLayer:
          c      = st.integers(min_value=1, max_value=10))
   @settings(max_examples=10,
             deadline=None)
-  def _printer (self, outputs, steps, b, w, h, c):
+  def test_printer (self, outputs, steps, b, w, h, c):
 
-    layer = SimpleRNN_layer(outputs=outputs, steps=steps, activation=Linear)
+    layer = SimpleRNN_layer(outputs=outputs, steps=steps, activation='linear')
 
-    with pytest.raises(TypeError):
+    with pytest.raises(AttributeError):
       print(layer)
 
-    layer = SimpleRNN_layer(outputs=outputs, steps=steps, activation=Linear, input_shape=(b, w, h, c))
+    layer = SimpleRNN_layer(outputs=outputs, steps=steps, activation='linear', input_shape=(b, w, h, c))
 
     print(layer)
 
@@ -133,22 +133,21 @@ class TestSimpleRNNLayer:
     model.set_weights([kernel, recurrent_kernel, bias])
 
     # create NumPyNet layer
-    layer = SimpleRNN_layer(outputs=outputs, steps=steps, input_shape=(50, 1, 1, 6), activation=activation, return_sequence=return_seq)
+    layer = SimpleRNN_layer(outputs=outputs, steps=steps, input_shape=(batch, 1, 1, features), activation=activation, return_sequence=return_seq)
 
     # set NumPyNet weights
-    layer.set_weights([kernel, recurrent_kernel, bias])
+    layer.load_weights(np.concatenate([bias.ravel(), kernel.ravel(), recurrent_kernel.ravel()]))
 
     # FORWARD
 
     # forward for keras
     forward_out_keras = model.predict(inpt_keras)
-    forward_out_keras.shape
 
     # forward NumPyNet
     layer.forward(inpt)
     forward_out_numpynet = layer.output.reshape(forward_out_keras.shape)
 
-    assert np.allclose(forward_out_numpynet, forward_out_keras, atol=1e-4)
+    assert np.allclose(forward_out_numpynet, forward_out_keras, atol=1e-4, rtol=1e-3)
 
 
   @given(steps    = st.integers(min_value=1, max_value=10),
@@ -156,11 +155,11 @@ class TestSimpleRNNLayer:
          features = st.integers(min_value=1, max_value=50),
          batch    = st.integers(min_value=20, max_value=100),
          return_seq = st.booleans())
-  @settings(max_examples=2, deadline=None)
+  @settings(max_examples=1, deadline=None)
   def test_backward(self, steps, outputs, features, batch, return_seq):
 
     return_seq = False # fixed to "many_to_one" for now
-    activation = 'linear'
+    activation = 'tanh'
 
     inpt = np.random.uniform(size=(batch, features))
     inpt_keras, _ = data_to_timesteps(inpt, steps=steps)
@@ -184,7 +183,7 @@ class TestSimpleRNNLayer:
     layer = SimpleRNN_layer(outputs=outputs, steps=steps, input_shape=(batch, 1, 1, features), activation=activation, return_sequence=return_seq)
 
     # set NumPyNet weights
-    layer.set_weights([kernel, recurrent_kernel, bias])
+    layer.load_weights(np.concatenate([bias.ravel(), kernel.ravel(), recurrent_kernel.ravel()]))
 
     assert np.allclose(layer.weights, model.get_weights()[0])
     assert np.allclose(layer.recurrent_weights, model.get_weights()[1])
@@ -199,7 +198,7 @@ class TestSimpleRNNLayer:
     layer.forward(inpt)
     forward_out_numpynet = layer.output.reshape(forward_out_keras.shape)
 
-    assert np.allclose(forward_out_numpynet, forward_out_keras, atol=1e-4)
+    assert np.allclose(forward_out_numpynet, forward_out_keras, atol=1e-4, rtol=1e-3)
 
     # BACKWARD
 
@@ -228,3 +227,8 @@ class TestSimpleRNNLayer:
     assert np.allclose(layer.weights_update, weights_update_keras,  atol=1e-8, rtol=1e-5)
     assert np.allclose(delta,                delta_keras,           atol=1e-8, rtol=1e-5)
     assert np.allclose(layer.recurrent_weights_update, recurrent_weights_update_keras, atol=1e-8, rtol=1e-5)
+
+if __name__ == '__main__':
+
+  test = TestSimpleRNNLayer()
+  test.test_backward()
