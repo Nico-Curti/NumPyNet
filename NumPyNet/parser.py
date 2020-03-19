@@ -118,7 +118,7 @@ class net_config (object):
     '''
 
     if not os.path.isfile(filename):
-      raise FileNotFoundError('Could not open or find the config file. Given: {}'.format(filename))
+      raise IOError('Could not open or find the config file. Given: {}'.format(filename))
 
     self._data = configparser.ConfigParser(defaults=None, dict_type=self.multidict, strict=False)
     self._data.read(filename)
