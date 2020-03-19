@@ -155,10 +155,10 @@ class Network(object):
 
     model = net_config(cfg_filename)
 
-    self.batch = model.get('net1', 'batch', 1)
-    self.w = model.get('net1', 'width', 416)
-    self.h = model.get('net1', 'height', 416)
-    self.c = model.get('net1', 'channels', 3)
+    self.batch = model.get('net0', 'batch', 1)
+    self.w = model.get('net0', 'width', 416)
+    self.h = model.get('net0', 'height', 416)
+    self.c = model.get('net0', 'channels', 3)
     # TODO: add other network parameters
 
     input_shape = (self.batch, self.w, self.h, self.c)
@@ -168,18 +168,7 @@ class Network(object):
 
     for i, layer in enumerate(model):
       layer_t = re.split(r'\d+', layer)[0]
-      params = dict(model.get_params(layer))
-
-      layer_params = {}
-      for k, v in params.items():
-        try:
-          val = eval(v)
-        except NameError:
-          val = v
-        except:
-          raise DataVariableError('Type variable not recognized! Possible variables are only [int, float, string, vector<float>].')
-
-        layer_params[k] = val
+      params = model.get_params(layer)
 
       if layer_t == 'shortcut':
         _from = model.get(layer, 'from', 0)
@@ -191,6 +180,8 @@ class Network(object):
 
       else:
         self._net.append( self.LAYERS[layer_t](input_shape=input_shape, **layer_params)(self._net[-1]) )
+
+      input_shape = self._net[-1].out_shape
 
       print('{:>4d} {}'.format(i, self._net[-1]), end='\n') # flush=True
       sys.stdout.flush() # compatibility with pythonn 2.7

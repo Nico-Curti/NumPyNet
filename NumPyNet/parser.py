@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import os
 import re
+import ast
 import configparser
 from collections import OrderedDict
 
@@ -50,8 +51,8 @@ class data_config (object):
 
     for k, v in rows:
       try:
-        self._data[k] = eval(v)
-      except NameError:
+        self._data[k] = ast.literal_eval(v)
+      except ValueError:
         self._data[k] = v
 
 
@@ -96,7 +97,6 @@ class net_config (object):
 
       OrderedDict.__setitem__(self, key, val)
 
-
   def __init__ (self, filename):
     '''
     Network config parser
@@ -118,16 +118,57 @@ class net_config (object):
     '''
 
     if not os.path.isfile(filename):
-      raise IOError('Could not open or find the network config file. Given: {}'.format(filename))
+      raise FileNotFoundError('Could not open or find the config file. Given: {}'.format(filename))
 
     self._data = configparser.ConfigParser(defaults=None, dict_type=self.multidict, strict=False)
     self._data.read(filename)
+    self._index = 0
 
     first_section = self._data.sections()[0]
 
     if not first_section.startswith('net') and not first_section.startswith('network'):
       raise CfgVariableError('Config error! First section must be a network one (ex. [net] / [network]). Given: [{}]'.format(first_section))
 
+  def __iter__ (self):
+    self._index = 0
+    return self
+
+  def __next__ (self):
+    self._index += 1
+
+    if self._index < len(self):
+      return self._data.sections()[self._index]
+    else:
+      raise StopIteration
+
+  def next (self): # this should fix python2* problems with __iter__ and __next__
+    return self.__next__()
+
+  def get_params (self, section):
+    '''
+    Return all params in section as dict
+
+    Parameters
+    ----------
+      section : str
+        Layer name + position
+
+    Returns
+    -------
+      params : dict
+        Dictionary of all (keys, values) in section
+    '''
+
+    options = self._data.options(section)
+    params = {}
+
+    for opt in options:
+      try:
+        params[opt] = ast.literal_eval(self._data.get(section, opt))
+      except ValueError:
+        params[opt] = self._data.get(section, opt)
+
+    return params
 
   def get (self, section, key, default=None):
     '''
@@ -149,14 +190,13 @@ class net_config (object):
       raise DataVariableError('Section not found in the config file. Given {}'.format(section))
 
     try:
-      return eval(self._data.get(section, key)) if self._data.has_option(section, key) else default
+      return ast.literal_eval(self._data.get(section, key)) if self._data.has_option(section, key) else default
 
-    except NameError: # it is a pure string
+    except ValueError: # it is a pure string
       return self._data.get(section, key) if self._data.has_option(section, key) else default
 
     except:
       raise DataVariableError('Type variable not recognized! Possible variables are only [int, float, string, vector<float>].')
-
 
   def __str__ (self):
 
