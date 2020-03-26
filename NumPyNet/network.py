@@ -10,6 +10,7 @@ import pickle
 from copy import copy
 import sys
 
+import inspect
 import numpy as np
 from time import time as now
 
@@ -174,14 +175,14 @@ class Network(object):
 
       if layer_t == 'shortcut':
         _from = model.get(layer, 'from', 0)
-        self._net.append( self.LAYERS[layer_t](input_shape=input_shape, **layer_params)([self._net[-1], self._net[_from]]) )
+        self._net.append( self.LAYERS[layer_t](input_shape=input_shape, **params)([self._net[-1], self._net[_from]]) )
 
       elif layer_t == 'route':
         _layers = model.get(layer, 'layers', [])
-        self._net.append( self.LAYERS[layer_t](input_shape=input_shape, **layer_params)(self._net[_layers]) )
+        self._net.append( self.LAYERS[layer_t](input_shape=input_shape, **params)(self._net[_layers]) )
 
       else:
-        self._net.append( self.LAYERS[layer_t](input_shape=input_shape, **layer_params)(self._net[-1]) )
+        self._net.append( self.LAYERS[layer_t](input_shape=input_shape, **params)(self._net[-1]) )
 
       input_shape = self._net[-1].out_shape
 
@@ -294,9 +295,15 @@ class Network(object):
       if not callable(func):
         raise MetricsError('Metrics {} is not a callable object'.format(func.__name__))
 
-      # TODO: check if the signature is correct
+      infos = inspect.getfullargspec(func)
+      if len(infos.args) - len(infos.defaults) != 2:
+        raise MetricsError('Metrics {0} is not a valid metrics function. '
+                           'The required signature is only func (y_true, y_pred, **kwargs). '
+                           'Try to use a partial to overcome this kind of issue.')
 
     self.metrics = metrics
+
+    return True
 
 
   def _evaluate_metrics(self, y_true, y_pred):
