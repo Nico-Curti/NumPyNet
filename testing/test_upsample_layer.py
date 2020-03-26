@@ -45,6 +45,7 @@ class TestUpsampleLayer:
 
     input_shape = choice(shape_choices)
     stride = choice(stride_choices)
+    stride = 1 if stride == 0 else stride
 
     if hasattr(stride, '__iter__'):
 
