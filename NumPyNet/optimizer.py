@@ -15,7 +15,7 @@ class Optimizer (object):
   '''
   '''
 
-  def __init__ (self, lr=1e-3, decay=0., lr_min=0., lr_max=np.inf, *args, **kwargs):
+  def __init__ (self, lr=1e-3, decay=0., lr_min=0., lr_max=np.inf):
 
     self.lr = lr
     self.decay = decay
@@ -45,7 +45,7 @@ class SGD (Optimizer):
   def update (self, params, gradients):
 
     for p, g in zip(params, gradients):
-      p -= self.lr * g
+      p -= self.lr * np.clip(g, -1., 1.)
 
     super(SGD, self).update(params, gradients)
 
@@ -69,7 +69,7 @@ class Momentum (Optimizer):
       self.velocity = [np.zeros(shape=p.shape, dtype=float) for p in params]
 
     for i, (v, p, g) in enumerate(zip(self.velocity, params, gradients)):
-      v  = self.momentum * v - self.lr * g
+      v  = self.momentum * v - self.lr * np.clip(g, -1., 1.)
       p += v
       self.velocity[i] = v
 
@@ -95,8 +95,8 @@ class NesterovMomentum (Optimizer):
       self.velocity = [np.zeros(shape=p.shape, dtype=float) for p in params]
 
     for i, (v, p, g) in enumerate(zip(self.velocity, params, gradients)):
-      v  = self.momentum * v - self.lr * g
-      p += self.momentum * v - self.lr * g
+      v  = self.momentum * v - self.lr * np.clip(g, -1., 1.)
+      p += self.momentum * v - self.lr * np.clip(g, -1., 1.)
       self.velocity[i] = v
 
     super(NesterovMomentum, self).update(params, gradients)

@@ -76,6 +76,14 @@ class Image (object):
 
     return img
 
+  def __array__ (self):
+    '''
+    Compatibility with numpy array.
+    In this way np.array(Image_object) is a valid 3D array and you can
+    also simply call plt.imshow(Image_object) without other intermediate steps.
+    '''
+    return self.data
+
   def _get_color (self, x, max):
 
     ratio = (x / max) * len(image_utils.num_box_colors - 1)
@@ -188,10 +196,11 @@ class Image (object):
     Note: this rotate preserve the original size so some original parts can be removed
           from the rotated image. See 'rotate_bound' for a conservative rotation.
     '''
-    num_rows, num_cols = self._data.shape[:2]
+    h, w = self._data.shape[:2]
 
-    rotation_matrix = cv2.getRotationMatrix2D(center=(num_cols//2, num_rows//2), angle=angle, scale=1.0)
-    self._data = cv2.warpAffine(self._data, M=rotation_matrix, dsize=(num_cols, num_rows))
+    center = (w // 2, h // 2)
+    rotation_matrix = cv2.getRotationMatrix2D(center=center, angle=angle, scale=1.0)
+    self._data = cv2.warpAffine(self._data, M=rotation_matrix, dsize=(w, h))
     return self
 
   def rotate_bound (self, angle):
@@ -212,7 +221,7 @@ class Image (object):
     # grab the rotation matrix (applying the negative of the
     # angle to rotate clockwise), then grab the sine and cosine
     # (i.e., the rotation components of the matrix)
-    M = cv2.getRotationMatrix2D(center=(cX, cY), angle=-angle, scale=1.0)
+    M = cv2.getRotationMatrix2D(center=(cX, cY), angle=angle, scale=1.0)
     cos = np.abs(M[0, 0])
     sin = np.abs(M[0, 1])
 
