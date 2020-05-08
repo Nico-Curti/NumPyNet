@@ -55,7 +55,7 @@ class TestUpsampleLayer:
 
         assert layer.input_shape == input_shape
         assert layer.stride == stride
-        assert layer.scales == scales
+        assert layer.scale == scales
         assert layer.reversed == np.sign(stride[0] + stride[1]) - 1
 
       else:
@@ -69,7 +69,7 @@ class TestUpsampleLayer:
 
       assert layer.input_shape == input_shape
       assert layer.stride == (stride, stride)
-      assert layer.scales == scales
+      assert layer.scale == scales
       assert layer.reversed == np.sign(stride[0]) - 1
 
 
