@@ -1,6 +1,7 @@
 language: python
 
 dist: trusty
+timeout: 1000
 
 matrix:
   include:
