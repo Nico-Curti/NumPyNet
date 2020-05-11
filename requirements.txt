@@ -1,5 +1,5 @@
 opencv-python
-numpy>=1.17
+numpy>=1.15
 pillow
 pytest
 enum34
