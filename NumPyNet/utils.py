@@ -208,10 +208,11 @@ def to_categorical (arr):
   '''
 
   n = len(arr)
-  uniques, index = np.unique(np.asarray(arr), return_inverse=True)
+  pos = np.expand_dims(arr, axis=1).astype(int)
+  num_label = np.max(pos) + 1
 
-  categorical = np.zeros(shape=(n, uniques.size), dtype=float)
-  categorical[range(0, n), index] = 1.
+  categorical = np.zeros(shape=(n, num_label), dtype=float)
+  np.put_along_axis(categorical, indices=pos, values=1, axis=1)
 
   return categorical
 

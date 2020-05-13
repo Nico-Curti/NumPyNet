@@ -51,26 +51,26 @@ class TestUpsampleLayer:
 
       if stride[0] + stride[1]:
 
-        layer = Upsample_layer(input_shape=input_shape, stride=stride, scales=scales)
+        layer = Upsample_layer(input_shape=input_shape, stride=stride, scale=scales)
 
         assert layer.input_shape == input_shape
         assert layer.stride == stride
-        assert layer.scales == scales
+        assert layer.scale == scales
         assert layer.reversed == np.sign(stride[0] + stride[1]) - 1
 
       else:
 
         with pytest.raises(NotImplementedError):
-          layer = Upsample_layer(input_shape=input_shape, stride=stride, scales=scales)
+          layer = Upsample_layer(input_shape=input_shape, stride=stride, scale=scales)
 
     else :
 
-      layer = Upsample_layer(input_shape=input_shape, stride=stride, scales=scales)
+      layer = Upsample_layer(input_shape=input_shape, stride=stride, scale=scales)
 
       assert layer.input_shape == input_shape
-      assert layer.stride == stride
-      assert layer.scales == scales
-      assert layer.reversed == np.sign(stride) - 1
+      assert layer.stride == (stride, stride)
+      assert layer.scale == scales
+      assert layer.reversed == np.sign(stride[0]) - 1
 
 
   @given(b = st.integers(min_value=5, max_value=15),
@@ -86,7 +86,7 @@ class TestUpsampleLayer:
 
     print(layer)
 
-    layer = Upsample_layer(input_shape=None, stride=stride, scales=scales)
+    layer = Upsample_layer(input_shape=None, stride=stride, scale=scales)
 
     with pytest.raises(TypeError):
       print(layer)

@@ -208,7 +208,7 @@ class TestBatchnormLayer:
 
     # Initialization of numpynet delta to one (multiplication) and an empty array to store values
     numpynet.delta = np.ones(shape=inpt.shape, dtype=float)
-    delta_numpynet = np.empty(shape=inpt.shape, dtype=float)
+    delta_numpynet = np.zeros(shape=inpt.shape, dtype=float)
 
     # numpynet bacward, updates delta_numpynet
     numpynet.backward(delta_numpynet)
