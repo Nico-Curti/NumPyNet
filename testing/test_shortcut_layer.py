@@ -7,7 +7,7 @@ from __future__ import print_function
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input
 from tensorflow.keras.layers import Activation
-import tensorflow.keras.backend as K
+import tensorflow as tf
 
 from NumPyNet.exception import NotFittedError
 from NumPyNet.layers.shortcut_layer import Shortcut_layer
@@ -145,6 +145,9 @@ class TestShortcutLayer :
     inpt1 = np.random.uniform(low=-1., high=1., size=(b, w, h, c))
     inpt2 = np.random.uniform(low=-1., high=1., size=(b, w, h, c))
 
+    tf_inpt1 = tf.Variable(inpt1)
+    tf_inpt2 = tf.Variable(inpt2)
+
     for k_activ, n_activ in zip(keras_activations, numpynet_activations):
 
       # numpynet model
@@ -166,7 +169,15 @@ class TestShortcutLayer :
       # FORWARD
 
       # Perform Add() for alpha*inpt and beta*inpt
-      forward_out_keras = model.predict([alpha*inpt1, beta*inpt2])
+      with tf.GradientTape(persistent=True) as tape :
+        preds = model([alpha*tf_inpt1, beta*tf_inpt2])
+        grad1 = tape.gradient(preds, tf_inpt1)
+        grad2 = tape.gradient(preds, tf_inpt2)
+
+        forward_out_keras = preds.numpy()
+        delta1 = grad1.numpy()
+        delta2 = grad2.numpy()
+
 
       layer.forward(inpt1,inpt2)
       forward_out_numpynet = layer.output
@@ -176,14 +187,6 @@ class TestShortcutLayer :
 
       # BACKWARD
 
-      grad = K.gradients(model.output, model.inputs)
-      func = K.function(model.inputs + [model.output],grad)
-
-      delta1, delta2 = func([alpha*inpt1, beta*inpt2])
-
-      delta1 *= alpha
-      delta2 *= beta
-
       delta      = np.zeros(shape=inpt1.shape, dtype=float)
       prev_delta = np.zeros(shape=inpt2.shape, dtype=float)
 
@@ -192,9 +195,3 @@ class TestShortcutLayer :
 
       assert np.allclose(delta1, delta)
       assert np.allclose(delta2, prev_delta, atol=1e-8)
-
-if __name__ == '__main__':
-
-  test = TestShortcutLayer()
-
-  test.test_forward()

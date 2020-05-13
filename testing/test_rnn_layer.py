@@ -117,7 +117,7 @@ class TestSimpleRNNLayer:
     inpt = np.random.uniform(size=(batch, features))
     inpt_keras, _ = data_to_timesteps(inpt, steps=steps)
 
-    assert inpt_keras.shape == (batch - steps, steps, features)
+    assert inpt_keras.shape == (batch, steps, features)
 
     # weights init
     kernel           = np.random.uniform(low=-1, high=1, size=(features, outputs))
@@ -164,7 +164,7 @@ class TestSimpleRNNLayer:
     inpt = np.random.uniform(size=(batch, features))
     inpt_keras, _ = data_to_timesteps(inpt, steps=steps)
 
-    assert inpt_keras.shape == (batch - steps, steps, features)
+    assert inpt_keras.shape == (batch, steps, features)
 
     # weights init
     kernel           = np.random.uniform(low=-1, high=1, size=(features, outputs))

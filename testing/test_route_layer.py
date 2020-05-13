@@ -4,6 +4,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Concatenate
 from tensorflow.keras.layers import Activation
@@ -131,6 +132,7 @@ class TestRouteLayer :
     # TODO: test backward correctly
 
     input = np.random.uniform(low=-10, high=10. ,size=(b, w, h, c))
+    tf_input = tf.Variable(input)
 
     # init keras model
     inp    = Input(batch_shape=(b, w, h, c))
@@ -153,7 +155,13 @@ class TestRouteLayer :
     # FORWARDS
 
     fwd_out_numpynet = net.predict(X=input)
-    fwd_out_keras    = model.predict(x=input, batch_size=b)
+
+    with tf.GradientTape() as tape :
+      preds = model(tf_input)
+      grads = tape.gradient(preds, tf_input)
+
+      fwd_out_keras = preds.numpy()
+      delta_keras = grads.numpy()
 
     assert np.allclose(fwd_out_keras, fwd_out_numpynet) # ok
 
@@ -161,15 +169,10 @@ class TestRouteLayer :
 
     # BACKWARD
 
-    # try some derivatives
-    gradient    = K.gradients(model.output, model.inputs)
-    func        = K.function(model.inputs + model.outputs ,gradient)
-    delta_keras = func([input])[0]
-
     net._net[3].delta = np.ones(shape=fwd_out_numpynet.shape)
     net._backward(X=input)
 
     delta_numpynet = net._net[0].delta
 
     assert delta_numpynet.shape == delta_keras.shape
-    # assert np.allclose(delta_keras, delta_numpynet)
+    # assert np.allclose(delta_keras, delta_numpynet) TODO : broken.

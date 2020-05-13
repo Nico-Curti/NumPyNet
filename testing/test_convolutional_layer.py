@@ -4,9 +4,7 @@
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input
-import tensorflow.keras.backend as K
+import tensorflow as tf
 
 from NumPyNet.activations import Activations
 from NumPyNet.activations import Relu
@@ -16,7 +14,6 @@ from NumPyNet.activations import Tanh
 from NumPyNet.exception import LayerError
 from NumPyNet.exception import NotFittedError
 from NumPyNet.layers.convolutional_layer import Convolutional_layer
-from tensorflow.keras.layers import Conv2D
 
 import numpy as np
 import pytest
@@ -180,22 +177,20 @@ class TestConvolutionalLayer :
                                   size=(size1,size2), stride=stride,
                                   pad=pad)
 
-      # Keras model
-      inp    = Input(batch_shape=inpt.shape)
-      Conv2d = Conv2D(filters=filters,
-                      kernel_size=size, strides=stride,
-                      padding=keras_pad,
-                      activation=keras_activ,
-                      data_format='channels_last',
-                      use_bias=True, bias_initializer='zeros',
-                      dilation_rate=1)(inp)
-      model = Model(inputs=[inp], outputs=[Conv2d])
-
-      model.set_weights([weights, bias])
+      # Tensorflow layer
+      model = tf.keras.layers.Conv2D( filters=filters,
+                                      kernel_initializer=lambda shape, dtype=None : weights,
+                                      bias_initializer=lambda shape, dtype=None : bias,
+                                      kernel_size=size, strides=stride,
+                                      padding=keras_pad,
+                                      activation=keras_activ,
+                                      data_format='channels_last',
+                                      use_bias=True,
+                                      dilation_rate=1)
 
       # FORWARD
 
-      forward_out_keras = model.predict(inpt)
+      forward_out_keras = model(inpt)
 
       layer.forward(inpt, copy=False)
       forward_out_numpynet = layer.output
@@ -230,6 +225,7 @@ class TestConvolutionalLayer :
     stride = (stride1, stride2)
 
     inpt    = np.random.uniform(low=-1., high=1., size=(b, w, h, c))
+    tf_input = tf.Variable(inpt.astype('float32'))
     weights = np.random.uniform(low=-1., high=1., size=(size1, size2) + (c, filters))
     bias    = np.random.uniform(low=-1., high=1., size=(filters,))
 
@@ -241,18 +237,16 @@ class TestConvolutionalLayer :
                                   size=(size1,size2), stride=stride,
                                   pad=pad)
 
-      # Keras model
-      inp    = Input(batch_shape=inpt.shape)
-      Conv2d = Conv2D(filters=filters,
-                      kernel_size=size, strides=stride,
-                      padding=keras_pad,
-                      activation=keras_activ,
-                      data_format='channels_last',
-                      use_bias=True, bias_initializer='zeros',
-                      dilation_rate=1)(inp)
-      model = Model(inputs=[inp], outputs=[Conv2d])
-
-      model.set_weights([weights, bias])
+      # Tensorflow layer
+      model = tf.keras.layers.Conv2D( filters=filters,
+                                      kernel_initializer=lambda shape, dtype=None : weights,
+                                      bias_initializer=lambda shape, dtype=None : bias,
+                                      kernel_size=size, strides=stride,
+                                      padding=keras_pad,
+                                      activation=keras_activ,
+                                      data_format='channels_last',
+                                      use_bias=True,
+                                      dilation_rate=1)
 
       # Try backward:
       with pytest.raises(NotFittedError):
@@ -261,7 +255,14 @@ class TestConvolutionalLayer :
 
       # FORWARD
 
-      forward_out_keras = model.predict(inpt)
+      with tf.GradientTape(persistent=True) as tape :
+        preds = model(tf_input)
+        grad1 = tape.gradient(preds, tf_input)
+        grad2 = tape.gradient(preds, model.trainable_weights)
+
+        forward_out_keras = preds.numpy()
+        delta_keras = grad1.numpy()
+        updates     = grad2
 
       layer.forward(inpt, copy=False)
       forward_out_numpynet = layer.output
@@ -270,16 +271,7 @@ class TestConvolutionalLayer :
       assert np.allclose(forward_out_keras, forward_out_numpynet,  atol=1e-4, rtol=1e-3)
 
       # BACKWARD
-
-      grad1 = K.gradients(model.output, [model.input])
-      grad2 = K.gradients(model.output, model.trainable_weights)
-
-      func1 = K.function(model.inputs + model.outputs, grad1 )
-      func2 = K.function(model.inputs + model.trainable_weights + model.outputs, grad2)
-
-      delta_keras = func1([inpt])[0]
-      updates     = func2([inpt])
-
+      
       weights_updates_keras = updates[0]
       bias_updates_keras    = updates[1]
 

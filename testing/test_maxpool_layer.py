@@ -5,9 +5,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input
-import tensorflow.keras.backend as K
 
 from NumPyNet.exception import LayerError
 from NumPyNet.exception import NotFittedError
@@ -18,10 +15,10 @@ import pytest
 from hypothesis import strategies as st
 from hypothesis import given
 from hypothesis import settings
+from hypothesis import example
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-# __package__ = 'MaxPool Layer testing'
 
 
 class TestMaxpoolLayer :
@@ -100,7 +97,6 @@ class TestMaxpoolLayer :
   def test_forward (self, b, w, h, c, size, stride, pad):
 
     inpt    = np.random.uniform(low=-1., high=1., size=(b, w, h, c))
-    inpt_tf = tf.convert_to_tensor(inpt)
 
     # NumPyNet model
     layer = Maxpool_layer(input_shape=inpt.shape, size=size, stride=stride, pad=pad)
@@ -110,12 +106,11 @@ class TestMaxpoolLayer :
     else :
       keras_pad = 'VALID'
 
-    out_keras = tf.nn.max_pool2d(input=inpt_tf,
-                                 ksize=size, strides=stride,
-                                 padding=keras_pad,
-                                 data_format='NHWC')
+    model = tf.keras.layers.MaxPool2D( pool_size=size, strides=stride,
+                                       padding=keras_pad,
+                                       data_format='channels_last')
 
-    forward_out_keras = K.eval(out_keras)
+    forward_out_keras = model(inpt).numpy()
 
     # numpynet forward and output
     layer.forward(inpt)
@@ -140,7 +135,7 @@ class TestMaxpoolLayer :
   def test_backward (self, b, w, h, c, size, stride, pad):
 
     inpt    = np.random.uniform(low=0., high=1., size=(b, w, h, c))
-    inpt_tf = tf.convert_to_tensor(inpt)
+    inpt_tf = tf.Variable(inpt)
 
     # NumPyNet model
     layer = Maxpool_layer(input_shape=inpt.shape, size=size, stride=stride, pad=pad)
@@ -150,12 +145,16 @@ class TestMaxpoolLayer :
     else :
       keras_pad = 'VALID'
 
-    out_keras = tf.nn.max_pool2d(input=inpt_tf,
-                                 ksize=size, strides=stride,
-                                 padding=keras_pad,
-                                 data_format='NHWC')
+    model = tf.keras.layers.MaxPool2D( pool_size=size, strides=stride,
+                                       padding=keras_pad,
+                                       data_format='channels_last')
 
-    forward_out_keras = K.eval(out_keras)
+    with tf.GradientTape() as tape:
+      preds = model(inpt_tf)
+      grads = tape.gradient(preds, inpt_tf)
+
+      forward_out_keras = preds.numpy()
+      delta_keras = grads.numpy()
 
     # numpynet forward and output
     layer.forward(inpt)
@@ -166,15 +165,6 @@ class TestMaxpoolLayer :
     assert np.allclose(forward_out_numpynet, forward_out_keras, atol=1e-6)
 
     # BACKWARD
-
-    # Compute the gradient of output w.r.t input
-    gradient = tf.gradients(out_keras, [inpt_tf])
-
-    # Define a function to evaluate the gradient
-    func = K.function([inpt_tf] + [out_keras], gradient)
-
-    # Compute delta for Keras
-    delta_keras = func([inpt])[0]
 
     # Definition of starting delta for numpynet
     layer.delta = np.ones(shape=layer.out_shape, dtype=float)

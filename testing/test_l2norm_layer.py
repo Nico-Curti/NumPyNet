@@ -5,7 +5,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-import tensorflow.keras.backend as K
 
 from NumPyNet.layers.l2norm_layer import L2Norm_layer
 
@@ -17,7 +16,7 @@ from hypothesis import settings
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-# __package__ = 'L2Norm Layer testing'
+
 
 class TestL2normLayer :
   '''
@@ -76,12 +75,8 @@ class TestL2normLayer :
       # NumPyNet model
       layer = L2Norm_layer(input_shape=inpt.shape, axis=axis)
 
-      sess = tf.Session()
-
       # Keras output
-      output_tf = K.l2_normalize(inpt_tf, axis=axis)
-
-      forward_out_keras = K.eval(output_tf)
+      forward_out_keras = tf.math.l2_normalize(inpt_tf, axis=axis).numpy()
 
       # numpynet forward and output
       layer.forward(inpt)
@@ -104,17 +99,18 @@ class TestL2normLayer :
     for axis in [None, 1, 2, 3]:
 
       inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
-      inpt_tf = tf.convert_to_tensor(inpt)
+      inpt_tf = tf.Variable(inpt)
 
       # NumPyNet model
       layer = L2Norm_layer(input_shape=inpt.shape, axis=axis)
 
-      sess = tf.Session()
-
       # Keras output
-      output_tf = K.l2_normalize(inpt_tf, axis=axis)
+      with tf.GradientTape() as tape:
+        preds = tf.math.l2_normalize(inpt_tf, axis=axis)
+        grads = tape.gradient(preds, inpt_tf)
 
-      forward_out_keras = K.eval(output_tf)
+        forward_out_keras = preds.numpy()
+        delta_keras = grads.numpy()
 
       # numpynet forward and output
       layer.forward(inpt)
@@ -126,10 +122,6 @@ class TestL2normLayer :
 
       # BACKWARD
 
-      grad = K.gradients(output_tf, [inpt_tf])
-      func = K.function([inpt_tf] + [output_tf], grad)
-      delta_keras = func([inpt])[0]
-
       # Definition of starting delta for numpynet
       layer.delta = np.zeros(shape=layer.out_shape)
       delta = np.zeros(inpt.shape)
@@ -140,7 +132,7 @@ class TestL2normLayer :
       # Back tests
       assert delta.shape == delta_keras.shape
       assert delta.shape == inpt.shape
-      # assert np.allclose(delta, delta_keras, atol=1e-6)
+      # assert np.allclose(delta, delta_keras, atol=1e-6) # TODO : wrong
 
 
 if __name__ == '__main__':

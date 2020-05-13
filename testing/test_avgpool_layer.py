@@ -4,14 +4,11 @@
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input
-import tensorflow.keras.backend as K
+import tensorflow as tf
 
 from NumPyNet.exception import LayerError
 from NumPyNet.exception import NotFittedError
 from NumPyNet.layers.avgpool_layer import Avgpool_layer
-from tensorflow.keras.layers import AvgPool2D
 
 import numpy as np
 import pytest
@@ -21,7 +18,6 @@ from hypothesis import settings
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-# __package__ = 'AvgPool Layer testing'
 
 
 class TestAvgpoolLayer:
@@ -106,12 +102,10 @@ class TestAvgpoolLayer:
       keras_pad = 'valid'
 
     # Keras model initialization.
-    inp   = Input(batch_shape=inpt.shape)
-    x     = AvgPool2D(pool_size=size, strides=stride, padding=keras_pad)(inp)
-    model = Model(inputs=[inp], outputs=x)
+    model = tf.keras.layers.AveragePooling2D(pool_size=(size, size), strides=stride, padding=keras_pad, data_format='channels_last')
 
     # Keras Output
-    forward_out_keras = model.predict(inpt)
+    forward_out_keras = model(inpt).numpy()
 
     # numpynet forward and output
     numpynet.forward(inpt)
@@ -134,6 +128,7 @@ class TestAvgpoolLayer:
   def test_backward (self, batch, w, h, c, size, stride, pad):
 
     inpt = np.random.uniform(low=0., high=1., size=(batch, w, h, c))
+    tf_input = tf.Variable(inpt)
 
     # Numpy_net model
     numpynet = Avgpool_layer(input_shape=inpt.shape, size=size, stride=stride, pad=pad)
@@ -144,12 +139,17 @@ class TestAvgpoolLayer:
       keras_pad = 'valid'
 
     # Keras model initialization.
-    inp   = Input(batch_shape=inpt.shape)
-    x     = AvgPool2D(pool_size=size, strides=stride, padding=keras_pad)(inp)
-    model = Model(inputs=[inp], outputs=x)
+    model = tf.keras.layers.AveragePooling2D(pool_size=(size, size), strides=stride, padding=keras_pad, data_format='channels_last')
+
 
     # Keras Output
-    forward_out_keras = model.predict(inpt)
+    with tf.GradientTape() as tape :
+      preds = model(tf_input)
+      grads = tape.gradient(preds, tf_input)
+
+      forward_out_keras = preds.numpy()
+      delta_keras = grads.numpy()
+
 
     # try to backward
     with pytest.raises(NotFittedError):
@@ -168,15 +168,6 @@ class TestAvgpoolLayer:
     assert np.allclose(forward_out_numpynet, forward_out_keras, atol=1e-8)
 
     # BACKWARD
-
-    # Compute the gradient of output w.r.t input
-    gradient = K.gradients(model.output, [model.input])
-
-    # Define a function to evaluate the gradient
-    func = K.function(model.inputs + [model.output], gradient)
-
-    # Compute delta for Keras
-    delta_keras = func([inpt])[0]
 
     # Definition of starting delta for numpynet
     numpynet.delta = np.ones(shape=numpynet.out_shape, dtype=float)
