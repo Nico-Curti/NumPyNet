@@ -22,7 +22,6 @@ from hypothesis import given
 from hypothesis import settings
 
 from random import choice
-import numpy as np
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -271,7 +270,7 @@ class TestConvolutionalLayer :
       assert np.allclose(forward_out_keras, forward_out_numpynet,  atol=1e-4, rtol=1e-3)
 
       # BACKWARD
-      
+
       weights_updates_keras = updates[0]
       bias_updates_keras    = updates[1]
 
