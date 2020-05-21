@@ -20,6 +20,7 @@ import pytest
 from hypothesis import strategies as st
 from hypothesis import given
 from hypothesis import settings
+from hypothesis import example
 
 
 class TestOptimizer:
@@ -33,7 +34,6 @@ class TestOptimizer:
 
   def test_constructor(self):
     pass
-
 
   @given(w  = st.integers(min_value=15, max_value=100),
          h  = st.integers(min_value=15, max_value=100),
@@ -103,6 +103,6 @@ class TestOptimizer:
       tf_updated2 = tf_params[1].numpy()
       tf_updated3 = tf_params[2].numpy()
 
-      np.testing.assert_allclose(first_up,  tf_updated1, atol=1e-5, rtol=1e-5)
-      np.testing.assert_allclose(second_up, tf_updated2, atol=1e-5, rtol=1e-5)
-      np.testing.assert_allclose(third_up,  tf_updated3, atol=1e-5, rtol=1e-5)
+      np.testing.assert_allclose(first_up,  tf_updated1, atol=1e-4, rtol=1e-4)
+      np.testing.assert_allclose(second_up, tf_updated2, atol=1e-4, rtol=1e-4)
+      np.testing.assert_allclose(third_up,  tf_updated3, atol=1e-4, rtol=1e-4)
