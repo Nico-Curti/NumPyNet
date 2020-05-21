@@ -25,6 +25,7 @@ from hypothesis import settings
 class TestOptimizer:
   '''
   Test for correct updates of most used optimizer
+  With no clipping on the gradients for SGD, Momentum and nesterov, the tests are all correct.
   '''
 
   Optimizers = [SGD, Momentum, NesterovMomentum,
@@ -32,6 +33,7 @@ class TestOptimizer:
 
   def test_constructor(self):
     pass
+
 
   @given(w  = st.integers(min_value=15, max_value=100),
          h  = st.integers(min_value=15, max_value=100),
@@ -42,7 +44,7 @@ class TestOptimizer:
          beta2 = st.floats(min_value=0, max_value=1, width=32),
          rho   = st.floats(min_value=0, max_value=1, width=32),
          decay = st.floats(min_value=0, max_value=1, width=32))
-  @settings(max_examples=10,
+  @settings(max_examples=100,
             deadline=None)
   def test_update(self, w, h, c, lr, momentum, beta1, beta2, rho, decay):
 
@@ -52,7 +54,7 @@ class TestOptimizer:
     mom   = Momentum(lr=lr, momentum=momentum, decay=decay)
     nmom  = NesterovMomentum(lr=lr, momentum=momentum, decay=decay)
     adam  = Adam(lr=lr, beta1=beta1, beta2=beta2, epsilon=epsilon, decay=decay)
-    adamM = Adamax(lr=lr, beta1=beta1, beta2=beta2, epsilon=epsilon, decay=decay)
+    adamm = Adamax(lr=lr, beta1=beta1, beta2=beta2, epsilon=epsilon, decay=decay)
     adag  = Adagrad(lr=lr, epsilon=epsilon, decay=decay)
     adad  = Adadelta(lr=lr, rho=rho, epsilon=epsilon, decay=decay)
     rms   = RMSprop(lr=lr, rho=rho, epsilon=epsilon, decay=decay)
@@ -61,29 +63,27 @@ class TestOptimizer:
     tf_mom   = tf.keras.optimizers.SGD(learning_rate=lr, momentum=momentum, nesterov=False, decay=decay)
     tf_nmom  = tf.keras.optimizers.SGD(learning_rate=lr, momentum=momentum, nesterov=True, decay=decay)
     tf_adam  = tf.keras.optimizers.Adam(learning_rate=lr, beta_1=beta1, beta_2=beta2, epsilon=epsilon, decay=decay)
-    tf_adamM = tf.keras.optimizers.Adamax(learning_rate=lr, beta_1=beta1, beta_2=beta2, epsilon=epsilon, decay=decay)
+    tf_adamm = tf.keras.optimizers.Adamax(learning_rate=lr, beta_1=beta1, beta_2=beta2, epsilon=epsilon, decay=decay)
     tf_adag  = tf.keras.optimizers.Adagrad(learning_rate=lr, epsilon=epsilon, initial_accumulator_value=0., decay=decay)
     tf_adad  = tf.keras.optimizers.Adadelta(learning_rate=lr, rho=rho, epsilon=epsilon, decay=decay)
     tf_rms   = tf.keras.optimizers.RMSprop(learning_rate=lr, rho=rho, epsilon=epsilon, momentum=momentum, decay=decay)
 
-    tf_optimizers = [tf_sgd, tf_mom, tf_nmom, tf_adam, tf_adamM, tf_adag, tf_adad, tf_rms]
-    optimizers    = [sgd, mom, nmom, adam, adamM, adag, adad, rms]
+    tf_optimizers = [tf_sgd, tf_mom, tf_nmom, tf_adam, tf_adamm, tf_adag, tf_adad, tf_rms]
+    optimizers    = [sgd, mom, nmom, adam, adamm, adag, adad, rms]
 
     for i, (nn_opt, tf_opt) in enumerate(zip(optimizers, tf_optimizers)):
 
-      print('Optimizer : {}'.format(i))
-
-      first  = np.random.uniform(low=-1, high=1., size=(w, h, c)).astype('float32')
-      second = np.random.uniform(low=-1, high=1., size=(w, h, c)).astype('float32')
-      third  = np.random.uniform(low=-1, high=1., size=(w, h, c)).astype('float32')
+      first  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
+      second = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
+      third  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
 
       tf_first  = tf.Variable(first.copy())
       tf_second = tf.Variable(second.copy())
       tf_third  = tf.Variable(third.copy())
 
-      first_update  = np.random.uniform(low=-1, high=1, size=(w, h, c)).astype('float32')
-      second_update = np.random.uniform(low=-1, high=1, size=(w, h, c)).astype('float32')
-      third_update  = np.random.uniform(low=-1, high=1, size=(w, h, c)).astype('float32')
+      first_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
+      second_update = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
+      third_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
 
       tf_first_update  = tf.Variable(first_update.copy())
       tf_second_update = tf.Variable(second_update.copy())
@@ -103,6 +103,6 @@ class TestOptimizer:
       tf_updated2 = tf_params[1].numpy()
       tf_updated3 = tf_params[2].numpy()
 
-      np.testing.assert_allclose(first_up,  tf_updated1, atol=1e-4, rtol=1e-3)
+      np.testing.assert_allclose(first_up,  tf_updated1, atol=1e-5, rtol=1e-5)
       np.testing.assert_allclose(second_up, tf_updated2, atol=1e-5, rtol=1e-5)
       np.testing.assert_allclose(third_up,  tf_updated3, atol=1e-5, rtol=1e-5)
