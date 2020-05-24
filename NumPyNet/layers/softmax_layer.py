@@ -73,7 +73,7 @@ class Softmax_layer(BaseLayer):
       self.output *= s
 
     else : # first implementation with groups, taken from darknet, mhe
-      self.output = np.empty(inpt.shape)
+      self.output = np.zeros(inpt.shape)
       inputs = np.prod(self.input_shape[1:])
       group_offset = inputs // self.groups
       flat_input = inpt.ravel()
@@ -99,8 +99,8 @@ class Softmax_layer(BaseLayer):
       self._check_dims(shape=self.out_shape, arr=truth, func='Forward')
       out = np.clip(self.output, 1e-8, 1. - 1e-8)
       self.cost  = - np.sum(truth * np.log(out))
-      self.delta = out - truth  # one hot-encoded case (single 1 for every output array)
-      # self.delta = out * (truth.sum(axis=-1)) - truth # general?
+      # self.delta = out - truth  # one hot-encoded case (single 1 for every output array)
+      self.delta = out * (truth.sum(axis=-1, keepdims=True)) - truth # general case?
 
 
     return self

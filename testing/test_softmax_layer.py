@@ -32,10 +32,10 @@ class TestSoftmaxLayer :
     - costructor of RNN_layer object
     - print function
     - forward function against tf.keras
+    - backward function against tf.keras
 
   to be:
-    - backward function not working
-  '''
+    '''
 
   @given(g = st.floats(-2,10),
          s = st.floats(-2,10),
@@ -143,15 +143,10 @@ class TestSoftmaxLayer :
             deadline=None)
   def test_backward (self, b, w, h, c, spatial):
 
-    w, h = (1, 1) # backward working only in this case
+    w, h = (1, 1) # backward working only in this case for spatial=False
 
     inpt  = np.random.uniform(low=0., high=1., size=(b, w, h, c))
-
-    # One-hot encoded array (single 1 for every output array)
-    truth = np.zeros(shape=inpt.shape)
-    for ar in truth:
-    	rnd = np.random.randint(0,c, size=1)
-    	ar[0,0, rnd] = 1.
+    truth = np.random.choice([0., 1.], p=[.5, .5], size=(b, w, h, c))
 
     if spatial :
     	inpt_tf  = tf.Variable(inpt)
@@ -184,7 +179,6 @@ class TestSoftmaxLayer :
     delta = np.zeros(shape=inpt.shape)
     layer.backward(delta)
 
-    # np.testing.assert_allclose(delta_keras, delta_keras2)
     np.testing.assert_allclose(forward_out_keras, forward_out_numpynet, atol=1e-8)
     np.testing.assert_allclose(keras_loss, numpynet_loss, rtol=1e-5, atol=1e-6)
     np.testing.assert_allclose(delta, delta_keras)
