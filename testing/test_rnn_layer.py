@@ -110,14 +110,14 @@ class TestSimpleRNNLayer:
          batch    = st.integers(min_value=20, max_value=100),
          return_seq = st.booleans())
   @settings(max_examples=10, deadline=None)
-  def test_forward(self, steps, outputs, features, batch, return_seq):
+  def _forward(self, steps, outputs, features, batch, return_seq):
 
     activation = 'tanh'
 
     inpt = np.random.uniform(size=(batch, features))
     inpt_keras, _ = data_to_timesteps(inpt, steps=steps)
 
-    assert inpt_keras.shape == (batch - steps, steps, features)
+    assert inpt_keras.shape == (batch, steps, features)
 
     # weights init
     kernel           = np.random.uniform(low=-1, high=1, size=(features, outputs))
@@ -156,7 +156,7 @@ class TestSimpleRNNLayer:
          batch    = st.integers(min_value=20, max_value=100),
          return_seq = st.booleans())
   @settings(max_examples=1, deadline=None)
-  def test_backward(self, steps, outputs, features, batch, return_seq):
+  def _backward(self, steps, outputs, features, batch, return_seq):
 
     return_seq = False # fixed to "many_to_one" for now
     activation = 'tanh'
@@ -164,7 +164,7 @@ class TestSimpleRNNLayer:
     inpt = np.random.uniform(size=(batch, features))
     inpt_keras, _ = data_to_timesteps(inpt, steps=steps)
 
-    assert inpt_keras.shape == (batch - steps, steps, features)
+    assert inpt_keras.shape == (batch, steps, features)
 
     # weights init
     kernel           = np.random.uniform(low=-1, high=1, size=(features, outputs))

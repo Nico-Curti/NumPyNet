@@ -4,9 +4,7 @@
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input
-import tensorflow.keras.backend as K
+import tensorflow as tf
 
 from NumPyNet.activations import Activations
 from NumPyNet.activations import Relu
@@ -16,7 +14,6 @@ from NumPyNet.activations import Tanh
 from NumPyNet.exception import LayerError
 from NumPyNet.exception import NotFittedError
 from NumPyNet.layers.connected_layer import Connected_layer
-from tensorflow.keras.layers import Dense
 
 import numpy as np
 import pytest
@@ -133,18 +130,16 @@ class TestConnectedLayer:
                                        activation=numpynet_act,
                                        weights=weights, bias=bias)
 
-      # Keras Model
-      inp   = Input(batch_shape=(b, w * h * c))
-      x     = Dense(outputs, activation=keras_act)(inp)
-      model = Model(inputs=[inp], outputs=x)
 
-      # Set weights in Keras Model.
-      model.set_weights([weights, bias])
+      # Tensorflow Layer
+      model = tf.keras.layers.Dense(outputs, activation=keras_act,
+                                    kernel_initializer=lambda shape, dtype=None : weights,
+                                    bias_initializer=lambda shape, dtype=None : bias)
 
       # FORWARD
 
       # Keras forward output
-      forward_out_keras = model.predict(inpt.reshape(b, -1))
+      forward_out_keras = model(inpt.reshape(b, -1))
 
       # Numpy_net forward output
       layer.forward(inpt)
@@ -170,18 +165,16 @@ class TestConnectedLayer:
     bias    = np.random.uniform(low=0., high=1., size=(outputs))
 
     inpt = np.random.uniform(low=-1., high=1., size=(b, w, h, c))
+    tf_input = tf.Variable(inpt.astype('float32').reshape(b,-1))
 
-    # Numpy_net model
+    # NumPyNet model
     layer = Connected_layer(outputs, input_shape=inpt.shape,
                                      activation=numpynet_act,
                                      weights=weights, bias=bias)
-    # Keras Model
-    inp   = Input(batch_shape=(b, w * h * c))
-    x     = Dense(outputs, activation=keras_act)(inp)
-    model = Model(inputs=[inp], outputs=x)
-
-    # Set weights in Keras Model.
-    model.set_weights([weights, bias])
+    # Tensorflow layer
+    model = tf.keras.layers.Dense(outputs, activation=keras_act,
+                                  kernel_initializer=lambda shape, dtype=None : weights,
+                                  bias_initializer=lambda shape, dtype=None : bias)
 
     # Try backward
     with pytest.raises(NotFittedError):
@@ -191,7 +184,15 @@ class TestConnectedLayer:
     # FORWARD
 
     # Keras forward output
-    forward_out_keras = model.predict(inpt.reshape(b, -1))
+    # Tensorflow forward and backward
+    with tf.GradientTape(persistent=True) as tape :
+      preds = model(tf_input)
+      grad1 = tape.gradient(preds, tf_input)
+      grad2 = tape.gradient(preds, model.trainable_weights)
+
+      forward_out_keras = preds.numpy()
+      delta_keras = grad1.numpy()
+      updates     = grad2
 
     # Numpy_net forward output
     layer.forward(inpt)
@@ -201,20 +202,6 @@ class TestConnectedLayer:
     assert np.allclose(forward_out_numpynet[:, 0, 0, :], forward_out_keras, atol=1e-2)
 
     # BACKWARD
-
-    # Output derivative in respect to input
-    grad1 = K.gradients(model.output, [model.input])
-
-    # Output derivative respect to trainable_weights(Weights and Biases)
-    grad2 = K.gradients(model.output, model.trainable_weights)
-
-    # Definning functions to compute those gradients
-    func1 = K.function(model.inputs + [model.output], grad1)
-    func2 = K.function(model.inputs + model.trainable_weights + [model.output], grad2)
-
-    # Evaluation of Delta, weights_updates and bias_updates for Keras
-    delta_keras = func1([inpt.reshape(b, -1)])
-    updates     = func2([inpt.reshape(b, -1)])
 
     # Initialization of NumPyNet starting delta to ones
     layer.delta = np.ones(shape=layer.out_shape, dtype=float)
@@ -226,6 +213,6 @@ class TestConnectedLayer:
     layer.backward(inpt, delta=delta)
 
     #Now the global variable delta is updated
-    assert np.allclose(delta_keras[0].reshape(b, w, h, c), delta, atol=1e-8)
+    assert np.allclose(delta_keras.reshape(b, w, h, c), delta, atol=1e-8)
     assert np.allclose(updates[0], layer.weights_update, atol=1e-6)
     assert np.allclose(updates[1], layer.bias_update, atol=1e-7)

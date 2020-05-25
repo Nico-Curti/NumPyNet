@@ -4,10 +4,7 @@
 from __future__ import division
 from __future__ import print_function
 
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input
-from tensorflow.keras.layers import Activation
-import tensorflow.keras.backend as K
+import tensorflow as tf
 
 from NumPyNet.exception import NotFittedError
 from NumPyNet.layers.input_layer import Input_layer
@@ -22,7 +19,7 @@ from hypothesis import settings
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-# __package__ = 'Input Layer testing'
+
 
 class TestInputLayer :
   '''
@@ -90,14 +87,12 @@ class TestInputLayer :
     layer = Input_layer(input_shape=inpt.shape)
 
     # Keras Model init
-    inp   = Input(batch_shape=(b, w, h, c))
-    x     = Activation(activation='linear')(inp)
-    model = Model(inputs=[inp], outputs=x)
+    model = tf.keras.layers.InputLayer(input_shape=(w, h, c))
 
     # FORWARD
 
     # Keras Forward
-    forward_out_keras = model.predict(inpt)
+    forward_out_keras = model(inpt)
 
     # numpynet forwrd
     layer.forward(inpt)
@@ -117,19 +112,23 @@ class TestInputLayer :
   def test_backward (self, b, w, h, c):
 
     inpt = np.random.uniform(low=-1, high=1., size=(b, w, h, c))
+    tf_input = tf.Variable(inpt)
 
     # numpynet model init
     layer = Input_layer(input_shape=inpt.shape)
 
     # Keras Model init
-    inp   = Input(batch_shape=(b, w, h, c))
-    x     = Activation(activation='linear')(inp)
-    model = Model(inputs=[inp], outputs=x)
+    model = tf.keras.layers.InputLayer(input_shape=(w, h, c))
 
     # FORWARD
 
-    # Keras Forward
-    forward_out_keras = model.predict(inpt)
+    # Tensorflow Forward and backward
+    with tf.GradientTape() as tape :
+      preds = model(tf_input)
+      grads = tape.gradient(preds, tf_input)
+
+      forward_out_keras = preds.numpy()
+      delta_keras = grads.numpy()
 
     # layer forward
     layer.forward(inpt)
@@ -141,15 +140,6 @@ class TestInputLayer :
 
     # BACKWARD
 
-    # Gradient computation (Analytical)
-    grad = K.gradients(model.output, [model.input])
-
-    # Define a function to compute the gradient numerically
-    func = K.function(model.inputs + [model.output], grad)
-
-    # Keras delta
-    keras_delta = func([inpt])[0] # It returns a list with one array inside.
-
     # layer delta init.
     layer.delta = np.ones(shape=inpt.shape, dtype=float)
 
@@ -160,8 +150,8 @@ class TestInputLayer :
     layer.backward(delta)
 
     # Check dimension and delta
-    assert keras_delta.shape == delta.shape
-    assert np.allclose(keras_delta, delta)
+    assert delta_keras.shape == delta.shape
+    assert np.allclose(delta_keras, delta)
 
     delta = np.zeros(shape=(1,2,3,4))
 

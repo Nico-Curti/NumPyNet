@@ -5,12 +5,8 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Input
-import tensorflow.keras.backend as K
 
 from NumPyNet.layers.batchnorm_layer import BatchNorm_layer
-from tensorflow.keras.layers import BatchNormalization
 
 import numpy as np
 import pytest
@@ -88,12 +84,12 @@ class TestBatchnormLayer:
             deadline=None)
   def test_forward(self, b, w, h, c):
 
-    inpt = np.random.uniform(low=1., high=10., size=(b, w, h, c))
+    inpt = np.random.uniform(low=1., high=10., size=(b, w, h, c)).astype(np.float32)
 
     bias   = np.random.uniform(low=0., high=1., size=(w, h, c)) # random biases
     scales = np.random.uniform(low=0., high=1., size=(w, h, c)) # random scales
 
-    inpt_tf = tf.convert_to_tensor(inpt.astype('float32'))
+    # inpt_tf = tf.convert_to_tensor(inpt.astype('float32'))
 
     # Numpy_net model
     numpynet = BatchNorm_layer(input_shape=inpt.shape, scales=scales, bias=bias)
@@ -111,24 +107,16 @@ class TestBatchnormLayer:
     def var_init(shape, dtype=None):
       return np.expand_dims(inpt.var(axis=0), axis=0)
 
-    # Keras Model
-    inp = Input(batch_shape=inpt.shape)
-    x = BatchNormalization(momentum=1., epsilon=1e-8, center=True, scale=True,
-                           axis=[1, 2, 3],
-                           beta_initializer=bias_init,
-                           gamma_initializer=gamma_init,
-                           moving_mean_initializer=mean_init,
-                           moving_variance_initializer=var_init)(inp)
-    model = Model(inputs=[inp], outputs=x)
-
-    # Opens a TensorFlow Session to Initialize Variables
-    sess = tf.compat.v1.InteractiveSession()
-    # Initialization of variables, code won't work without it
-    sess.run([tf.compat.v1.global_variables_initializer(),
-              tf.compat.v1.local_variables_initializer()])
+    # Tensorflow Layer
+    model = tf.keras.layers.BatchNormalization(momentum=1., epsilon=1e-8, center=True, scale=True,
+                                               axis=[1, 2, 3],
+                                               beta_initializer=bias_init,
+                                               gamma_initializer=gamma_init,
+                                               moving_mean_initializer=mean_init,
+                                               moving_variance_initializer=var_init)
 
     # Keras forward
-    forward_out_keras = model.predict(inpt)
+    forward_out_keras = model(inpt).numpy()
 
     numpynet.forward(inpt)
     forward_out_numpynet = numpynet.output
@@ -161,7 +149,7 @@ class TestBatchnormLayer:
     bias   = np.random.uniform(low=0., high=1., size=(w, h, c)) # random biases
     scales = np.random.uniform(low=0., high=1., size=(w, h, c)) # random scales
 
-    inpt_tf = tf.convert_to_tensor(inpt.astype('float32'))
+    tf_input = tf.Variable(inpt.astype('float32'))
 
     # Numpy_net model
     numpynet = BatchNorm_layer(input_shape=inpt.shape, scales=scales, bias=bias)
@@ -180,23 +168,24 @@ class TestBatchnormLayer:
       return np.expand_dims(inpt.var(axis=0), axis=0)
 
     # Keras Model
-    inp = Input(batch_shape=inpt.shape)
-    x = BatchNormalization(momentum=1., epsilon=1e-8, center=True, scale=True,
-                           axis=[1, 2, 3],
-                           beta_initializer=bias_init,
-                           gamma_initializer=gamma_init,
-                           moving_mean_initializer=mean_init,
-                           moving_variance_initializer=var_init)(inp)
-    model = Model(inputs=[inp], outputs=x)
+    model = tf.keras.layers.BatchNormalization(momentum=1., epsilon=1e-8, center=True, scale=True,
+                                               trainable=True,
+                                               axis=[1, 2, 3],
+                                               beta_initializer=bias_init,
+                                               gamma_initializer=gamma_init,
+                                               moving_mean_initializer=mean_init,
+                                               moving_variance_initializer=var_init)
 
-    # Opens a TensorFlow Session to Initialize Variables
-    sess = tf.compat.v1.InteractiveSession()
-    # Initialization of variables, code won't work without it
-    sess.run([tf.compat.v1.global_variables_initializer(),
-              tf.compat.v1.local_variables_initializer()])
 
-    # Keras forward
-    forward_out_keras = model.predict(inpt)
+    # Tensorflow forward and backward
+    with tf.GradientTape(persistent=True) as tape :
+      preds = model(tf_input)
+      grad1 = tape.gradient(preds, tf_input)
+      grad2 = tape.gradient(preds, model.trainable_weights)
+
+      forward_out_keras = preds.numpy()
+      delta_keras = grad1.numpy()
+      updates     = grad2
 
     numpynet.forward(inpt)
     forward_out_numpynet = numpynet.output
@@ -216,19 +205,6 @@ class TestBatchnormLayer:
     assert np.allclose(numpynet.x_norm, x_norm)
 
     # BACKWARD
-
-    # Computes analytical output gradients w.r.t input and w.r.t trainable_weights
-    # Kept them apart for clarity
-    grad1 = K.gradients(model.output, [model.input])
-    grad2 = K.gradients(model.output, model.trainable_weights)
-
-    # Definning functions to compute those gradients
-    func1 = K.function(model.inputs + [model.output], grad1)
-    func2 = K.function(model.inputs + model.trainable_weights + [model.output], grad2)
-
-    # Evaluation of Delta, weights_updates and bias_updates for Keras
-    delta_keras = func1([inpt])[0]
-    updates     = func2([inpt])
 
     # Initialization of numpynet delta to one (multiplication) and an empty array to store values
     numpynet.delta = np.ones(shape=inpt.shape, dtype=float)

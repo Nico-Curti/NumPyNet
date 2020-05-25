@@ -57,7 +57,7 @@ class Softmax_layer(BaseLayer):
     Parameters
     ----------
       inpt  : numpy array of shape (batch, w, h, c), input array
-      truth : numpyarray of shape (batch, w, h, c), default is None, target vector.
+      truth : numpy array of shape (batch, w, h, c), default is None, target vector.
         if a value is passed, the function compute the cross entropy cost
 
     Returns
@@ -72,8 +72,8 @@ class Softmax_layer(BaseLayer):
       s = 1. / self.output.sum(axis=-1, keepdims=True)
       self.output *= s
 
-    else : # first implementation with groups, inspired from darknet, mhe
-      self.output = np.empty(inpt.shape)
+    else : # first implementation with groups, taken from darknet, mhe
+      self.output = np.zeros(inpt.shape)
       inputs = np.prod(self.input_shape[1:])
       group_offset = inputs // self.groups
       flat_input = inpt.ravel()
@@ -97,10 +97,11 @@ class Softmax_layer(BaseLayer):
 
     if truth is not None:
       self._check_dims(shape=self.out_shape, arr=truth, func='Forward')
-      out = self.output * (1. / self.output.sum())
-      out = np.clip(out, 1e-8, 1. - 1e-8)
-      self.cost = - np.sum(truth * np.log(out))
-      self.delta = np.clip(self.output, 1e-8, 1. - 1e-8) - truth
+      out = np.clip(self.output, 1e-8, 1. - 1e-8)
+      self.cost  = - np.sum(truth * np.log(out))
+      # self.delta = out - truth  # one hot-encoded case (single 1 for every output array)
+      self.delta = out * (truth.sum(axis=-1, keepdims=True)) - truth # general case?
+
 
     return self
 

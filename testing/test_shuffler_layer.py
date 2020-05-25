@@ -5,7 +5,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-import tensorflow.keras.backend as K
 
 from NumPyNet.exception import NotFittedError
 from NumPyNet.layers.shuffler_layer import Shuffler_layer
@@ -94,12 +93,16 @@ class TestShuffleLayer :
       layer.forward(inpt)
       forward_out_numpynet = layer.output
 
-      forward_out_keras = K.eval(tf.depth_to_space(inpt, block_size=scale))
+      forward_out_keras = tf.nn.depth_to_space(inpt, block_size=scale, data_format='NHWC')
 
       assert forward_out_numpynet.shape == forward_out_keras.shape
       assert np.allclose(forward_out_numpynet, forward_out_keras)
 
 
+  @example(couple=(2, 12),  b=5, w=10, h=30)
+  @example(couple=(4, 32),  b=5, w=10, h=30)
+  @example(couple=(4, 48),  b=5, w=10, h=30)
+  @example(couple=(6, 108), b=5, w=10, h=30)
   @given(couple = st.tuples(st.integers(min_value=2, max_value=10), st.integers(min_value=1, max_value=100)),
          b = st.integers(min_value=1, max_value=10),
          w = st.integers(min_value=10, max_value=100),
@@ -108,9 +111,9 @@ class TestShuffleLayer :
             deadline=None)
   def test_backward (self, b, w, h, couple):
 
-    couples = choice([(2, 12), (4, 32), (4, 48), (6, 108), couple])
+    # couples = choice([(2, 12), (4, 32), (4, 48), (6, 108), couple])
 
-    scale, channels = couples
+    scale, channels = couple
 
     # input initialization
     inpt  = np.random.uniform(low=0., high=1., size=(b, w, h, channels))
@@ -126,7 +129,7 @@ class TestShuffleLayer :
 
     else:
 
-      forward_out_keras = K.eval(tf.depth_to_space(inpt, block_size=scale))
+      forward_out_keras = tf.nn.depth_to_space(inpt, block_size=scale, data_format='NHWC')
 
       # try to BACKWARD
       with pytest.raises(NotFittedError):
@@ -145,7 +148,7 @@ class TestShuffleLayer :
 
       delta = np.random.uniform(low=0., high=1., size=forward_out_keras.shape)
 
-      delta_keras = K.eval(tf.space_to_depth(delta, block_size=scale))
+      delta_keras = tf.nn.space_to_depth(delta, block_size=scale, data_format='NHWC')
 
       layer.delta = delta
       delta = delta.reshape(inpt.shape)

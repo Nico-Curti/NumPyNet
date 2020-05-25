@@ -115,7 +115,7 @@ class Convolutional_layer(BaseLayer):
   def __str__(self):
     batch, out_w, out_h, out_c = self.out_shape
     _, w, h, c = self.input_shape
-    return 'conv   {0:>4d} {1:d} x {2:d} / {3:d}  {4:>4d} x{5:>4d} x{6:>4d} x{7:>4d}   ->  {5:>4d} x{8:>4d} x{9:>4d} x{10:>4d}  {11:>5.3f} BFLOPs'.format(
+    return 'conv   {0:>4d} {1:d} x {2:d} / {3:d}  {4:>4d} x{5:>4d} x{6:>4d} x{7:>4d}   ->  {4:>4d} x{8:>4d} x{9:>4d} x{10:>4d}  {11:>5.3f} BFLOPs'.format(
            out_c, self.size[0], self.size[1], self.stride[0],
            batch, w, h, c,
            out_w, out_h, out_c,

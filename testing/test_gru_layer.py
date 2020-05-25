@@ -32,7 +32,7 @@ class TestGRUlayer :
   def test_printer (self):
     pass
 
-  def test_forward (self):
+  def _forward (self):
     outputs = 30
     steps   = 1
     features = 10

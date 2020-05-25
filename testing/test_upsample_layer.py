@@ -17,8 +17,6 @@ from hypothesis import strategies as st
 from hypothesis import given
 from hypothesis import settings
 
-from random import choice
-
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
@@ -43,9 +41,11 @@ class TestUpsampleLayer:
     shape_choices  = [(b,w,h,c), None]
     stride_choices = [(stride, stride), (stride, -stride), stride]
 
-    input_shape = choice(shape_choices)
-    stride = choice(stride_choices)
+    input_shape = np.random.choice(shape_choices, p=[0.5, 0.5])
+    stride = np.random.choice(stride_choices, p=[0.34, 0.33, 0.33])
     stride = 1 if stride == 0 else stride
+
+    print(stride, input_shape, scales)
 
     if hasattr(stride, '__iter__'):
 
@@ -56,7 +56,7 @@ class TestUpsampleLayer:
         assert layer.input_shape == input_shape
         assert layer.stride == stride
         assert layer.scale == scales
-        assert layer.reversed == np.sign(stride[0] + stride[1]) - 1
+        assert layer.reverse == np.sign(stride[0] + stride[1]) - 1
 
       else:
 
@@ -65,12 +65,19 @@ class TestUpsampleLayer:
 
     else :
 
-      layer = Upsample_layer(input_shape=input_shape, stride=stride, scale=scales)
+      if stride == 0:
+        with pytest.raises(NotImplementedError) :
+          layer = Upsample_layer(input_shape=input_shape, stride=stride, scale=scales)
 
-      assert layer.input_shape == input_shape
-      assert layer.stride == (stride, stride)
-      assert layer.scale == scales
-      assert layer.reversed == np.sign(stride[0]) - 1
+      else :
+
+        layer = Upsample_layer(input_shape=input_shape, stride=stride, scale=scales)
+
+        assert layer.input_shape == input_shape
+        assert layer.stride == (stride, stride) or layer.stride == (-stride, -stride)
+        assert layer.scale == scales
+        rev = True if stride<0 else False
+        assert layer.reverse == rev
 
 
   @given(b = st.integers(min_value=5, max_value=15),

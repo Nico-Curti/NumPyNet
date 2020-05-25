@@ -5,7 +5,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-import tensorflow.keras.backend as K
 
 from NumPyNet.layers.l1norm_layer import L1Norm_layer
 
@@ -17,7 +16,6 @@ from hypothesis import settings
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
-# __package__ = 'L1Norm Layer testing'
 
 class TestL1normLayer :
   '''
@@ -71,16 +69,13 @@ class TestL1normLayer :
     for axis in [1, 2, 3]:
 
       inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
-      inpt_tf = tf.convert_to_tensor(inpt)
+      inpt_tf = tf.Variable(inpt)
 
       # NumPyNet model
       layer = L1Norm_layer(input_shape=inpt.shape, axis=axis)
 
-      sess = tf.Session()
-
       # # Keras output
-      output_tf = tf.linalg.norm(inpt_tf, ord=1, axis=axis, keepdims=True)
-      forward_out_keras = K.eval(inpt_tf / output_tf)
+      forward_out_keras = tf.keras.utils.normalize(inpt_tf, order=1, axis=axis).numpy()
 
       # numpynet forward and output
       layer.forward(inpt)
@@ -104,16 +99,19 @@ class TestL1normLayer :
     for axis in [1, 2, 3]:
 
       inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
-      inpt_tf = tf.convert_to_tensor(inpt)
+      inpt_tf = tf.Variable(inpt)
 
       # NumPyNet model
       layer = L1Norm_layer(input_shape=inpt.shape, axis=axis)
 
-      sess = tf.Session()
-
       # Keras output
-      output_tf = tf.linalg.norm(inpt_tf, ord=1, axis=axis, keepdims=True)
-      forward_out_keras = K.eval(inpt_tf / output_tf)
+
+      with tf.GradientTape() as tape:
+        preds = tf.keras.utils.normalize(inpt_tf, order=1, axis=axis)
+        grads = tape.gradient(preds, inpt_tf)
+
+        forward_out_keras = preds.numpy()
+        delta_keras = grads.numpy()
 
       # numpynet forward and output
       layer.forward(inpt)
@@ -125,10 +123,6 @@ class TestL1normLayer :
 
       # BACKWARD
 
-      grad = K.gradients([output_tf], [inpt_tf])
-      func = K.function([inpt_tf] + [output_tf], grad)
-      delta_keras = func([inpt])[0]
-
       # Definition of starting delta for numpynet
       layer.delta = np.zeros(shape=layer.out_shape)
       delta = np.zeros(inpt.shape)
@@ -139,4 +133,4 @@ class TestL1normLayer :
       # Back tests
       assert delta.shape == delta_keras.shape
       assert delta.shape == inpt.shape
-      # assert np.allclose(delta, delta_keras, atol=1e-6)
+      # assert np.allclose(delta, delta_keras, atol=1e-6) # TODO wrong results?
