@@ -62,10 +62,10 @@ class LSTM_layer(object):
 
       self.batch = b // self.steps
       # self.batches = np.array_split(range(self.input_shape[0]), indices_or_sections=self.steps)
-      indices = range(0,b)
+      indices = np.arange(0, b)
       self.batches = np.lib.stride_tricks.as_strided(indices, shape=(b - self.steps + 1, self.steps), strides=(8, 8)).T.copy()
 
-      print(self.batches)
+      # print(self.batches)
 
       _, w, h, c = self.input_shape
       initial_shape = (self.batch, w, h, c)
@@ -137,7 +137,7 @@ class LSTM_layer(object):
       self.input_shape = (self.batch, w, h, c)
       indices = np.arange(0, b)
 
-      self.batches = np.lib.stride_tricks.as_strided(indices, shape=(self.steps, self.batch), strides=(self.batch * 8, 8)).copy()
+      self.batches = np.lib.stride_tricks.as_strided(indices, shape=(b - self.steps + 1, self.steps), strides=(8, 8)).T.copy()
 
       initial_shape = (self.batch, w, h, c)
 
