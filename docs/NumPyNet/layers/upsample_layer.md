@@ -7,7 +7,7 @@ Thhese feats can be achieved using a Pooling algorithm (in particular an average
 The UpSample function is commonly related to GAN (Generative Adversarial Networks) models in which we have to provide a series of artificial images to a given Neural Network, but it's also a function that can be introduced inside a Neural Network model to rescale the number of features.
 The UpSample function inside a Neural Network model has to provide both up- and down- sampling technique since one is used in the `forward` function, while its inverse during the back-propagation.
 
-This is an example code on how to use the sngle UpSample layer:
+This is an example code on how to use the single UpSample layer:
 
 ```python
 from NumPyNet.layers.upsample_layer import Upsample_layer

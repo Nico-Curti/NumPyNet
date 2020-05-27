@@ -36,16 +36,16 @@ Implementation in **pure** `Numpy` of neural networks models.
 **TODO:** Insert here introduction about neural network models starting from the Simple Perceptron model provided [here](https://gist.github.com/Nico-Curti/358b7a2ffed1abbb57ee87a5338ca073)
 
 Layers are the main core of a Neural Network model: every one of them performs, on its respective input, a different operation.
-The concatenation of multiple Layer form a CNN, where for concatenation we mean that the output of a layer become the input of the next one.
+The concatenation of multiple Layer forms a CNN, where for concatenation we mean that the output of a layer becomes the input of the next one.
 
-In the `NumPyNet` framework a Layer is a python `class`, this allow the users to instantiate an object of the chosen type and call one of its methods.
+In the `NumPyNet` framework a Layer is a python `class`, this allows the users to instantiate an object of the chosen type and call one of its methods.
 
 Main Method:
 
-* **forward** : this function is defined for every Layer and perform the so-called *forward pass*, that is the implementation of the transformation the Layer performs on the Input.
-It usually receives as argument just the output of the previous Layer
+* **forward** : this function is defined for every Layer and it performs the so-called *forward pass*, that is the implementation of the transformation the Layer performs on the Input.
+It usually receives as argument just the output of the previous Layer.
 
-* **backward** : this function is defined for every Layer and perform the so-called *backward pass*, that is an implementation of the BackPropagation algorithm for the error.
+* **backward** : this function is defined for every Layer and it performs the so-called *backward pass*, that is an implementation of the BackPropagation algorithm for the error.
 It computes the delta to be back-propagated during *training* and, eventually, the updates to trainable weights
 It usually receives as input only the global delta of the network, on which it performs a transformation, depending on the layer.
 
@@ -145,8 +145,9 @@ See [here](https://github.com/Nico-Curti/NumPyNet/blob/master/CONTRIBUTING.md) f
 
 ## Authors
 
-* **Nico Curti** [git](https://github.com/Nico-Curti), [unibo](https://www.unibo.it/sitoweb/nico.curti2)
-* **Mattia Ceccarelli** [git](https://github.com/Mat092)
+* <img src="https://avatars0.githubusercontent.com/u/24650975?s=400&v=4" width="25px"> **Nico Curti** [git](https://github.com/Nico-Curti), [unibo](https://www.unibo.it/sitoweb/nico.curti2)
+
+* <img src="https://avatars0.githubusercontent.com/u/41483077?s=400&v=4" width="25px;"/> **Mattia Ceccarelli** [git](https://github.com/Mat092)
 
 See also the list of [contributors](https://github.com/Nico-Curti/NumPyNet/contributors) [![GitHub contributors](https://img.shields.io/github/contributors/Nico-Curti/NumPyNet.svg?style=plastic)](https://github.com/Nico-Curti/NumPyNet/graphs/contributors/) who participated in this project.
 
