@@ -59,8 +59,8 @@ matrix:
         - MATRIX_EVAL=""
 
     - os: linux
-      python: 3.8-dev
-      name: ubuntu 14.04 - python@3.8-dev
+      python: 3.8
+      name: ubuntu 14.04 - python@3.8
       dist: xenial
       sudo: true
       env:
@@ -71,7 +71,7 @@ matrix:
     # python3.8 does not yet supports opencv
     - name: ubuntu 14.04 - python@2.6
     - name: ubuntu 14.04 - python@3.3
-    - name: ubuntu 14.04 - python@3.8-dev
+    - name: ubuntu 14.04 - python@3.8
 
 
 before_install:

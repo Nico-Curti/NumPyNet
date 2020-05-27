@@ -173,6 +173,7 @@ class Avgpool_layer(BaseLayer):
     kx, ky = self.size
     sx, sy = self.stride
     _, w, h, _ = self.input_shape
+    inpt = inpt.astype('float64')
 
     # Padding
     if self.pad:
@@ -206,6 +207,7 @@ class Avgpool_layer(BaseLayer):
 
     check_is_fitted(self, 'delta')
     self._check_dims(shape=self.input_shape, arr=delta, func='Backward')
+    delta[:] = delta.astype('float64')
 
     # kx, ky = self.size
 

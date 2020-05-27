@@ -71,6 +71,7 @@ class GRU_layer (object):
 
   def forward(self, inpt):
 
+    inpt = inpt.astype('float64')
     _input = self._as_Strided(inpt)
     state  = np.zeros(shape=(_input.shape[1], self.outputs))
 

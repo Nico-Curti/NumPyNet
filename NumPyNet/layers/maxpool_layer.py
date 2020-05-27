@@ -182,6 +182,7 @@ class Maxpool_layer(BaseLayer):
     kx , ky  = self.size
     st1, st2 = self.stride
     _, w, h, _ = self.input_shape
+    inpt = inpt.astype('float64')
 
     if self.pad:
       mat_pad = self._pad(inpt)
@@ -229,6 +230,7 @@ class Maxpool_layer(BaseLayer):
 
     check_is_fitted(self, 'delta')
     self._check_dims(shape=self.input_shape, arr=delta, func='Backward')
+    delta[:] = delta.astype('float64')
 
     # Padding delta in order to create another view
     if self.pad:

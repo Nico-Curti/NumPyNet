@@ -34,6 +34,12 @@ environment:
     - PYTHON: "C:\\Python36-x64"
       VERSION: 36
       ARCH: x64
+    - PYTHON: "C:\\Python37-x64"
+      VERSION: 37
+      ARCH: x64
+    - PYTHON: "C:\\Python38-x64"
+      VERSION: 38
+      ARCH: x64
 
 build: off
 

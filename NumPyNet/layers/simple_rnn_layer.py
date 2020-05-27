@@ -175,6 +175,7 @@ class SimpleRNN_layer(BaseLayer):
     Forward of the RNN layer
     '''
 
+    inpt = inpt.astype('float64')
     self.X = self._asStride(inpt.reshape(-1, np.prod(inpt.shape[1:])))
     self.states = np.zeros(shape=(self.steps, self.X.shape[1], self.outputs))
 
