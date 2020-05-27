@@ -51,7 +51,7 @@ install:
   - "%PYTHON%\\python.exe setup.py install"
   # testing libraries
   - IF [%VERSION%] GEQ [35] IF [%ARCH%] == [x64] %PYTHON%\\python.exe -m pip install hypothesis
-  - IF [%VERSION%] GEQ [35] IF [%ARCH%] == [x64] %PYTHON%\\python.exe -m pip install tensorflow==2.0.0b1
+  - IF [%VERSION%] GEQ [35] IF [%ARCH%] == [x64] IF [%VERSION%] GEQ [38] ( %PYTHON%\\python.exe -m pip install tensorflow==2.2.0rc1 ) ELSE ( %PYTHON%\\python.exe -m pip install tensorflow==2.0.0b1 )
 
 test_script:
   - IF [%VERSION%] GEQ [35] IF [%ARCH%] == [x64] %PYTHON%\\Scripts\\pytest.exe
