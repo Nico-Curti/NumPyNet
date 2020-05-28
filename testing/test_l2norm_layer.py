@@ -84,7 +84,7 @@ class TestL2normLayer :
 
       # Test for dimension and allclose of all output
       assert forward_out_numpynet.shape == forward_out_keras.shape
-      assert np.allclose(forward_out_numpynet, forward_out_keras, atol=1e-4, rtol=1e-3)
+      assert np.allclose(forward_out_numpynet, forward_out_keras, atol=1e-3, rtol=1e-3)
       assert np.allclose(layer.delta, np.zeros(shape=(b, w, h, c)))
 
 
@@ -118,7 +118,7 @@ class TestL2normLayer :
 
       # Test for dimension and allclose of all output
       assert forward_out_numpynet.shape == forward_out_keras.shape
-      assert np.allclose(forward_out_numpynet, forward_out_keras, atol=1e-4, rtol=1e-3)
+      assert np.allclose(forward_out_numpynet, forward_out_keras, atol=1e-3, rtol=1e-3)
 
       # BACKWARD
 
