@@ -2,6 +2,8 @@
 |:------------:|:-----------:|:-----------------:|:----------------:|:----------------:|:------------:|
 |   [**N. Curti**](https://github.com/Nico-Curti) <br/> [**M. Ceccarelli**](https://github.com/Mat092) | **NumPyNet**  | [![docs](https://img.shields.io/badge/documentation-latest-blue.svg?style=plastic)](https://nico-curti.github.io/NumPyNet/) | **Linux/MacOS** : [![travis](https://travis-ci.com/Nico-Curti/NumPyNet.svg?branch=master)](https://travis-ci.com/Nico-Curti/NumPyNet) <br/> **Windows** : [![appveyor](https://ci.appveyor.com/api/projects/status/qbn3ml2q04j9rbat?svg=true)](https://ci.appveyor.com/project/Nico-Curti/numpynet) | **Codacy** : [![Codacy Badge](https://api.codacy.com/project/badge/Grade/bc07a2bf6ba84555a7b9647891cc309d)](https://www.codacy.com/manual/Nico-Curti/NumPyNet?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Nico-Curti/NumPyNet&amp;utm_campaign=Badge_Grade) <br/> **Codebeat** : [![Codebeat](https://codebeat.co/badges/3ac26bf3-44ae-47ff-9b93-2f9785c4a7d6)](https://codebeat.co/projects/github-com-nico-curti-numpynet-master) | [![codecov](https://codecov.io/gh/Nico-Curti/NumPyNet/branch/master/graph/badge.svg)](https://codecov.io/gh/Nico-Curti/NumPyNet) |
 
+![NumPyNet CI](https://github.com/Nico-Curti/NumPyNet/workflows/NumPyNet%20CI/badge.svg)
+
 [![GitHub pull-requests](https://img.shields.io/github/issues-pr/Nico-Curti/NumPyNet.svg?style=plastic)](https://github.com/Nico-Curti/NumPyNet/pulls)
 [![GitHub issues](https://img.shields.io/github/issues/Nico-Curti/NumPyNet.svg?style=plastic)](https://github.com/Nico-Curti/NumPyNet/issues)
 
