@@ -131,7 +131,7 @@ class Shortcut_layer(BaseLayer):
       #           [1, 1, 1, 1]]
 
       # TODO: Not working with different dimensions
-      if (self.ix, self.jx, self.kx) is (None, None, None):
+      if (self.ix, self.jx, self.kx) == (None, None, None):
         self._stride_index(inpt.shape, prev_output.shape)
 
       self.output = inpt.copy()
@@ -163,7 +163,7 @@ class Shortcut_layer(BaseLayer):
 
     delta[:]   += self.delta * self.alpha
 
-    if (self.ix, self.iy, self.kx) is (None, None, None): # same shapes
+    if (self.ix, self.iy, self.kx) == (None, None, None): # same shapes
       prev_delta[:] += self.delta[:] * self.beta
 
     else: # different shapes

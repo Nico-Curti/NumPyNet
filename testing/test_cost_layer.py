@@ -117,7 +117,7 @@ class TestCostLayer :
       elif keras_loss_type is logcosh:             cost = cost_type.logcosh
       elif keras_loss_type is hinge:               cost = cost_type.hinge
       else:
-        raise ValuError()
+        raise ValueError()
 
       layer = Cost_layer(input_shape=inpt.shape, cost_type=cost,
                          scale=scale, ratio=ratio, noobject_scale=nbj_scale,
@@ -171,7 +171,7 @@ class TestCostLayer :
       elif keras_loss_type is logcosh:             cost = cost_type.logcosh
       elif keras_loss_type is hinge:               cost = cost_type.hinge
       else:
-        raise ValuError()
+        raise ValueError()
 
       layer = Cost_layer(input_shape=inpt.shape, cost_type=cost,
                          scale=1., ratio=0., noobject_scale=1.,

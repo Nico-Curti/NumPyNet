@@ -164,10 +164,10 @@ def main():
 
     # insert boxes evaluation and draw-detection and show image
 
-    input_image.show(window_name=outfile, ms=0, fullscreen=fullscreen)
+    input_image.show(window_name=args.outfile, ms=0, fullscreen=args.fullscreen)
 
     if args.save:
-      input_image.save(filename=outfile)
+      input_image.save(filename=args.outfile)
 
 
     args.input = input('Enter Image Path: ')

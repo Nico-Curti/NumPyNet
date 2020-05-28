@@ -8,6 +8,7 @@ from NumPyNet.layers import Connected_layer
 from NumPyNet.activations import Activations
 from NumPyNet.utils import _check_activation
 from NumPyNet.utils import check_is_fitted
+from NumPyNet.exception import LayerError
 
 import numpy as np
 

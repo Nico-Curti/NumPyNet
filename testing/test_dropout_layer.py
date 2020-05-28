@@ -164,9 +164,3 @@ class TestDropoutLayer:
 
     else :
       assert ~np.allclose(delta, np.zeros(shape=inpt.shape))
-
-
-
-if __name__ == '__main__':
-
-  test_dropout_layer()

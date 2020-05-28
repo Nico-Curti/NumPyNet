@@ -47,7 +47,7 @@ class BaseLayer (object):
 
     if previous_layer.out_shape is None:
       class_name = self.__class__.__name__
-      prev_name  = layer.__class__.__name__
+      prev_name  = previous_layer.__class__.__name__
       raise LayerError('Incorrect shapes found. Layer {0} cannot be connected to the previous {1} layer.'.format(class_name, prev_name))
 
     self.input_shape = previous_layer.out_shape

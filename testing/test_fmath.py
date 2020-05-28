@@ -170,9 +170,3 @@ def test_rsqrt ():
   x = np.pi
   assert np.isclose(1. / np.sqrt(x),    rsqrt(x),   atol=1e-5)
 
-
-
-if __name__ == '__main__':
-
-  test_fmath()
-

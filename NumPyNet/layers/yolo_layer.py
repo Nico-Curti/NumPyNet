@@ -8,6 +8,8 @@ import numpy as np
 from NumPyNet.activations import Logistic
 from NumPyNet.exception import LayerError
 from NumPyNet.utils import check_is_fitted
+from NumPyNet.box import Box
+from NumPyNet.detection import Detection
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -57,7 +59,7 @@ class Yolo_layer(object):
 
     if previous_layer.out_shape is None:
       class_name = self.__class__.__name__
-      prev_name  = layer.__class__.__name__
+      prev_name  = previous_layer.__class__.__name__
       raise LayerError('Incorrect shapes found. Layer {} cannot be connected to the previous {} layer.'.format(class_name, prev_name))
 
     self.batch, self.grid_w, self.grid_h, self.c = previous_layer.out_shape
@@ -246,6 +248,7 @@ class Yolo_layer(object):
     '''
     # it probably works only with n == 3
     output = self.output.reshape((self.grid_h, self.grid_w, self.n, -1))
+    net_w, net_h = net_shape
 
     detections = []
 
@@ -266,7 +269,7 @@ class Yolo_layer(object):
 
           probability = self.output[i, j, k, 5:]
           probs = objectness * probability
-          probability[prob <= thresh] = 0.
+          probability[probs <= thresh] = 0.
 
           dets = Detection()
           dets._objectness = objectness
