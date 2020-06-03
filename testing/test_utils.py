@@ -44,7 +44,6 @@ class TestUtils:
          num_labels = st.integers(min_value=0, max_value=120))
   @settings(max_examples=100, deadline=None)
   def test_from_categorical(self, size, num_labels):
-    # tf.math.argamax(input, axis=None)
 
     label = np.random.uniform(low=0, high=num_labels, size=(size,))
 
