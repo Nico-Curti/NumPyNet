@@ -97,11 +97,10 @@ class Softmax_layer(BaseLayer):
 
     if truth is not None:
       self._check_dims(shape=self.out_shape, arr=truth, func='Forward')
-      out = np.clip(self.output, 1e-8, 1. - 1e-8)
-      self.cost  = - np.sum(truth * np.log(out))
-      # self.delta = out - truth  # one hot-encoded case (single 1 for every output array)
+      out = np.clip(self.output, 1e-8, 1. - 1e-8) # clip to prevent overflow
+      # self.delta = self.output - truth  # one hot-encoded case (single 1 for every output array)
       self.delta = out * (truth.sum(axis=-1, keepdims=True)) - truth # general case?
-
+      self.cost  = - np.sum(truth * np.log(out))
 
     return self
 

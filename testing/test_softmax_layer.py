@@ -5,13 +5,6 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import InputLayer
-from tensorflow.keras.layers import Input
-from tensorflow.keras.layers import Softmax
-from tensorflow.keras.layers import Reshape
-from tensorflow.keras.losses import categorical_crossentropy
-import tensorflow.keras.backend as K
 
 from NumPyNet.layers.softmax_layer import Softmax_layer
 
@@ -139,7 +132,7 @@ class TestSoftmaxLayer :
          h = st.integers(min_value=1, max_value=100),
          c = st.integers(min_value=10, max_value=100),
          spatial = st.booleans())
-  @settings(max_examples=100,
+  @settings(max_examples=10,
             deadline=None)
   def test_backward (self, b, w, h, c, spatial):
 
