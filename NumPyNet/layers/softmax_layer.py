@@ -14,26 +14,19 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 class Softmax_layer(BaseLayer):
 
-  def __init__(self, input_shape=None, groups=1, spatial=False, temperature=1., **kwargs):
+  def __init__(self, input_shape=None, spatial=False, temperature=1., **kwargs):
     '''
     Softmax layer: perfoms a Softmax transformation of its input
 
     Parameters
     ----------
       input_shape : tuple of 4 integers: input shape of the layer.
-      groups       : int, default is 1, indicates how many groups
-        every images is divided into. Used only if spatial is False
       spatial      : boolean, default is False. if True performs the softmax
         computing max and sum over the entire image. if False max and sum are computed over
         the last axes (channels)
       temperature  : float, default is 1.. divide max and input in the softmax formulation
         used only is spatial is False
     '''
-
-    if isinstance(groups, int) and groups > 0:
-       self.groups = groups
-    else:
-      raise ValueError('Softmax Layer : parameter "groups" must be an integer and > 0')
 
     self.spatial = spatial
     self.cost = 0.
@@ -72,25 +65,14 @@ class Softmax_layer(BaseLayer):
       s = 1. / self.output.sum(axis=-1, keepdims=True)
       self.output *= s
 
-    else : # first implementation with groups, taken from darknet, mhe
-      self.output = np.zeros(inpt.shape)
-      inputs = np.prod(self.input_shape[1:])
-      group_offset = inputs // self.groups
-      flat_input = inpt.ravel()
-      flat_outpt = self.output.ravel()
-      for b in range(self.input_shape[0]):
-        for g in range(self.groups):
-          idx = b * inputs + g * group_offset
-          inp = flat_input[idx : idx + group_offset]
-          out = flat_outpt[idx : idx + group_offset]
-          out[:]  = np.exp((inp - inp.max()) * self.temperature)
-          out[:] *= 1. / out.sum()
+    else :
 
-      self.output = flat_outpt.reshape(inpt.shape)
+      shape = inpt.shape
+      inpt = inpt.reshape(shape[0], -1)
 
-      # Original implementation of spatial false
-      # self.output = np.exp((inpt - np.max(inpt, axis=(1,2,3), keepdims=True)) * self.temperature)
-      # s = self.output.sum(axis=(1,2,3), keepdims=True)
+      self.output = np.exp((inpt - inpt.max(axis=1, keepdims=True) ) * self.temperature)
+      self.output *= 1. / self.output.sum(axis=1, keepdims=True)
+      self.output = self.output.reshape(shape)
 
     # value of delta if truth is None
     # self.delta = np.zeros(shape=self.out_shape, dtype=float)
@@ -98,10 +80,11 @@ class Softmax_layer(BaseLayer):
     if truth is not None:
       self._check_dims(shape=self.out_shape, arr=truth, func='Forward')
       out = np.clip(self.output, 1e-8, 1. - 1e-8)
-      self.cost  = - np.sum(truth * np.log(out))
+      self.cost = - np.sum(truth * np.log(out))
       # self.delta = out - truth  # one hot-encoded case (single 1 for every output array)
-      self.delta = out * (truth.sum(axis=-1, keepdims=True)) - truth # general case?
-
+      self.delta = out * truth.sum(axis=(1, 2, 3), keepdims=True) - truth # general case?
+    else:
+      self.delta  = np.empty(shape=self.out_shape)
 
     return self
 
@@ -157,7 +140,6 @@ if __name__ == '__main__':
   inpt = np.expand_dims(inpt, axis=0)
 
   spatial     = True
-  groups      = 4
   temperature = 1.5
 
   np.random.seed(123)
@@ -167,7 +149,7 @@ if __name__ == '__main__':
   truth = np.random.choice([0., 1.], p=[.5, .5], size=(batch, w, h, c))
 
   # Model initialization
-  layer = Softmax_layer(input_shape=inpt.shape, groups=groups, temperature=temperature, spatial=spatial)
+  layer = Softmax_layer(input_shape=inpt.shape, temperature=temperature, spatial=spatial)
 
   # FORWARD
 
@@ -189,7 +171,7 @@ if __name__ == '__main__':
   fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
   fig.suptitle(('SoftMax Layer\n' +
                'loss : {:.3f}, \n' +
-               'spatial : {}, temperature : {}, groups : {}').format(layer_loss, spatial, temperature, groups))
+               'spatial : {}, temperature : {}').format(layer_loss, spatial, temperature))
 
   ax1.imshow(float_2_img(inpt[0]))
   ax1.set_title('Original Image')

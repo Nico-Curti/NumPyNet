@@ -29,7 +29,7 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 class TestSoftmaxLayer :
   '''
   Tests:
-    - costructor of RNN_layer object
+    - costructor of Softmax_layer object
     - print function
     - forward function against tf.keras
     - backward function against tf.keras
@@ -37,37 +37,25 @@ class TestSoftmaxLayer :
   to be:
     '''
 
-  @given(g = st.floats(-2,10),
-         s = st.floats(-2,10),
+  @given(s = st.floats(-2,10),
          t = st.floats(0,10))
   @settings(max_examples=10,
             deadline=None)
-  def test_constructor (self, g, s, t):
+  def test_constructor (self, s, t):
 
-    with pytest.raises(ValueError):
-      layer = Softmax_layer(groups=g, spatial=s, temperature=t)
+    if t > 0:
+      layer = Softmax_layer(spatial=s, temperature=t)
 
-    g = int(g)
+      assert layer.output == None
+      assert layer.delta  == None
 
-    if g <= 0 :
+      assert layer.spatial == s
+
+      assert layer.temperature == 1. / t
+
+    else :
       with pytest.raises(ValueError):
-        layer = Softmax_layer(groups=g, spatial=s, temperature=t)
-    else:
-
-      if t > 0:
-        layer = Softmax_layer(groups=g, spatial=s, temperature=t)
-
-        assert layer.output == None
-        assert layer.delta  == None
-
-        assert layer.spatial == s
-        assert layer.groups  == g
-
-        assert layer.temperature == 1. / t
-
-      else :
-        with pytest.raises(ValueError):
-          layer = Softmax_layer(groups=g, spatial=s, temperature=t)
+        layer = Softmax_layer(spatial=s, temperature=t)
 
   @given(b = st.integers(min_value=1, max_value=15 ),
          w = st.integers(min_value=1, max_value=100),
@@ -108,7 +96,7 @@ class TestSoftmaxLayer :
       truth_tf = tf.Variable(truth.copy().reshape(b, -1))
 
     # NumPyNet layer
-    layer = Softmax_layer(input_shape=inpt.shape, groups=1, temperature=1., spatial=spatial)
+    layer = Softmax_layer(input_shape=inpt.shape, temperature=1., spatial=spatial)
 
     # Tensorflow layer
     model = tf.keras.layers.Softmax(axis=-1)
@@ -157,7 +145,7 @@ class TestSoftmaxLayer :
     	truth_tf = tf.Variable(truth.copy().reshape(b, -1))
 
     # NumPyNet layer
-    layer = Softmax_layer(input_shape=inpt.shape, groups=1, temperature=1., spatial=spatial)
+    layer = Softmax_layer(input_shape=inpt.shape, temperature=1., spatial=spatial)
 
     # Tensorflow layer
     model = tf.keras.layers.Softmax(axis=-1)
