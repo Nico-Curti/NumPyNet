@@ -153,7 +153,7 @@ class RMSprop (Optimizer):
     for i, (c, p, g) in enumerate(zip(self.cache, params, gradients)):
 
       c = self.rho * c + (1 - self.rho) * g * g
-      p -= (self.lr * g / np.sqrt(c + self.epsilon))
+      p -= (self.lr * g / (np.sqrt(c) + self.epsilon))
       self.cache[i] = c
 
     super(RMSprop, self).update(params, gradients)
