@@ -123,7 +123,7 @@ class Adagrad (Optimizer):
     for i, (c, p, g) in enumerate(zip(self.cache, params, gradients)):
 
       c += g * g
-      p -= self.lr * g / (np.sqrt(c + self.epsilon))
+      p -= self.lr * g / (np.sqrt(c) + self.epsilon)
       self.cache[i] = c
 
     super(Adagrad, self).update(params, gradients)
@@ -153,7 +153,7 @@ class RMSprop (Optimizer):
     for i, (c, p, g) in enumerate(zip(self.cache, params, gradients)):
 
       c = self.rho * c + (1 - self.rho) * g * g
-      p -= (self.lr * g / np.sqrt(c + self.epsilon))
+      p -= (self.lr * g / (np.sqrt(c) + self.epsilon))
       self.cache[i] = c
 
     super(RMSprop, self).update(params, gradients)
@@ -229,7 +229,7 @@ class Adam (Optimizer):
 
       m = self.beta1 * m + (1 - self.beta1) * g
       v = self.beta2 * v + (1 - self.beta2) * g * g
-      p -= a_t * m / (np.sqrt(v + self.epsilon))
+      p -= a_t * m / (np.sqrt(v) + self.epsilon)
 
       self.ms[i] = m
       self.vs[i] = v
