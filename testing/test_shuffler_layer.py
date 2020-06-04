@@ -111,8 +111,6 @@ class TestShuffleLayer :
             deadline=None)
   def test_backward (self, b, w, h, couple):
 
-    # couples = choice([(2, 12), (4, 32), (4, 48), (6, 108), couple])
-
     scale, channels = couple
 
     # input initialization
@@ -149,6 +147,7 @@ class TestShuffleLayer :
       delta = np.random.uniform(low=0., high=1., size=forward_out_keras.shape)
 
       delta_keras = tf.nn.space_to_depth(delta, block_size=scale, data_format='NHWC')
+      inpt_keras  = tf.nn.space_to_depth(forward_out_keras, block_size=scale, data_format='NHWC')
 
       layer.delta = delta
       delta = delta.reshape(inpt.shape)
@@ -157,3 +156,4 @@ class TestShuffleLayer :
 
       assert delta_keras.shape == delta.shape
       assert np.allclose(delta_keras, delta)
+      assert np.allclose(inpt_keras, inpt)
