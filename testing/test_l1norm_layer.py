@@ -65,7 +65,8 @@ class TestL1normLayer :
             deadline=None)
   def test_forward (self, b, w, h, c):
 
-    for axis in [None, 1, 2, 3]:
+    # "None" axis supported only in NumPyNet
+    for axis in [1, 2, 3]:
 
       inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
       inpt_tf = tf.Variable(inpt)
@@ -73,8 +74,8 @@ class TestL1normLayer :
       # NumPyNet model
       layer = L1Norm_layer(input_shape=inpt.shape, axis=axis)
 
-      # # Keras output
-      forward_out_keras, _ = tf.linalg.normalize(inpt_tf, ord=1, axis=axis)
+      # Keras output
+      forward_out_keras = tf.keras.utils.normalize(inpt_tf, order=1, axis=axis).numpy()
 
       # numpynet forward and output
       layer.forward(inpt)
@@ -94,7 +95,7 @@ class TestL1normLayer :
             deadline=None)
   def test_backward (self, b, w, h, c):
 
-    for axis in [None, 1, 2, 3]:
+    for axis in [1, 2, 3]:
 
       inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
       inpt_tf = tf.Variable(inpt)
@@ -105,7 +106,7 @@ class TestL1normLayer :
       # Keras output
 
       with tf.GradientTape() as tape:
-        preds, _ = tf.linalg.normalize(inpt_tf, ord=1, axis=axis)
+        preds = tf.keras.utils.normalize(inpt_tf, order=1, axis=axis)
         grads = tape.gradient(preds, inpt_tf)
 
         forward_out_keras = preds.numpy()

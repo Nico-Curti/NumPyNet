@@ -76,7 +76,7 @@ class TestL2normLayer :
       layer = L2Norm_layer(input_shape=inpt.shape, axis=axis)
 
       # Keras output
-      forward_out_keras, _ = tf.linalg.normalize(inpt_tf, ord=2, axis=axis)
+      forward_out_keras = tf.math.l2_normalize(inpt_tf, axis=axis).numpy()
 
       # numpynet forward and output
       layer.forward(inpt)
@@ -106,7 +106,7 @@ class TestL2normLayer :
 
       # Keras output
       with tf.GradientTape() as tape:
-        preds, _ = tf.linalg.normalize(inpt_tf, ord=2, axis=axis)
+        preds = tf.math.l2_normalize(inpt_tf, axis=axis)
         grads = tape.gradient(preds, inpt_tf)
 
         forward_out_keras = preds.numpy()
