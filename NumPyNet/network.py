@@ -289,13 +289,20 @@ class Network(object):
 
   def _check_metrics(self, metrics):
     '''
+    Check the signature of the given metric functions.
+    The right signature must have only two required arguments (y_true, y_pred)
+    plus other possible arguments with default values.
+    The checked function are added to the list of network metric functions.
     '''
+
+     # getfullargspec works only in python3.*
+    argspec = inspect.getfullargspec if int(sys.version[0]) >= 3 else inspect.getargspec
 
     for func in metrics:
       if not callable(func):
         raise MetricsError('Metrics {} is not a callable object'.format(func.__name__))
 
-      infos = inspect.getfullargspec(func)
+      infos = argspec(func)
       num_defaults = len(infos.defaults) if infos.defaults else 0
 
       if len(infos.args) - num_defaults != 2:
