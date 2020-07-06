@@ -296,7 +296,9 @@ class Network(object):
         raise MetricsError('Metrics {} is not a callable object'.format(func.__name__))
 
       infos = inspect.getfullargspec(func)
-      if len(infos.args) - len(infos.defaults) != 2:
+      num_defaults = len(infos.defaults) if infos.defaults else 0
+
+      if len(infos.args) - num_defaults != 2:
         raise MetricsError('Metrics {0} is not a valid metrics function. '
                            'The required signature is only func (y_true, y_pred, **kwargs). '
                            'Try to use a partial to overcome this kind of issue.')
