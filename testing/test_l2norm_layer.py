@@ -70,7 +70,7 @@ class TestL2normLayer :
     for axis in [None, 1, 2, 3]:
 
       inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
-      inpt_tf = tf.convert_to_tensor(inpt)
+      inpt_tf = tf.Variable(inpt)
 
       # NumPyNet model
       layer = L2Norm_layer(input_shape=inpt.shape, axis=axis)
@@ -132,7 +132,7 @@ class TestL2normLayer :
       # Back tests
       assert delta.shape == delta_keras.shape
       assert delta.shape == inpt.shape
-      # assert np.allclose(delta, delta_keras, atol=1e-6) # TODO : wrong
+      # np.testing.assert_allclose(delta, delta_keras, atol=1e-6) # TODO : wrong
 
 
 if __name__ == '__main__':

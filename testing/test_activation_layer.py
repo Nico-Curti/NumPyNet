@@ -47,6 +47,9 @@ class TestActivationLayer:
     - backward function against tf.keras for different activations
   '''
 
+  nn_activations = [Relu, Logistic, Tanh, Linear, Elu, Selu, ]#SoftSign, SoftPlus]
+  tf_activations = ['relu', 'sigmoid', 'tanh', 'linear', 'elu', 'selu'] #'softsign', 'softplus']
+
   def test_constructor (self):
 
     numpynet_activ = [Elliot, Elu, Hardtan,
@@ -103,24 +106,22 @@ class TestActivationLayer:
   @given(batch = st.integers(min_value=1, max_value=15 ),
          w     = st.integers(min_value=1, max_value=100),
          h     = st.integers(min_value=1, max_value=100),
-         c     = st.integers(min_value=1, max_value=10 ))
+         c     = st.integers(min_value=1, max_value=10 ),
+         )
   @settings(max_examples=10,
             deadline=None)
   def test_forward (self, batch, w, h, c):
 
-    keras_activ = ['relu', 'sigmoid', 'tanh','linear'] # 'softplus', 'softsign', 'elu', 'selu']
-    numpynet_activ = [Relu, Logistic, Tanh, Linear] # SoftPlus, SoftSign, Elu, Selu]
+    for nn_act, tf_act in zip(self.nn_activations, self.tf_activations):
 
-    # negative value for Relu testing
-    inpt = np.random.uniform(low=-1., high=1., size=(batch, w, h, c))
-
-    for act_fun in range(0, len(keras_activ)):
+      # negative value for Relu testing
+      inpt = np.random.uniform(low=-1., high=1., size=(batch, w, h, c)).astype('float32')
 
       # numpynet model init
-      numpynet = Activation_layer(input_shape=inpt.shape, activation=numpynet_activ[act_fun])
+      numpynet = Activation_layer(input_shape=inpt.shape, activation=nn_act)
 
       # tensorflow model
-      model = tf.keras.layers.Activation(activation=keras_activ[act_fun])
+      model = tf.keras.layers.Activation(activation=tf_act)
 
       # FORWARD
 
@@ -133,69 +134,66 @@ class TestActivationLayer:
 
       # Forward check (Shape and Values)
       assert forward_out_keras.shape == forward_out_numpynet.shape
-      assert np.allclose(forward_out_keras, forward_out_numpynet, atol=1e-4)
+      np.testing.assert_allclose(forward_out_keras, forward_out_numpynet, atol=1e-4, rtol=1e-5)
 
 
   @given(batch = st.integers(min_value=1, max_value=15 ),
          w     = st.integers(min_value=1, max_value=100),
          h     = st.integers(min_value=1, max_value=100),
          c     = st.integers(min_value=1, max_value=10 ))
-  @settings(max_examples=10,
+  @settings(max_examples=100,
             deadline=None)
   def test_backward (self, batch, w, h, c):
 
-    keras_activ = ['relu', 'sigmoid', 'tanh','linear'] # 'elu', 'selu', 'softsign', 'softplus']
-    numpynet_activ = [Relu, Logistic, Tanh, Linear] # Elu,  Selu, SoftSign, SoftPlus]
+    for nn_act, tf_act in zip(self.nn_activations, self.tf_activations):
 
-    # negative value for Relu testing
-    inpt = np.random.uniform(low=-1., high=1., size=(batch, w, h, c))
-    tf_input = tf.Variable(inpt)
-
-    for act_fun in range(0, len(keras_activ)):
+      # negative value for Relu testing
+      inpt = np.random.uniform(low=-1., high=1., size=(batch, w, h, c)).astype('float32')
+      tf_input = tf.Variable(inpt)
 
       # numpynet model init
-      numpynet = Activation_layer(input_shape=inpt.shape, activation=numpynet_activ[act_fun])
+      numpynet = Activation_layer(input_shape=inpt.shape, activation=nn_act)
 
-      # Keras Model init
-      model = tf.keras.layers.Activation(activation=keras_activ[act_fun])
+      # tensorflow model
+      model = tf.keras.layers.Activation(activation=tf_act)
 
-      # try to backward
-      with pytest.raises(NotFittedError):
-        # Global delta init.
-        delta = np.empty(shape=inpt.shape, dtype=float)
-
-        # numpynet Backward
-        numpynet.backward(delta)
-
-      # FORWARD
-
-      # Tensorflow Forward and backward
-      with tf.GradientTape() as tape :
-        preds = model(tf_input)
-        grads = tape.gradient(preds, tf_input)
-
-        forward_out_keras = preds.numpy()
-        delta_keras = grads.numpy()
-
-      # numpynet forwrd
-      numpynet.forward(inpt)
-      forward_out_numpynet = numpynet.output
-
-      # Forward check (Shape and Values)
-      assert forward_out_keras.shape == forward_out_numpynet.shape
-      assert np.allclose(forward_out_keras, forward_out_numpynet)
-
-      # BACKWARD
-
-      # numpynet delta init. (Multiplication with gradients)
-      numpynet.delta = np.ones(shape=inpt.shape, dtype=float)
-
+    # try to backward
+    with pytest.raises(NotFittedError):
       # Global delta init.
-      delta = np.empty(shape=inpt.shape, dtype=float)
+      delta = np.empty(shape=inpt.shape, dtype='float32')
 
       # numpynet Backward
       numpynet.backward(delta)
 
-      # Check dimension and delta
-      assert delta_keras.shape == delta.shape
-      assert np.allclose(delta_keras, delta, atol=1e-7)
+    # FORWARD
+
+    # Tensorflow Forward and backward
+    with tf.GradientTape() as tape :
+      preds = model(tf_input)
+      grads = tape.gradient(preds, tf_input)
+
+      forward_out_keras = preds.numpy()
+      delta_keras = grads.numpy()
+
+    # numpynet forward
+    numpynet.forward(inpt)
+    forward_out_numpynet = numpynet.output
+
+    # Forward check (Shape and Values)
+    assert forward_out_keras.shape == forward_out_numpynet.shape
+    np.testing.assert_allclose(forward_out_keras, forward_out_numpynet, atol=1e-4, rtol=1e-5)
+
+    # BACKWARD
+
+    # numpynet delta init. (Multiplication with gradients)
+    numpynet.delta = np.ones(shape=inpt.shape, dtype='float32')
+
+    # Global delta init.
+    delta = np.empty(shape=inpt.shape, dtype='float32')
+
+    # numpynet Backward
+    numpynet.backward(delta)
+
+    # Check dimension and delta
+    assert delta_keras.shape == delta.shape
+    np.testing.assert_allclose(delta_keras, delta, atol=1e-4, rtol=1e-4)

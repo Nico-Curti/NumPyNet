@@ -95,7 +95,7 @@ class TestBatchnormLayer:
     numpynet = BatchNorm_layer(input_shape=inpt.shape, scales=scales, bias=bias)
 
     # initializers must be callable with this syntax, I need those for dimensionality problems
-    def bias_init(shape, **kwargs):
+    def bias_init(shape, dtype=None):
       return np.expand_dims(bias, axis=0)
 
     def gamma_init(shape, dtype=None):
@@ -113,7 +113,8 @@ class TestBatchnormLayer:
                                                beta_initializer=bias_init,
                                                gamma_initializer=gamma_init,
                                                moving_mean_initializer=mean_init,
-                                               moving_variance_initializer=var_init)
+                                               moving_variance_initializer=var_init,
+                                               )
 
     # Keras forward
     forward_out_keras = model(inpt).numpy()
@@ -123,8 +124,8 @@ class TestBatchnormLayer:
 
     # Comparing outputs
     assert forward_out_numpynet.shape == (b, w, h, c)
-    assert forward_out_numpynet.shape == forward_out_keras.shape            # same shape
-    assert np.allclose(forward_out_keras, forward_out_numpynet, atol=1e-3)  # same output
+    assert forward_out_numpynet.shape == forward_out_keras.shape
+    np.testing.assert_allclose(forward_out_keras, forward_out_numpynet, atol=1e-3, rtol=1e-5)
 
     x_norm = (numpynet.x - numpynet.mean)*numpynet.var
 
@@ -155,7 +156,7 @@ class TestBatchnormLayer:
     numpynet = BatchNorm_layer(input_shape=inpt.shape, scales=scales, bias=bias)
 
     # initializers must be callable with this syntax, I need those for dimensionality problems
-    def bias_init(shape, **kwargs):
+    def bias_init(shape, dtype=None):
       return np.expand_dims(bias, axis=0)
 
     def gamma_init(shape, dtype=None):

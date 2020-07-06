@@ -91,7 +91,7 @@ class TestAvgpoolLayer:
             deadline=None)
   def test_forward (self, batch, w, h, c, size, stride, pad):
 
-    inpt = np.random.uniform(low=0., high=1., size=(batch, w, h, c))
+    inpt = np.random.uniform(low=0., high=1., size=(batch, w, h, c)).astype('float32')
 
     # Numpy_net model
     numpynet = Avgpool_layer(input_shape=inpt.shape, size=size, stride=stride, pad=pad)

@@ -65,7 +65,7 @@ class TestL1normLayer :
             deadline=None)
   def test_forward (self, b, w, h, c):
 
-    # None is supported only in NumPyNet version!
+    # "None" axis supported only in NumPyNet
     for axis in [1, 2, 3]:
 
       inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
@@ -74,7 +74,7 @@ class TestL1normLayer :
       # NumPyNet model
       layer = L1Norm_layer(input_shape=inpt.shape, axis=axis)
 
-      # # Keras output
+      # Keras output
       forward_out_keras = tf.keras.utils.normalize(inpt_tf, order=1, axis=axis).numpy()
 
       # numpynet forward and output
@@ -95,7 +95,6 @@ class TestL1normLayer :
             deadline=None)
   def test_backward (self, b, w, h, c):
 
-    # None is supported only in NumPyNet version!
     for axis in [1, 2, 3]:
 
       inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
