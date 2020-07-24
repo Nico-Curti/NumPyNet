@@ -111,8 +111,8 @@ class TestCostLayer :
     nn_cost = nn_losses[cost_idx]
     tf_cost = tf_losses[cost_idx]
 
-    truth = np.random.uniform(low=0., high=10., size=(outputs,)).astype(float)
-    inpt  = np.random.uniform(low=0., high=10., size=(outputs,)).astype(float)
+    truth = np.random.uniform(low=0., high=10., size=(outputs,)).astype(np.float32) # I don't know why but TF in this case requires a float32
+    inpt  = np.random.uniform(low=0., high=10., size=(outputs,)).astype(np.float32) # I don't know why but TF in this case requires a float32
 
     truth_tf = tf.Variable(truth)
     inpt_tf  = tf.Variable(inpt)
@@ -153,8 +153,8 @@ class TestCostLayer :
     tf_cost = tf_losses[cost_idx]
 
 
-    truth = np.random.uniform(low=0., high=1., size=(outputs,)).astype(float)
-    inpt  = np.random.uniform(low=0., high=1., size=(outputs,)).astype(float)
+    truth = np.random.uniform(low=0., high=1., size=(outputs,)).astype(np.float32) # I don't know why but TF in this case requires a float32
+    inpt  = np.random.uniform(low=0., high=1., size=(outputs,)).astype(np.float32) # I don't know why but TF in this case requires a float32
 
     truth_tf = tf.Variable(truth)
     inpt_tf  = tf.Variable(inpt)
