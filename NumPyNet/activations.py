@@ -143,10 +143,8 @@ class Ramp (Activations):
 
   @staticmethod
   def gradient (x, copy=False):
-    if copy: y = x.copy()
-    else:    y = x
 
-    return (y > 0.) + .1
+    return (x > 0.) + .1
 
 
 class Linear (Activations):
@@ -160,7 +158,7 @@ class Linear (Activations):
 
   @staticmethod
   def gradient(x, copy=False):
-    return np.ones(shape=x.shape, dtype=float)
+    return np.ones_like(a=x, dtype=float)
 
 
 class Tanh (Activations):
@@ -266,8 +264,9 @@ class Hardtan (Activations):
     if copy: y = x.copy()
     else:    y = x
 
-    y[x < -1.] = -1.
-    y[x >  1.] =  1.
+    y[x < -2.5] = 0.
+    y[x >  2.5] = 1.
+    y = np.where(((x >= -2.5) & (x <= 2.5)), .2 * x + .5, x)
     return y
 
   @staticmethod
@@ -277,8 +276,8 @@ class Hardtan (Activations):
     y[:] = np.zeros(shape=y.shape)
     # this function select corrects indexes
     # solves problems with multiple conditions
-    func = np.vectorize(lambda t: (t >- 1) and (t < 1.))
-    y[func(x)] = 1.
+    func = np.vectorize(lambda t: (t >- 2.5) and (t < 2.5))
+    y[func(x)] = 0.2
     return y
 
 
@@ -316,17 +315,13 @@ class Selu (Activations):
 
   @staticmethod
   def activate (x, copy=False):
-    if copy: y = x.copy()
-    else:    y = x
 
-    return (y >= 0.) * 1.0507 * y + (y < 0.) * 1.0507 * 1.6732 * (np.exp(x) - 1.)
+    return (x >= 0.) * 1.0507 * x + (x < 0.) * 1.0507 * 1.6732 * (np.exp(x) - 1.)
 
   @staticmethod
   def gradient (x, copy=False):
-    if copy: y = x.copy()
-    else:    y = x
 
-    return (y >= 0.) * 1.0507 + (y < 0.) * (y + 1.0507 * 1.6732)
+    return (x >= 0.) * 1.0507 + (x < 0.) * (x + 1.0507 * 1.6732)
 
 
 class Elliot (Activations):
@@ -338,17 +333,13 @@ class Elliot (Activations):
 
   @staticmethod
   def activate (x, copy=False):
-    if copy: y = x.copy()
-    else:    y = x
 
-    return .5 * Elliot.STEEPNESS * y / (1. + np.abs(y + Elliot.STEEPNESS)) + .5
+    return .5 * Elliot.STEEPNESS * x / (1. + np.abs(x + Elliot.STEEPNESS)) + .5
 
   @staticmethod
   def gradient (x, copy=False):
-    if copy: y = x.copy()
-    else:    y = x
 
-    last_fwd = 1. + np.abs(y * Elliot.STEEPNESS)
+    last_fwd = 1. + np.abs(x * Elliot.STEEPNESS)
     return .5 * Elliot.STEEPNESS / (last_fwd * last_fwd)
 
 
@@ -361,17 +352,13 @@ class SymmElliot (Activations):
 
   @staticmethod
   def activate (x, copy=False):
-    if copy: y = x.copy()
-    else:    y = x
 
-    return y * SymmElliot.STEEPNESS / (1. + np.abs(y * SymmElliot.STEEPNESS))
+    return x * SymmElliot.STEEPNESS / (1. + np.abs(x * SymmElliot.STEEPNESS))
 
   @staticmethod
   def gradient (x, copy=False):
-    if copy: y = x.copy()
-    else:    y = x
 
-    last_fwd = 1. + np.abs(y * SymmElliot.STEEPNESS)
+    last_fwd = 1. + np.abs(x * SymmElliot.STEEPNESS)
     return SymmElliot.STEEPNESS / (last_fwd * last_fwd)
 
 
@@ -382,17 +369,13 @@ class SoftPlus (Activations):
 
   @staticmethod
   def activate (x, copy=False):
-    if copy: y = x.copy()
-    else:    y = x
 
-    return np.log(1. + np.exp(y))
+    return np.log(1. + np.exp(x))
 
   @staticmethod
   def gradient (x, copy=False):
-    if copy: y = x.copy()
-    else:    y = x
 
-    ey = np.exp(y)
+    ey = np.exp(x)
     return ey / (1. + ey)
 
 
@@ -403,15 +386,11 @@ class SoftSign (Activations):
 
   @staticmethod
   def activate (x, copy=False):
-    if copy: y = x.copy()
-    else:    y = x
 
-    return y / (np.abs(y) + 1.)
+    return x / (np.abs(x) + 1.)
 
   @staticmethod
   def gradient (x, copy=False):
-    if copy: y = x.copy()
-    else:    y = x
 
-    fy = np.abs(y) + 1.
+    fy = np.abs(x) + 1.
     return 1. / (fy * fy)

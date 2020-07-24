@@ -90,7 +90,7 @@ class TestRouteLayer :
             deadline=None)
   def test_forward (self, b, w, h, c):
 
-    input = np.random.uniform(low=-10, high=10., size=(b, w, h, c))
+    input = np.random.uniform(low=-10, high=10., size=(b, w, h, c)).astype(float)
 
     # init keras model
     inp    = Input(batch_shape=(b, w, h, c))
@@ -118,7 +118,7 @@ class TestRouteLayer :
     fwd_out_numpynet = net.predict(X=input)
     fwd_out_keras    = model.predict(x=input, batch_size=b)
 
-    assert np.allclose(fwd_out_keras, fwd_out_numpynet) # ok
+    np.testing.assert_allclose(fwd_out_keras, fwd_out_numpynet, rtol=1e-5, atol=1e-8) 
 
 
   @given(b = st.integers(min_value=5, max_value=15),
@@ -163,16 +163,16 @@ class TestRouteLayer :
       fwd_out_keras = preds.numpy()
       delta_keras = grads.numpy()
 
-    assert np.allclose(fwd_out_keras, fwd_out_numpynet) # ok
+    np.testing.assert_allclose(fwd_out_keras, fwd_out_numpynet, rtol=1e-5, atol=1e-8) 
 
     net._fitted = False
 
     # BACKWARD
 
-    net._net[3].delta = np.ones(shape=fwd_out_numpynet.shape)
+    net._net[3].delta = np.ones(shape=fwd_out_numpynet.shape, dtype=float)
     net._backward(X=input)
 
     delta_numpynet = net._net[0].delta
 
     assert delta_numpynet.shape == delta_keras.shape
-    # assert np.allclose(delta_keras, delta_numpynet) TODO : broken.
+    # np.testing.assert_allclose(delta_keras, delta_numpynet, rtol=1e-5, atol=1e-8) TODO : broken.

@@ -26,6 +26,11 @@ from hypothesis import settings
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
+
+nn_losses = [cost_type.mae, cost_type.mse, cost_type.logcosh, cost_type.hinge]
+tf_losses = [mean_absolute_error, mean_squared_error, logcosh, hinge]
+
+
 class TestCostLayer :
   '''
   Tests:
@@ -44,41 +49,43 @@ class TestCostLayer :
     _wgan
   '''
 
-  @given(scale=st.floats(min_value=0., max_value=10.),
-         ratio=st.floats(min_value=0., max_value=10.),
-         nbj_scale=st.floats(min_value=0., max_value=10. ),
-         threshold=st.floats(min_value=0., max_value=10., ),
-         smoothing=st.floats(min_value=0., max_value=10., ),
-         b = st.integers(min_value=1, max_value=15 ),
+  @given(scale = st.floats(min_value=0., max_value=10.),
+         ratio = st.floats(min_value=0., max_value=10.),
+         nbj_scale = st.floats(min_value=0., max_value=10.),
+         threshold = st.floats(min_value=0., max_value=10.),
+         smoothing = st.floats(min_value=0., max_value=10.),
+         b = st.integers(min_value=1, max_value=15),
          w = st.integers(min_value=1, max_value=100),
          h = st.integers(min_value=1, max_value=100),
          c = st.integers(min_value=1, max_value=10),
+         cost = st.integers(min_value=0, max_value=8)
          )
   @settings(max_examples=10,
             deadline=None)
-  def test_constructor (self, b, w, h, c, scale, ratio, nbj_scale, threshold, smoothing):
+  def test_constructor (self, b, w, h, c, scale, ratio, nbj_scale, threshold, smoothing, cost):
 
-    for cost in range(0, 9):
+    input_shape = choice([None, (b, w, h, c)])
 
-      input_shape = choice([None, (b, w, h, c)])
+    layer = Cost_layer(cost_type=cost, input_shape=input_shape, scale=scale, ratio=ratio, noobject_scale=nbj_scale, threshold=threshold, smoothing=smoothing)
 
-      layer = Cost_layer(cost_type=cost, input_shape=input_shape, scale=scale, ratio=ratio, noobject_scale=nbj_scale, threshold=threshold, smoothing=smoothing)
+    assert layer.cost_type == cost
+    assert layer.scale     == scale
+    assert layer.ratio     == ratio
+    assert layer.noobject_scale == nbj_scale
+    assert layer.threshold == threshold
+    assert layer.smoothing == smoothing
 
-      assert layer.cost_type == cost
-      assert layer.scale     == scale
-      assert layer.ratio     == ratio
-      assert layer.noobject_scale == nbj_scale
-      assert layer.threshold == threshold
-      assert layer.smoothing == smoothing
-
-      assert layer.out_shape == input_shape
-      assert layer.output == None
-      assert layer.delta  == None
+    assert layer.out_shape == input_shape
+    assert layer.output == None
+    assert layer.delta  == None
 
 
-  def test_printer (self):
+  @given(cost = st.integers(min_value=0, max_value=len(nn_losses)-1))
+  @settings(max_examples=10,
+            deadline=None)
+  def test_printer (self, cost):
 
-    layer = Cost_layer(cost_type=cost_type.mse)
+    layer = Cost_layer(cost_type=cost)
 
     with pytest.raises(TypeError):
       print(layer)
@@ -88,110 +95,89 @@ class TestCostLayer :
     print(layer)
 
 
-  @given(scale=st.floats(min_value=0., max_value=10.),
-         # ratio=st.floats(min_value=0., max_value=10.),
-         nbj_scale=st.floats(min_value=0., max_value=10. ),
-         threshold=st.floats(min_value=0., max_value=10., ),
-         smoothing=st.floats(min_value=0., max_value=10., ),
-         outputs=st.integers(min_value=10, max_value=100),
+  @given(scale = st.floats(min_value=0., max_value=10.),
+         # ratio = st.floats(min_value=0., max_value=10.),
+         nbj_scale = st.floats(min_value=0., max_value=10.),
+         threshold = st.floats(min_value=0., max_value=10.),
+         smoothing = st.floats(min_value=0., max_value=10.),
+         outputs = st.integers(min_value=10, max_value=100),
+         cost_idx = st.integers(min_value=0, max_value=len(nn_losses)-1)
          )
   @settings(max_examples=10,
             deadline=None)
-  def test_forward (self, outputs, scale, nbj_scale, threshold, smoothing):
+  def test_forward (self, outputs, scale, nbj_scale, threshold, smoothing, cost_idx):
 
     ratio = 0.
-    losses = [mean_absolute_error, mean_squared_error, logcosh, hinge]
+    nn_cost = nn_losses[cost_idx]
+    tf_cost = tf_losses[cost_idx]
 
-    truth = np.random.uniform(low=0., high=10., size=(outputs,)).astype(np.float32)
-    inpt  = np.random.uniform(low=0., high=10., size=(outputs,)).astype(np.float32)
+    truth = np.random.uniform(low=0., high=10., size=(outputs,)).astype(float)
+    inpt  = np.random.uniform(low=0., high=10., size=(outputs,)).astype(float)
 
-    for loss_function in losses :
+    truth_tf = tf.Variable(truth)
+    inpt_tf  = tf.Variable(inpt)
 
-      keras_loss_type = loss_function
+    layer = Cost_layer(input_shape=inpt.shape, cost_type=nn_cost,
+                       scale=scale, ratio=ratio, noobject_scale=nbj_scale,
+                       threshold=threshold, smoothing=smoothing)
 
-      truth_tf = tf.Variable(truth)
-      inpt_tf  = tf.Variable(inpt)
+    keras_loss_tf = tf_cost(truth_tf, inpt_tf)
 
-      if   keras_loss_type is mean_squared_error:  cost = cost_type.mse
-      elif keras_loss_type is mean_absolute_error: cost = cost_type.mae
-      elif keras_loss_type is logcosh:             cost = cost_type.logcosh
-      elif keras_loss_type is hinge:               cost = cost_type.hinge
-      else:
-        raise ValueError()
+    keras_loss = keras_loss_tf.numpy()
 
-      layer = Cost_layer(input_shape=inpt.shape, cost_type=cost,
-                         scale=scale, ratio=ratio, noobject_scale=nbj_scale,
-                         threshold=threshold, smoothing=smoothing)
+    layer.forward(inpt=inpt, truth=truth)
 
-      keras_loss_tf = keras_loss_type(truth_tf, inpt_tf)
+    assert layer.out_shape == inpt.shape
+    assert layer.output is not None
+    assert layer.delta is not None
+    assert layer.cost is not None
 
-      keras_loss = keras_loss_tf.numpy()
+    # recreate cost layer with default values foor testing against keras
+    layer = Cost_layer(input_shape=inpt.shape, cost_type=nn_cost,
+                       scale=1., ratio=0., noobject_scale=1.,
+                       threshold=0., smoothing=0.)
+    layer.forward(inpt=inpt, truth=truth)
+    loss = layer.cost
 
-      layer.forward(inpt, truth)
-
-      assert layer.out_shape == inpt.shape
-      assert layer.output is not None
-      assert layer.delta is not None
-      assert layer.cost is not None
-
-      # recreate cost layer with default values foor testing against keras
-      layer = Cost_layer(input_shape=inpt.shape, cost_type=cost,
-                         scale=1., ratio=0., noobject_scale=1.,
-                         threshold=0., smoothing=0.)
-      layer.forward(inpt, truth)
-      loss = layer.cost
-
-      assert np.isclose(keras_loss, loss, atol=1e-3)
+    assert np.isclose(keras_loss, loss, atol=1e-3)
 
 
-  @given(outputs=st.integers(min_value=10, max_value=100))
+  @given(outputs = st.integers(min_value=10, max_value=100),
+         cost_idx = st.integers(min_value=0, max_value=len(nn_losses)-2)) #hinge derivative is ambigous
   @settings(max_examples=10,
             deadline=None)
-  def test_backward (self, outputs):
+  def test_backward (self, outputs, cost_idx):
     # testing only default values since the backard is really simple
 
-    losses = [mean_absolute_error, mean_squared_error, logcosh]
-              #, hinge] # derivative is ambigous
-
-    for loss_function in losses :
-
-      losses = [mean_absolute_error, mean_squared_error, logcosh]
-                #, hinge] # derivative is ambigous
-
-      keras_loss_type = loss_function
-
-      truth = np.random.uniform(low=0., high=1., size=(outputs,)).astype(np.float32)
-      inpt  = np.random.uniform(low=0., high=1., size=(outputs,)).astype(np.float32)
-
-      truth_tf = tf.Variable(truth)
-      inpt_tf  = tf.Variable(inpt)
-
-      if   keras_loss_type is mean_squared_error:  cost = cost_type.mse
-      elif keras_loss_type is mean_absolute_error: cost = cost_type.mae
-      elif keras_loss_type is logcosh:             cost = cost_type.logcosh
-      elif keras_loss_type is hinge:               cost = cost_type.hinge
-      else:
-        raise ValueError()
-
-      layer = Cost_layer(input_shape=inpt.shape, cost_type=cost,
-                         scale=1., ratio=0., noobject_scale=1.,
-                         threshold=0., smoothing=0.)
-
-      with tf.GradientTape() as tape :
-        preds = keras_loss_type(truth_tf, inpt_tf)
-        grads = tape.gradient(preds, inpt_tf)
-
-        keras_loss  = preds.numpy()
-        delta_keras = grads.numpy()
+    nn_cost = nn_losses[cost_idx]
+    tf_cost = tf_losses[cost_idx]
 
 
-      layer.forward(inpt, truth)
-      loss = layer.cost
+    truth = np.random.uniform(low=0., high=1., size=(outputs,)).astype(float)
+    inpt  = np.random.uniform(low=0., high=1., size=(outputs,)).astype(float)
 
-      assert np.isclose(keras_loss, loss, atol=1e-7)
+    truth_tf = tf.Variable(truth)
+    inpt_tf  = tf.Variable(inpt)
 
-      # BACKWARD
+    layer = Cost_layer(input_shape=inpt.shape, cost_type=nn_cost,
+                       scale=1., ratio=0., noobject_scale=1.,
+                       threshold=0., smoothing=0.)
 
-      numpynet_delta = layer.delta
+    with tf.GradientTape() as tape :
+      preds = tf_cost(truth_tf, inpt_tf)
+      grads = tape.gradient(preds, inpt_tf)
 
-      assert np.allclose(delta_keras, numpynet_delta)
+      keras_loss  = preds.numpy()
+      delta_keras = grads.numpy()
+
+
+    layer.forward(inpt=inpt, truth=truth)
+    loss = layer.cost
+
+    assert np.isclose(keras_loss, loss, atol=1e-7)
+
+    # BACKWARD
+
+    numpynet_delta = layer.delta
+
+    np.testing.assert_allclose(delta_keras, numpynet_delta, rtol=1e-4, atol=1e-8)

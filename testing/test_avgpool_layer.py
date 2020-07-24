@@ -44,8 +44,8 @@ class TestAvgpoolLayer:
     else:
       layer = Avgpool_layer(size=size, stride=stride, pad=pad)
 
-      assert layer.size        == (size, size)
-      assert len(layer.size)   == 2
+      assert layer.size      == (size, size)
+      assert len(layer.size) == 2
 
       if stride:
         assert layer.stride == (stride, stride)
@@ -54,8 +54,8 @@ class TestAvgpoolLayer:
 
       assert len(layer.stride) == 2
 
-      assert layer.delta   == None
-      assert layer.output  == None
+      assert layer.delta  == None
+      assert layer.output == None
 
       assert layer.pad        == pad
       assert layer.pad_left   == 0
@@ -91,15 +91,12 @@ class TestAvgpoolLayer:
             deadline=None)
   def test_forward (self, batch, w, h, c, size, stride, pad):
 
-    inpt = np.random.uniform(low=0., high=1., size=(batch, w, h, c)).astype('float32')
+    inpt = np.random.uniform(low=0., high=1., size=(batch, w, h, c)).astype(float)
 
     # Numpy_net model
     numpynet = Avgpool_layer(input_shape=inpt.shape, size=size, stride=stride, pad=pad)
 
-    if pad:
-      keras_pad = 'same'
-    else :
-      keras_pad = 'valid'
+    keras_pad = 'same' if pad else 'valid'
 
     # Keras model initialization.
     model = tf.keras.layers.AveragePooling2D(pool_size=(size, size), strides=stride, padding=keras_pad, data_format='channels_last')
@@ -108,12 +105,12 @@ class TestAvgpoolLayer:
     forward_out_keras = model(inpt).numpy()
 
     # numpynet forward and output
-    numpynet.forward(inpt)
+    numpynet.forward(inpt=inpt)
     forward_out_numpynet = numpynet.output
 
     # Test for dimension and allclose of all output
     assert forward_out_numpynet.shape == forward_out_keras.shape
-    assert np.allclose(forward_out_numpynet, forward_out_keras, atol=1e-8)
+    np.testing.assert_allclose(forward_out_numpynet, forward_out_keras, rtol=1e-5, atol=1e-8)
 
 
   @given(batch  = st.integers(min_value=1, max_value=15),
@@ -127,20 +124,16 @@ class TestAvgpoolLayer:
             deadline=None)
   def test_backward (self, batch, w, h, c, size, stride, pad):
 
-    inpt = np.random.uniform(low=0., high=1., size=(batch, w, h, c))
+    inpt = np.random.uniform(low=0., high=1., size=(batch, w, h, c)).astype(float)
     tf_input = tf.Variable(inpt)
 
     # Numpy_net model
     numpynet = Avgpool_layer(input_shape=inpt.shape, size=size, stride=stride, pad=pad)
 
-    if pad:
-      keras_pad = 'same'
-    else :
-      keras_pad = 'valid'
+    keras_pad = 'same' if pad else 'valid'
 
     # Keras model initialization.
     model = tf.keras.layers.AveragePooling2D(pool_size=(size, size), strides=stride, padding=keras_pad, data_format='channels_last')
-
 
     # Keras Output
     with tf.GradientTape() as tape :
@@ -157,15 +150,15 @@ class TestAvgpoolLayer:
       delta = np.empty(shape=inpt.shape, dtype=float)
 
       # numpynet Backward
-      numpynet.backward(delta)
+      numpynet.backward(delta=delta)
 
     # numpynet forward and output
-    numpynet.forward(inpt)
+    numpynet.forward(inpt=inpt)
     forward_out_numpynet = numpynet.output
 
     # Test for dimension and allclose of all output
     assert forward_out_numpynet.shape == forward_out_keras.shape
-    assert np.allclose(forward_out_numpynet, forward_out_keras, atol=1e-8)
+    np.testing.assert_allclose(forward_out_numpynet, forward_out_keras, rtol=1e-5, atol=1e-8)
 
     # BACKWARD
 
@@ -174,9 +167,9 @@ class TestAvgpoolLayer:
     delta = np.zeros(shape=inpt.shape, dtype=float)
 
     # numpynet Backward
-    numpynet.backward(delta)
+    numpynet.backward(delta=delta)
 
     # Back tests
     assert delta.shape == delta_keras.shape
     assert delta.shape == inpt.shape
-    assert np.allclose(delta, delta_keras, atol=1e-8)
+    np.testing.assert_allclose(delta, delta_keras, rtol=1e-5, atol=1e-8)

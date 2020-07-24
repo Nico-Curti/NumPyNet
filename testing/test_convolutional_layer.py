@@ -195,7 +195,7 @@ class TestConvolutionalLayer :
       forward_out_numpynet = layer.output
 
       assert forward_out_keras.shape == forward_out_numpynet.shape
-      assert np.allclose(forward_out_keras, forward_out_numpynet,  atol=1e-4, rtol=1e-3)
+      np.testing.assert_allclose(forward_out_keras, forward_out_numpynet, atol=1e-4, rtol=1e-3)
 
 
   @given(b = st.integers(min_value=1,  max_value=10),
@@ -267,7 +267,7 @@ class TestConvolutionalLayer :
       forward_out_numpynet = layer.output
 
       assert forward_out_keras.shape == forward_out_numpynet.shape
-      assert np.allclose(forward_out_keras, forward_out_numpynet,  atol=1e-4, rtol=1e-3)
+      np.testing.assert_allclose(forward_out_keras, forward_out_numpynet, atol=1e-4, rtol=1e-3)
 
       # BACKWARD
 
@@ -278,6 +278,6 @@ class TestConvolutionalLayer :
       layer.delta    = np.ones(shape=layer.out_shape, dtype=float)
       layer.backward(delta_numpynet, copy=False)
 
-      assert np.allclose(delta_numpynet,          delta_keras,        atol=1e-3, rtol=1e-2)
-      assert np.allclose(layer.weights_update, weights_updates_keras, atol=1e-3, rtol=1e-3)
-      assert np.allclose(layer.bias_update,    bias_updates_keras,    atol=1e-5, rtol=1e-3)
+      np.testing.assert_allclose(delta_numpynet,          delta_keras,        atol=1e-3, rtol=1e-2)
+      np.testing.assert_allclose(layer.weights_update, weights_updates_keras, atol=1e-3, rtol=1e-3)
+      np.testing.assert_allclose(layer.bias_update,    bias_updates_keras,    atol=1e-5, rtol=1e-3)

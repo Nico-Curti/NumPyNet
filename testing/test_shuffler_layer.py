@@ -32,7 +32,7 @@ class TestShuffleLayer :
   to be:
   '''
 
-  @given(scale=st.integers(min_value=-3, max_value=10))
+  @given(scale = st.integers(min_value=-3, max_value=10))
   @settings(max_examples=5,
             deadline=None)
   def test_constructor (self, scale):
@@ -63,10 +63,10 @@ class TestShuffleLayer :
     print(layer)
 
 
-  @example(couple=(2,12),  b=5, w=100, h=300)
-  @example(couple=(4,32),  b=5, w=100, h=300)
-  @example(couple=(4,48),  b=5, w=100, h=300)
-  @example(couple=(6,108), b=5, w=100, h=300)
+  @example(couple=(2, 12),  b=5, w=100, h=300)
+  @example(couple=(4, 32),  b=5, w=100, h=300)
+  @example(couple=(4, 48),  b=5, w=100, h=300)
+  @example(couple=(6, 108), b=5, w=100, h=300)
   @given(couple = st.tuples(st.integers(min_value=2, max_value=10), st.integers(min_value=1, max_value=200)),
          b = st.integers(min_value=1, max_value=10),
          w = st.integers(min_value=10, max_value=100),
@@ -87,16 +87,16 @@ class TestShuffleLayer :
 
     if channels % (scale*scale):
       with pytest.raises(ValueError):
-        layer.forward(inpt)
+        layer.forward(inpt=inpt)
 
     else:
-      layer.forward(inpt)
+      layer.forward(inpt=inpt)
       forward_out_numpynet = layer.output
 
       forward_out_keras = tf.nn.depth_to_space(inpt, block_size=scale, data_format='NHWC')
 
       assert forward_out_numpynet.shape == forward_out_keras.shape
-      assert np.allclose(forward_out_numpynet, forward_out_keras)
+      np.testing.assert_allclose(forward_out_numpynet, forward_out_keras, rtol=1e-5, atol=1e-8)
 
 
   @example(couple=(2, 12),  b=5, w=10, h=30)
@@ -133,18 +133,18 @@ class TestShuffleLayer :
       with pytest.raises(NotFittedError):
         delta = np.random.uniform(low=0., high=1., size=forward_out_keras.shape)
         delta = delta.reshape(inpt.shape)
-        layer.backward(delta)
+        layer.backward(delta=delta)
 
 
-      layer.forward(inpt)
+      layer.forward(inpt=inpt)
       forward_out_numpynet = layer.output
 
       assert forward_out_numpynet.shape == forward_out_keras.shape
-      assert np.allclose(forward_out_numpynet, forward_out_keras)
+      np.testing.assert_allclose(forward_out_numpynet, forward_out_keras, rtol=1e-5, atol=1e-8)
 
       # BACKWARD
 
-      delta = np.random.uniform(low=0., high=1., size=forward_out_keras.shape)
+      delta = np.random.uniform(low=0., high=1., size=forward_out_keras.shape).astype(float)
 
       delta_keras = tf.nn.space_to_depth(delta, block_size=scale, data_format='NHWC')
       inpt_keras  = tf.nn.space_to_depth(forward_out_keras, block_size=scale, data_format='NHWC')
@@ -152,8 +152,8 @@ class TestShuffleLayer :
       layer.delta = delta
       delta = delta.reshape(inpt.shape)
 
-      layer.backward(delta)
+      layer.backward(delta=delta)
 
       assert delta_keras.shape == delta.shape
-      assert np.allclose(delta_keras, delta)
-      assert np.allclose(inpt_keras, inpt)
+      np.testing.assert_allclose(delta_keras, delta, rtol=1e-5, atol=1e-8)
+      np.testing.assert_allclose(inpt_keras, inpt, rtol=1e-5, atol=1e-8)

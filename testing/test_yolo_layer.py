@@ -287,15 +287,9 @@ class TestYoloLayer:
     with sess.as_default():
       outtf = out_tf.eval()
 
-    assert np.allclose(out_np.cost, outtf, rtol=1e-1)
+    np.testing.assert_allclose(out_np.cost, outtf, rtol=1e-1, atol=1e-8)
 
 
   def test_backwad (self):
     pass
 
-
-if __name__ == '__main__':
-
-  test = TestYoloLayer()
-
-  test.test_forward()

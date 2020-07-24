@@ -68,18 +68,18 @@ class TestSimpleRNNLayer:
     for numpynet_act in numpynet_activ:
 
       layer = SimpleRNN_layer(outputs=outputs, steps=steps, activation=numpynet_act,
-                        input_shape=(b, w, h, c),
-                        weights=weights, bias=bias)
+                              input_shape=(b, w, h, c),
+                              weights=weights, bias=bias)
 
       if weights is not None:
-        assert np.allclose(layer.input_layer.weights, weights[0])
-        assert np.allclose(layer.self_layer.weights, weights[1])
-        assert np.allclose(layer.output_layer.weights, weights[2])
+        np.testing.assert_allclose(layer.input_layer.weights, weights[0], rtol=1e-5, atol=1e-8)
+        np.testing.assert_allclose(layer.self_layer.weights, weights[1], rtol=1e-5, atol=1e-8)
+        np.testing.assert_allclose(layer.output_layer.weights, weights[2], rtol=1e-5, atol=1e-8)
 
       if bias is not None:
-        assert np.allclose(layer.input_layer.bias, bias[0])
-        assert np.allclose(layer.self_layer.bias, bias[1])
-        assert np.allclose(layer.output_layer.bias, bias[2])
+        np.testing.assert_allclose(layer.input_layer.bias, bias[0], rtol=1e-5, atol=1e-8)
+        np.testing.assert_allclose(layer.self_layer.bias, bias[1], rtol=1e-5, atol=1e-8)
+        np.testing.assert_allclose(layer.output_layer.bias, bias[2], rtol=1e-5, atol=1e-8)
 
       assert layer.output == None
 
@@ -185,9 +185,9 @@ class TestSimpleRNNLayer:
     # set NumPyNet weights
     layer.load_weights(np.concatenate([bias.ravel(), kernel.ravel(), recurrent_kernel.ravel()]))
 
-    assert np.allclose(layer.weights, model.get_weights()[0])
-    assert np.allclose(layer.recurrent_weights, model.get_weights()[1])
-    assert np.allclose(layer.bias, model.get_weights()[2])
+    np.testing.assert_allclose(layer.weights, model.get_weights()[0], rtol=1e-5, atol=1e-8)
+    np.testing.assert_allclose(layer.recurrent_weights, model.get_weights()[1], rtol=1e-5, atol=1e-8)
+    np.testing.assert_allclose(layer.bias, model.get_weights()[2], rtol=1e-5, atol=1e-8)
 
     # FORWARD
 
@@ -198,7 +198,7 @@ class TestSimpleRNNLayer:
     layer.forward(inpt)
     forward_out_numpynet = layer.output.reshape(forward_out_keras.shape)
 
-    assert np.allclose(forward_out_numpynet, forward_out_keras, atol=1e-4, rtol=1e-3)
+    np.testing.assert_allclose(forward_out_numpynet, forward_out_keras, atol=1e-4, rtol=1e-3)
 
     # BACKWARD
 
@@ -223,12 +223,7 @@ class TestSimpleRNNLayer:
     layer.delta = np.ones(shape=layer.output.shape, dtype=float)
     layer.backward(inpt, delta, copy=True)
 
-    assert np.allclose(layer.bias_update,    bias_update_keras,     atol=1e-8, rtol=1e-5)
-    assert np.allclose(layer.weights_update, weights_update_keras,  atol=1e-8, rtol=1e-5)
-    assert np.allclose(delta,                delta_keras,           atol=1e-8, rtol=1e-5)
-    assert np.allclose(layer.recurrent_weights_update, recurrent_weights_update_keras, atol=1e-8, rtol=1e-5)
-
-if __name__ == '__main__':
-
-  test = TestSimpleRNNLayer()
-  test.test_backward()
+    np.testing.assert_allclose(layer.bias_update,    bias_update_keras,    atol=1e-8, rtol=1e-5)
+    np.testing.assert_allclose(layer.weights_update, weights_update_keras, atol=1e-8, rtol=1e-5)
+    np.testing.assert_allclose(delta,                delta_keras,          atol=1e-8, rtol=1e-5)
+    np.testing.assert_allclose(layer.recurrent_weights_update, recurrent_weights_update_keras, atol=1e-8, rtol=1e-5)

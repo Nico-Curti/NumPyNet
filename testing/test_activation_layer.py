@@ -37,6 +37,16 @@ from hypothesis import settings
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
+activation = [Elliot, Elu, Hardtan,
+              Leaky, Lhtan, Linear, Loggy, Logistic,
+              Plse, Ramp, Relie, Relu,
+              Selu, SoftPlus, SoftSign, Stair,
+              SymmElliot, Tanh]
+
+nn_activations = [Relu,   Logistic,  Tanh,   Linear,   Elu,   Selu,   Hardtan,
+                  #, SoftSign,   SoftPlus]
+                  Leaky]
+tf_activations = ['relu', 'sigmoid', 'tanh', 'linear', 'elu', 'selu', 'hard_sigmoid']#, 'softsign', 'softplus']
 
 class TestActivationLayer:
   '''
@@ -47,123 +57,118 @@ class TestActivationLayer:
     - backward function against tf.keras for different activations
   '''
 
-  nn_activations = [Relu, Logistic, Tanh, Linear, Elu, Selu, ]#SoftSign, SoftPlus]
-  tf_activations = ['relu', 'sigmoid', 'tanh', 'linear', 'elu', 'selu'] #'softsign', 'softplus']
 
-  def test_constructor (self):
+  @given(act_fun = st.sampled_from(activation))
+  @settings(max_examples=30, deadline=None)
+  def test_constructor (self, act_fun):
 
-    numpynet_activ = [Elliot, Elu, Hardtan,
-                     Leaky, Lhtan, Linear, Loggy, Logistic,
-                     Plse, Ramp, Relie, Relu,
-                     Selu, SoftPlus, SoftSign, Stair,
-                     SymmElliot, Tanh]
+    layer = Activation_layer(activation=act_fun)
 
-    for act_fun in numpynet_activ:
+    assert layer.output is None
+    assert layer.delta is None
 
-      layer = Activation_layer(activation=act_fun)
-
-      assert layer.output is None
-      assert layer.delta is None
-
-      assert layer.activation is not Activations.activate
-      assert layer.gradient is not Activations.gradient
+    assert layer.activation is not Activations.activate
+    assert layer.gradient is not Activations.gradient
 
 
 
-  def test_printer (self):
+  @given(act_fun = st.sampled_from(activation))
+  @settings(max_examples=30, deadline=None)
+  def test_printer (self, act_fun):
 
-    numpynet_activ = [Elliot, Elu, Hardtan,
-                     Leaky, Lhtan, Linear, Loggy, Logistic,
-                     Plse, Ramp, Relie, Relu,
-                     Selu, SoftPlus, SoftSign, Stair,
-                     SymmElliot, Tanh]
+    layer = Activation_layer(activation=act_fun)
 
-    for act_fun in numpynet_activ:
-
-      layer = Activation_layer(activation=act_fun)
-
-      with pytest.raises(TypeError):
-        print(layer)
-
-      layer.input_shape = 1
-      with pytest.raises(TypeError):
-        print(layer)
-
-      layer.input_shape = (1, 2)
-      with pytest.raises(ValueError):
-        print(layer)
-
-      layer.input_shape = (1, 2, 3)
-      with pytest.raises(ValueError):
-        print(layer)
-
-      layer.input_shape = (1, 2, 3, 4)
+    with pytest.raises(TypeError):
       print(layer)
 
-      assert layer.out_shape == (1, 2, 3, 4)
+    layer.input_shape = 1
+    with pytest.raises(TypeError):
+      print(layer)
+
+    layer.input_shape = (1, 2)
+    with pytest.raises(ValueError):
+      print(layer)
+
+    layer.input_shape = (1, 2, 3)
+    with pytest.raises(ValueError):
+      print(layer)
+
+    layer.input_shape = (1, 2, 3, 4)
+    print(layer)
+
+    assert layer.out_shape == (1, 2, 3, 4)
 
 
   @given(batch = st.integers(min_value=1, max_value=15 ),
          w     = st.integers(min_value=1, max_value=100),
          h     = st.integers(min_value=1, max_value=100),
          c     = st.integers(min_value=1, max_value=10 ),
+         idx_act = st.integers(min_value=0, max_value=len(tf_activations)-1)
          )
-  @settings(max_examples=10,
+  @settings(max_examples=100,
             deadline=None)
-  def test_forward (self, batch, w, h, c):
+  def test_forward (self, batch, w, h, c, idx_act):
 
-    for nn_act, tf_act in zip(self.nn_activations, self.tf_activations):
+    nn_act = nn_activations[idx_act]
 
-      # negative value for Relu testing
-      inpt = np.random.uniform(low=-1., high=1., size=(batch, w, h, c)).astype('float32')
+    # negative value for Relu testing
+    inpt = np.random.uniform(low=-1., high=1., size=(batch, w, h, c)).astype(float)
 
-      # numpynet model init
-      numpynet = Activation_layer(input_shape=inpt.shape, activation=nn_act)
+    # numpynet model init
+    numpynet = Activation_layer(input_shape=inpt.shape, activation=nn_act)
 
-      # tensorflow model
-      model = tf.keras.layers.Activation(activation=tf_act)
+    # tensorflow model
+    if isinstance(nn_act, Leaky):
+      model = tf.keras.LeakyReLU()
+    else:
+      model = tf.keras.layers.Activation(activation=tf_activations[idx_act])
 
-      # FORWARD
+    # FORWARD
 
-      # Keras Forward
-      forward_out_keras = model(inpt).numpy()
+    # Keras Forward
+    forward_out_keras = model(inpt).numpy()
 
-      # numpynet forwrd
-      numpynet.forward(inpt)
-      forward_out_numpynet = numpynet.output
+    # numpynet forwrd
+    numpynet.forward(inpt=inpt)
+    forward_out_numpynet = numpynet.output
 
-      # Forward check (Shape and Values)
-      assert forward_out_keras.shape == forward_out_numpynet.shape
-      np.testing.assert_allclose(forward_out_keras, forward_out_numpynet, atol=1e-4, rtol=1e-5)
+    # Forward check (Shape and Values)
+    assert forward_out_keras.shape == forward_out_numpynet.shape
+    np.testing.assert_allclose(forward_out_keras, forward_out_numpynet, atol=1e-4, rtol=1e-5)
 
 
   @given(batch = st.integers(min_value=1, max_value=15 ),
          w     = st.integers(min_value=1, max_value=100),
          h     = st.integers(min_value=1, max_value=100),
-         c     = st.integers(min_value=1, max_value=10 ))
+         c     = st.integers(min_value=1, max_value=10 ),
+         idx_act = st.integers(min_value=0, max_value=len(tf_activations)-1)
+         )
   @settings(max_examples=100,
             deadline=None)
-  def test_backward (self, batch, w, h, c):
+  def test_backward (self, batch, w, h, c, idx_act):
 
-    for nn_act, tf_act in zip(self.nn_activations, self.tf_activations):
+    nn_act = nn_activations[idx_act]
 
-      # negative value for Relu testing
-      inpt = np.random.uniform(low=-1., high=1., size=(batch, w, h, c)).astype('float32')
-      tf_input = tf.Variable(inpt)
+    # negative value for Relu testing
+    inpt = np.random.uniform(low=-1., high=1., size=(batch, w, h, c)).astype(float)
+    tf_input = tf.Variable(inpt)
 
-      # numpynet model init
-      numpynet = Activation_layer(input_shape=inpt.shape, activation=nn_act)
+    # numpynet model init
+    numpynet = Activation_layer(input_shape=inpt.shape, activation=nn_act)
 
-      # tensorflow model
-      model = tf.keras.layers.Activation(activation=tf_act)
+    # tensorflow model
+    if isinstance(nn_act, Leaky):
+      model = tf.keras.LeakyReLU()
+    else:
+      model = tf.keras.layers.Activation(activation=tf_activations[idx_act])
 
     # try to backward
     with pytest.raises(NotFittedError):
       # Global delta init.
-      delta = np.empty(shape=inpt.shape, dtype='float32')
+      delta = np.empty(shape=inpt.shape, dtype=float)
 
       # numpynet Backward
-      numpynet.backward(delta)
+      numpynet.backward(delta=delta)
 
     # FORWARD
 
@@ -176,7 +181,7 @@ class TestActivationLayer:
       delta_keras = grads.numpy()
 
     # numpynet forward
-    numpynet.forward(inpt)
+    numpynet.forward(inpt=inpt)
     forward_out_numpynet = numpynet.output
 
     # Forward check (Shape and Values)
@@ -186,13 +191,13 @@ class TestActivationLayer:
     # BACKWARD
 
     # numpynet delta init. (Multiplication with gradients)
-    numpynet.delta = np.ones(shape=inpt.shape, dtype='float32')
+    numpynet.delta = np.ones(shape=inpt.shape, dtype=float)
 
     # Global delta init.
-    delta = np.empty(shape=inpt.shape, dtype='float32')
+    delta = np.empty(shape=inpt.shape, dtype=float)
 
     # numpynet Backward
-    numpynet.backward(delta)
+    numpynet.backward(delta=delta)
 
     # Check dimension and delta
     assert delta_keras.shape == delta.shape

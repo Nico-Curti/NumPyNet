@@ -81,7 +81,7 @@ class TestInputLayer :
             deadline=None)
   def test_forward (self, b, w, h, c):
 
-    inpt = np.random.uniform(low=-1, high=1., size=(b, w, h, c))
+    inpt = np.random.uniform(low=-1, high=1., size=(b, w, h, c)).astype(float)
 
     # numpynet model init
     layer = Input_layer(input_shape=inpt.shape)
@@ -95,12 +95,12 @@ class TestInputLayer :
     forward_out_keras = model(inpt)
 
     # numpynet forwrd
-    layer.forward(inpt)
+    layer.forward(inpt=inpt)
     forward_out_numpynet = layer.output
 
     # Forward check (Shape and Values)
     assert forward_out_keras.shape == forward_out_numpynet.shape
-    assert np.allclose(forward_out_keras, forward_out_numpynet)
+    np.testing.assert_allclose(forward_out_keras, forward_out_numpynet)
 
 
   @given(b = st.integers(min_value=1, max_value=15 ),
@@ -111,7 +111,7 @@ class TestInputLayer :
             deadline=None)
   def test_backward (self, b, w, h, c):
 
-    inpt = np.random.uniform(low=-1, high=1., size=(b, w, h, c))
+    inpt = np.random.uniform(low=-1, high=1., size=(b, w, h, c)).astype(float)
     tf_input = tf.Variable(inpt)
 
     # numpynet model init
@@ -131,12 +131,12 @@ class TestInputLayer :
       delta_keras = grads.numpy()
 
     # layer forward
-    layer.forward(inpt)
+    layer.forward(inpt=inpt)
     forward_out_numpynet = layer.output
 
     # Forward check (Shape and Values)
     assert forward_out_keras.shape == forward_out_numpynet.shape
-    assert np.allclose(forward_out_keras, forward_out_numpynet)
+    np.testing.assert_allclose(forward_out_keras, forward_out_numpynet)
 
     # BACKWARD
 
@@ -147,13 +147,13 @@ class TestInputLayer :
     delta = np.empty(shape=inpt.shape, dtype=float)
 
     # layer Backward
-    layer.backward(delta)
+    layer.backward(delta=delta)
 
     # Check dimension and delta
     assert delta_keras.shape == delta.shape
-    assert np.allclose(delta_keras, delta)
+    np.testing.assert_allclose(delta_keras, delta)
 
-    delta = np.zeros(shape=(1,2,3,4))
+    delta = np.zeros(shape=(1, 2, 3, 4), dtype=float)
 
     with pytest.raises(ValueError):
       layer.backward(delta)

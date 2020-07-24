@@ -26,6 +26,10 @@ from random import choice
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
+
+nn_activation = [Relu, Logistic, Linear]
+tf_activation = ['relu', 'sigmoid','linear']
+
 class TestConnectedLayer:
   '''
   Tests:
@@ -38,16 +42,15 @@ class TestConnectedLayer:
     update function.
   '''
 
-  @given(outputs= st.integers(min_value=-3, max_value=10),
-         b      = st.integers(min_value=1, max_value=15),
-         w      = st.integers(min_value=15, max_value=100),
-         h      = st.integers(min_value=15, max_value=100),
-         c      = st.integers(min_value=1, max_value=10))
+  @given(outputs = st.integers(min_value=-3, max_value=10),
+         b       = st.integers(min_value=1, max_value=15),
+         w       = st.integers(min_value=15, max_value=100),
+         h       = st.integers(min_value=15, max_value=100),
+         c       = st.integers(min_value=1, max_value=10),
+         act_fun = st.sampled_from(nn_activation))
   @settings(max_examples=20,
             deadline=None)
-  def test_constructor (self, outputs, b, w, h, c):
-
-    numpynet_activ = [Relu, Logistic, Tanh, Linear]
+  def test_constructor (self, outputs, b, w, h, c, act_fun):
 
     if outputs > 0:
       weights_choice = [np.random.uniform(low=-1, high=1., size=( w * h * c, outputs)), None]
@@ -64,34 +67,32 @@ class TestConnectedLayer:
     weights = choice(weights_choice)
     bias    = choice(bias_choice)
 
-    for numpynet_act in numpynet_activ:
+    layer = Connected_layer(outputs=outputs, activation=act_fun,
+                            input_shape=(b, w, h, c),
+                            weights=weights, bias=bias)
 
-      layer = Connected_layer(outputs=outputs, activation=numpynet_act,
-                              input_shape=(b, w, h, c),
-                              weights=weights, bias=bias)
+    if weights is not None:
+      assert np.allclose(layer.weights, weights)
 
-      if weights is not None:
-        assert np.allclose(layer.weights, weights)
+    if bias is not None:
+      assert np.allclose(layer.bias, bias)
+    else :
+      assert np.allclose(layer.bias, np.zeros(shape=(outputs,)))
 
-      if bias is not None:
-        assert np.allclose(layer.bias, bias)
-      else :
-        assert np.allclose(layer.bias, np.zeros(shape=(outputs,)))
+    assert layer.output         == None
+    assert layer.weights_update == None
+    assert layer.bias_update    == None
+    assert layer.optimizer      == None
 
-      assert layer.output         == None
-      assert layer.weights_update == None
-      assert layer.bias_update    == None
-      assert layer.optimizer      == None
-
-      assert layer.activation == numpynet_act.activate
-      assert layer.gradient   == numpynet_act.gradient
+    assert layer.activation == act_fun.activate
+    assert layer.gradient   == act_fun.gradient
 
 
-  @given(outputs= st.integers(min_value=1, max_value=10),
-         b      = st.integers(min_value=1, max_value=15),
-         w      = st.integers(min_value=15, max_value=100),
-         h      = st.integers(min_value=15, max_value=100),
-         c      = st.integers(min_value=1, max_value=10))
+  @given(outputs = st.integers(min_value=1, max_value=10),
+         b       = st.integers(min_value=1, max_value=15),
+         w       = st.integers(min_value=15, max_value=100),
+         h       = st.integers(min_value=15, max_value=100),
+         c       = st.integers(min_value=1, max_value=10))
   @settings(max_examples=20,
             deadline=None)
   def test_printer (self, outputs, b, w, h, c):
@@ -106,80 +107,74 @@ class TestConnectedLayer:
     print(layer)
 
 
-  @given(outputs= st.integers(min_value=1, max_value=10),
-         b      = st.integers(min_value=1, max_value=15),
-         w      = st.integers(min_value=15, max_value=100),
-         h      = st.integers(min_value=15, max_value=100),
-         c      = st.integers(min_value=1, max_value=10))
+  @given(outputs = st.integers(min_value=1, max_value=10),
+         b       = st.integers(min_value=1, max_value=15),
+         w       = st.integers(min_value=15, max_value=100),
+         h       = st.integers(min_value=15, max_value=100),
+         c       = st.integers(min_value=1, max_value=10),
+         idx_act = st.integers(min_value=0, max_value=len(nn_activation)-1))
   @settings(max_examples=10,
             deadline=None)
-  def test_forward (self, outputs, b, w, h, c):
+  def test_forward (self, outputs, b, w, h, c, idx_act):
 
-    keras_activ = ['relu', 'sigmoid', 'tanh','linear']
-    numpynet_activ = [Relu, Logistic, Tanh, Linear]
+    weights = np.random.uniform(low=-1., high=1., size=(w * h * c, outputs)).astype(float)
+    bias    = np.random.uniform(low=-1., high=1., size=(outputs)).astype(float)
 
-    weights = np.random.uniform(low=-1., high=1., size=(w * h * c, outputs))
-    bias    = np.random.uniform(low=-1., high=1., size=(outputs))
+    inpt = np.random.uniform(low=-1., high=1., size=(b, w, h, c)).astype(float)
 
-    inpt = np.random.uniform(low=-1., high=1., size=(b, w, h, c))
-
-    for keras_act, numpynet_act in zip(keras_activ, numpynet_activ):
-
-      # Numpy_net model
-      layer = Connected_layer(outputs, input_shape=inpt.shape,
-                                       activation=numpynet_act,
-                                       weights=weights, bias=bias)
+    # Numpy_net model
+    layer = Connected_layer(outputs, input_shape=inpt.shape,
+                                     activation=nn_activation[idx_act],
+                                     weights=weights, bias=bias)
 
 
-      # Tensorflow Layer
-      model = tf.keras.layers.Dense(outputs, activation=keras_act,
-                                    kernel_initializer=lambda shape, dtype=None : weights,
-                                    bias_initializer=lambda shape, dtype=None : bias)
+    # Tensorflow Layer
+    model = tf.keras.layers.Dense(outputs, activation=tf_activation[idx_act],
+                                  kernel_initializer=lambda shape, dtype=None : weights,
+                                  bias_initializer=lambda shape, dtype=None : bias)
 
-      # FORWARD
+    # FORWARD
 
-      # Keras forward output
-      forward_out_keras = model(inpt.reshape(b, -1))
+    # Keras forward output
+    forward_out_keras = model(inpt.reshape(b, -1))
 
-      # Numpy_net forward output
-      layer.forward(inpt)
-      forward_out_numpynet = layer.output
+    # Numpy_net forward output
+    layer.forward(inpt=inpt)
+    forward_out_numpynet = layer.output
 
-      assert forward_out_numpynet.shape == (b, 1, 1, outputs)
-      assert np.allclose(forward_out_numpynet[:, 0, 0, :], forward_out_keras, atol=1e-2)
+    assert forward_out_numpynet.shape == (b, 1, 1, outputs)
+    np.testing.assert_allclose(forward_out_numpynet[:, 0, 0, :], forward_out_keras, rtol=1e-5, atol=1e-2)
 
 
-  @given(outputs= st.integers(min_value=1, max_value=10),
-         b      = st.integers(min_value=1, max_value=15),
-         w      = st.integers(min_value=15, max_value=100),
-         h      = st.integers(min_value=15, max_value=100),
-         c      = st.integers(min_value=1, max_value=10))
+  @given(outputs = st.integers(min_value=1, max_value=10),
+         b       = st.integers(min_value=1, max_value=15),
+         w       = st.integers(min_value=15, max_value=100),
+         h       = st.integers(min_value=15, max_value=100),
+         c       = st.integers(min_value=1, max_value=10),
+         idx_act = st.integers(min_value=0, max_value=len(nn_activation)-1))
   @settings(max_examples=10,
             deadline=None)
-  def test_backward (self, outputs, b, w, h, c):
+  def test_backward (self, outputs, b, w, h, c, idx_act):
 
-    numpynet_act = Linear
-    keras_act    = 'linear'
+    weights = np.random.uniform(low=0., high=1., size=(w * h * c, outputs)).astype(float)
+    bias    = np.random.uniform(low=0., high=1., size=(outputs)).astype(float)
 
-    weights = np.random.uniform(low=0., high=1., size=(w * h * c, outputs))
-    bias    = np.random.uniform(low=0., high=1., size=(outputs))
-
-    inpt = np.random.uniform(low=-1., high=1., size=(b, w, h, c))
-    tf_input = tf.Variable(inpt.astype('float32').reshape(b,-1))
+    inpt = np.random.uniform(low=-1., high=1., size=(b, w, h, c)).astype(float)
+    tf_input = tf.Variable(inpt.astype(float).reshape(b, -1))
 
     # NumPyNet model
     layer = Connected_layer(outputs, input_shape=inpt.shape,
-                                     activation=numpynet_act,
+                                     activation=nn_activation[idx_act],
                                      weights=weights, bias=bias)
     # Tensorflow layer
-    model = tf.keras.layers.Dense(outputs, activation=keras_act,
+    model = tf.keras.layers.Dense(outputs, activation=tf_activation[idx_act],
                                   kernel_initializer=lambda shape, dtype=None : weights,
                                   bias_initializer=lambda shape, dtype=None : bias)
 
     # Try backward
     with pytest.raises(NotFittedError):
-      delta = np.empty(shape=inpt.shape)
-      layer.backward(inpt, delta)
+      delta = np.empty(shape=inpt.shape, dtype=float)
+      layer.backward(inpt=inpt, delta=delta)
 
     # FORWARD
 
@@ -195,11 +190,11 @@ class TestConnectedLayer:
       updates     = grad2
 
     # Numpy_net forward output
-    layer.forward(inpt)
+    layer.forward(inpt=inpt)
     forward_out_numpynet = layer.output
 
     # Forward output Test
-    assert np.allclose(forward_out_numpynet[:, 0, 0, :], forward_out_keras, atol=1e-2)
+    np.testing.assert_allclose(forward_out_numpynet[:, 0, 0, :], forward_out_keras, rtol=1e-5, atol=1e-2)
 
     # BACKWARD
 
@@ -210,9 +205,9 @@ class TestConnectedLayer:
     delta = np.zeros(shape=(b, w, h, c), dtype=float)
 
     # Computation of delta, weights_update and bias updates for numpy_net
-    layer.backward(inpt, delta=delta)
+    layer.backward(inpt=inpt, delta=delta)
 
     #Now the global variable delta is updated
-    assert np.allclose(delta_keras.reshape(b, w, h, c), delta, atol=1e-8)
-    assert np.allclose(updates[0], layer.weights_update, atol=1e-6)
-    assert np.allclose(updates[1], layer.bias_update, atol=1e-7)
+    np.testing.assert_allclose(delta_keras.reshape(b, w, h, c), delta, rtol=1e-5, atol=1e-6)
+    np.testing.assert_allclose(updates[0], layer.weights_update, rtol=1e-5, atol=1e-6)
+    np.testing.assert_allclose(updates[1], layer.bias_update, rtol=1e-4, atol=1e-7)

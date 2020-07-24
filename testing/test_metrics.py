@@ -99,7 +99,7 @@ class TestMetrics:
     res_py = mean_hellinger(y_true, y_pred)
 
     assert res_py >= 0.
-    assert np.allclose(res_py, mean_hellinger(y_pred, y_true))
+    np.testing.assert_allclose(res_py, mean_hellinger(y_pred, y_true), rtol=1e-5, atol=1e-8)
 
 
   @given(size      = st.integers(min_value=10, max_value=100),

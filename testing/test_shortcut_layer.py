@@ -27,6 +27,10 @@ __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
+nn_activations = [Tanh, Linear, Relu, Logistic]
+tf_activations = ['tanh','linear','relu', 'sigmoid']
+
+
 class TestShortcutLayer :
   '''
   Tests:
@@ -70,8 +74,8 @@ class TestShortcutLayer :
             deadline=None)
   def test_printer (self, b, w, h, c, alpha, beta):
 
-    inpt1 = np.random.uniform(low=-1., high=1., size=(b, w, h, c))
-    inpt2 = np.random.uniform(low=-1., high=1., size=(b, w, h, c))
+    inpt1 = np.random.uniform(low=-1., high=1., size=(b, w, h, c)).astype(float)
+    inpt2 = np.random.uniform(low=-1., high=1., size=(b, w, h, c)).astype(float)
 
     layer = Shortcut_layer(activation=Linear, alpha=alpha, beta=beta)
 
@@ -87,46 +91,45 @@ class TestShortcutLayer :
          h = st.integers(min_value=10, max_value=100),
          c = st.integers(min_value=1, max_value=10 ),
          alpha = st.floats(min_value=0., max_value=1., width=32),
-         beta  = st.floats(min_value=0., max_value=1., width=32))
+         beta  = st.floats(min_value=0., max_value=1., width=32),
+         idx_act = st.integers(min_value=0, max_value=len(tf_activations)-1))
   @settings(max_examples=10,
             deadline=None)
-  def test_forward (self, b, w, h, c, alpha, beta):
+  def test_forward (self, b, w, h, c, alpha, beta, idx_act):
 
-    keras_activations = ['tanh','linear','relu', 'sigmoid']
-    numpynet_activations = [Tanh, Linear, Relu, Logistic]
+    nn_act = nn_activations[idx_act]
+    tf_act = tf_activations[idx_act]
 
-    inpt1 = np.random.uniform(low=-1., high=1., size=(b, w, h, c))
-    inpt2 = np.random.uniform(low=-1., high=1., size=(b, w, h, c))
+    inpt1 = np.random.uniform(low=-1., high=1., size=(b, w, h, c)).astype(float)
+    inpt2 = np.random.uniform(low=-1., high=1., size=(b, w, h, c)).astype(float)
 
-    for k_activ, n_activ in zip(keras_activations, numpynet_activations):
+    layer = Shortcut_layer(activation=nn_act, alpha=alpha, beta=beta)
 
-      layer = Shortcut_layer(activation=n_activ, alpha=alpha, beta=beta)
+    # Keras Model, double input
+    inp1  = Input(batch_shape=inpt1.shape)
+    inp2  = Input(batch_shape=inpt2.shape)
+    x     = Add()([inp1, inp2])
+    out   = Activation(activation=tf_act)(x)
+    model = Model(inputs=[inp1, inp2], outputs=out)
 
-      # Keras Model, double input
-      inp1  = Input(batch_shape=inpt1.shape)
-      inp2  = Input(batch_shape=inpt2.shape)
-      x     = Add()([inp1,inp2])
-      out   = Activation(activation=k_activ)(x)
-      model = Model(inputs=[inp1,inp2], outputs=out)
+    # FORWARD
 
-      # FORWARD
+    forward_out_keras = model.predict([alpha*inpt1, beta*inpt2])
 
-      forward_out_keras = model.predict([alpha*inpt1, beta*inpt2])
+    layer.forward(inpt1, inpt2)
+    forward_out_numpynet = layer.output
 
-      layer.forward(inpt1,inpt2)
-      forward_out_numpynet = layer.output
+    assert forward_out_keras.shape == forward_out_numpynet.shape
+    np.testing.assert_allclose(forward_out_keras, forward_out_numpynet, rtol=1e-5, atol=1e-7)
 
-      assert forward_out_keras.shape == forward_out_numpynet.shape
-      assert np.allclose(forward_out_keras, forward_out_numpynet, atol=1e-7)
-
-      # # minor test with different input size (no keras version)
-      #
-      # inpt1 = np.random.uniform(low=-1., high=1., size=(b, w, h, c))
-      # inpt2 = np.random.uniform(low=-1., high=1., size=(b, w//2, h//2, c))
-      #
-      # layer.forward(inpt1, inpt2)
-      #
-      # assert inpt1.shape == layer.output.shape
+    # # minor test with different input size (no keras version)
+    #
+    # inpt1 = np.random.uniform(low=-1., high=1., size=(b, w, h, c)).astype(float)
+    # inpt2 = np.random.uniform(low=-1., high=1., size=(b, w//2, h//2, c)).astype(float)
+    #
+    # layer.forward(inpt1, inpt2)
+    #
+    # assert inpt1.shape == layer.output.shape
 
 
   @given(b = st.integers(min_value=1, max_value=15 ),
@@ -134,64 +137,63 @@ class TestShortcutLayer :
          h = st.integers(min_value=1, max_value=100),
          c = st.integers(min_value=1, max_value=10 ),
          alpha = st.floats(min_value=0., max_value=1., width=32),
-         beta  = st.floats(min_value=0., max_value=1., width=32))
+         beta  = st.floats(min_value=0., max_value=1., width=32),
+         idx_act = st.integers(min_value=0, max_value=len(tf_activations)-1))
   @settings(max_examples=10,
             deadline=None)
-  def test_backward (self, b, w, h, c, alpha, beta):
+  def test_backward (self, b, w, h, c, alpha, beta, idx_act):
 
-    keras_activations = ['tanh','linear','relu', 'sigmoid']
-    numpynet_activations = [Tanh, Linear, Relu, Logistic]
+    nn_act = nn_activations[idx_act]
+    tf_act = tf_activations[idx_act]
 
-    inpt1 = np.random.uniform(low=-1., high=1., size=(b, w, h, c))
-    inpt2 = np.random.uniform(low=-1., high=1., size=(b, w, h, c))
+    inpt1 = np.random.uniform(low=-1., high=1., size=(b, w, h, c)).astype(float)
+    inpt2 = np.random.uniform(low=-1., high=1., size=(b, w, h, c)).astype(float)
 
     tf_inpt1 = tf.Variable(inpt1)
     tf_inpt2 = tf.Variable(inpt2)
 
-    for k_activ, n_activ in zip(keras_activations, numpynet_activations):
+    # numpynet model
+    layer = Shortcut_layer(activation=nn_act, alpha=alpha, beta=beta)
 
-      # numpynet model
-      layer = Shortcut_layer(activation=n_activ, alpha=alpha, beta=beta)
+    # Keras Model, double input
+    inp1  = Input(batch_shape=inpt1.shape)
+    inp2  = Input(batch_shape=inpt2.shape)
+    x     = Add()([inp1, inp2])
+    out   = Activation(activation=tf_act)(x)
+    model = Model(inputs=[inp1, inp2], outputs=out)
 
-      # Keras Model, double input
-      inp1  = Input(batch_shape=inpt1.shape)
-      inp2  = Input(batch_shape=inpt2.shape)
-      x     = Add()([inp1,inp2])
-      out   = Activation(activation=k_activ)(x)
-      model = Model(inputs=[inp1,inp2], outputs=out)
-
-      # Try backward:
-      with pytest.raises(NotFittedError):
-        delta      = np.zeros(shape=inpt1.shape, dtype=float)
-        prev_delta = np.zeros(shape=inpt2.shape, dtype=float)
-        layer.backward(delta, prev_delta)
-
-      # FORWARD
-
-      # Perform Add() for alpha*inpt and beta*inpt
-      with tf.GradientTape(persistent=True) as tape :
-        preds = model([alpha*tf_inpt1, beta*tf_inpt2])
-        grad1 = tape.gradient(preds, tf_inpt1)
-        grad2 = tape.gradient(preds, tf_inpt2)
-
-        forward_out_keras = preds.numpy()
-        delta1 = grad1.numpy()
-        delta2 = grad2.numpy()
-
-
-      layer.forward(inpt1,inpt2)
-      forward_out_numpynet = layer.output
-
-      assert forward_out_keras.shape == forward_out_numpynet.shape
-      assert np.allclose(forward_out_keras, forward_out_numpynet, atol=1e-7)
-
-      # BACKWARD
-
+    # Try backward:
+    with pytest.raises(NotFittedError):
       delta      = np.zeros(shape=inpt1.shape, dtype=float)
       prev_delta = np.zeros(shape=inpt2.shape, dtype=float)
-
-      layer.delta = np.ones(shape=(b, w, h, c), dtype=float)
       layer.backward(delta, prev_delta)
 
-      assert np.allclose(delta1, delta)
-      assert np.allclose(delta2, prev_delta, atol=1e-8)
+    # FORWARD
+
+    # Perform Add() for alpha*inpt and beta*inpt
+    with tf.GradientTape(persistent=True) as tape :
+      preds = model([alpha*tf_inpt1, beta*tf_inpt2])
+      grad1 = tape.gradient(preds, tf_inpt1)
+      grad2 = tape.gradient(preds, tf_inpt2)
+
+      forward_out_keras = preds.numpy()
+      delta1 = grad1.numpy()
+      delta2 = grad2.numpy()
+
+
+    layer.forward(inpt1,inpt2)
+    forward_out_numpynet = layer.output
+
+    assert forward_out_keras.shape == forward_out_numpynet.shape
+    np.testing.assert_allclose(forward_out_keras, forward_out_numpynet, rtol=1e-5, atol=1e-7)
+
+    # BACKWARD
+
+    delta      = np.zeros(shape=inpt1.shape, dtype=float)
+    prev_delta = np.zeros(shape=inpt2.shape, dtype=float)
+
+    layer.delta = np.ones(shape=(b, w, h, c), dtype=float)
+    layer.backward(delta, prev_delta)
+
+    np.testing.assert_allclose(delta1, delta, rtol=1e-5, atol=1e-8)
+    np.testing.assert_allclose(delta2, prev_delta, rtol=1e-5, atol=1e-8)

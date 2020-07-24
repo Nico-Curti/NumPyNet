@@ -30,8 +30,8 @@ class TestSoftmaxLayer :
   to be:
     '''
 
-  @given(s = st.floats(-2,10),
-         t = st.floats(0,10))
+  @given(s = st.floats(-2, 10),
+         t = st.floats(0, 10))
   @settings(max_examples=10,
             deadline=None)
   def test_constructor (self, s, t):
@@ -77,8 +77,8 @@ class TestSoftmaxLayer :
             deadline=None)
   def test_forward (self, b, w, h, c, spatial):
 
-    inpt  = np.random.uniform(low=0., high=1., size=(b, w, h, c))
-    truth = np.random.choice([0., 1.], p=[.5, .5], size=(b, w, h, c))
+    inpt  = np.random.uniform(low=0., high=1., size=(b, w, h, c)).astype(float)
+    truth = np.random.choice([0., 1.], p=[.5, .5], size=(b, w, h, c)).astype(float)
 
     if spatial :
       inpt_tf  = tf.Variable(inpt.copy())
@@ -103,12 +103,12 @@ class TestSoftmaxLayer :
     forward_out_keras = preds.numpy().reshape(b, w, h, c)
 
     # Softmax + crossentropy NumPyNet
-    layer.forward(inpt, truth)
+    layer.forward(inpt=inpt, truth=truth)
     forward_out_numpynet = layer.output
     numpynet_loss = layer.cost
 
     # testing softmax
-    np.testing.assert_allclose(forward_out_keras, forward_out_numpynet, atol=1e-8)
+    np.testing.assert_allclose(forward_out_keras, forward_out_numpynet, rtol=1e-5, atol=1e-8)
 
     # testing crossentropy
     np.testing.assert_allclose(keras_loss, numpynet_loss, rtol=1e-5, atol=1e-6)
@@ -126,8 +126,8 @@ class TestSoftmaxLayer :
 
     w, h = (1, 1) # backward working only in this case for spatial=False
 
-    inpt  = np.random.uniform(low=0., high=1., size=(b, w, h, c))
-    truth = np.random.choice([0., 1.], p=[.5, .5], size=(b, w, h, c))
+    inpt  = np.random.uniform(low=0., high=1., size=(b, w, h, c)).astype(float)
+    truth = np.random.choice([0., 1.], p=[.5, .5], size=(b, w, h, c)).astype(float)
 
     if spatial :
     	inpt_tf  = tf.Variable(inpt)
@@ -153,13 +153,13 @@ class TestSoftmaxLayer :
     	keras_loss        = cost.numpy()
     	delta_keras       = grads.numpy().reshape(b, w, h, c)
 
-    layer.forward(inpt, truth)
+    layer.forward(inpt=inpt, truth=truth)
     forward_out_numpynet = layer.output
     numpynet_loss = layer.cost
 
-    delta = np.zeros(shape=inpt.shape)
-    layer.backward(delta)
+    delta = np.zeros(shape=inpt.shape, dtype=float)
+    layer.backward(delta=delta)
 
-    np.testing.assert_allclose(forward_out_keras, forward_out_numpynet, atol=1e-8)
+    np.testing.assert_allclose(forward_out_keras, forward_out_numpynet, rtol=1e-5, atol=1e-8)
     np.testing.assert_allclose(keras_loss, numpynet_loss, rtol=1e-5, atol=1e-6)
-    np.testing.assert_allclose(delta, delta_keras)
+    np.testing.assert_allclose(delta, delta_keras, rtol=1e-5, atol=1e-8)

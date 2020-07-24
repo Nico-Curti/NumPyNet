@@ -44,17 +44,17 @@ class TestOptimizer:
     sgd = SGD(lr=lr, decay=decay)
     tf_sgd = tf.keras.optimizers.SGD(learning_rate=lr, momentum=0., nesterov=False, decay=decay)
 
-    first  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
-    second = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
-    third  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
+    first  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
+    second = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
+    third  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
 
     tf_first  = tf.Variable(first.copy())
     tf_second = tf.Variable(second.copy())
     tf_third  = tf.Variable(third.copy())
 
-    first_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
-    second_update = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
-    third_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
+    first_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
+    second_update = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
+    third_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
 
     tf_first_update  = tf.Variable(first_update.copy())
     tf_second_update = tf.Variable(second_update.copy())
@@ -92,17 +92,17 @@ class TestOptimizer:
     mom = Momentum(lr=lr, momentum=momentum, decay=decay)
     tf_mom = tf.keras.optimizers.SGD(learning_rate=lr, momentum=momentum, nesterov=False, decay=decay)
 
-    first  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
-    second = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
-    third  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
+    first  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
+    second = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
+    third  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
 
     tf_first  = tf.Variable(first.copy())
     tf_second = tf.Variable(second.copy())
     tf_third  = tf.Variable(third.copy())
 
-    first_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
-    second_update = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
-    third_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
+    first_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
+    second_update = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
+    third_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
 
     tf_first_update  = tf.Variable(first_update.copy())
     tf_second_update = tf.Variable(second_update.copy())
@@ -140,17 +140,17 @@ class TestOptimizer:
     nmom = NesterovMomentum(lr=lr, momentum=momentum, decay=decay)
     tf_nmom = tf.keras.optimizers.SGD(learning_rate=lr, momentum=momentum, nesterov=True, decay=decay)
 
-    first  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
-    second = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
-    third  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
+    first  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
+    second = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
+    third  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
 
     tf_first  = tf.Variable(first.copy())
     tf_second = tf.Variable(second.copy())
     tf_third  = tf.Variable(third.copy())
 
-    first_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
-    second_update = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
-    third_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
+    first_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
+    second_update = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
+    third_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
 
     tf_first_update  = tf.Variable(first_update.copy())
     tf_second_update = tf.Variable(second_update.copy())
@@ -191,17 +191,17 @@ class TestOptimizer:
     adam = Adam(lr=lr, beta1=beta1, beta2=beta2, epsilon=epsilon, decay=decay)
     tf_adam = tf.keras.optimizers.Adam(learning_rate=lr, beta_1=beta1, beta_2=beta2, epsilon=epsilon, decay=decay)
 
-    first  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
-    second = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
-    third  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
+    first  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
+    second = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
+    third  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
 
     tf_first  = tf.Variable(first.copy())
     tf_second = tf.Variable(second.copy())
     tf_third  = tf.Variable(third.copy())
 
-    first_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
-    second_update = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
-    third_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
+    first_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
+    second_update = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
+    third_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
 
     tf_first_update  = tf.Variable(first_update.copy())
     tf_second_update = tf.Variable(second_update.copy())
@@ -241,17 +241,17 @@ class TestOptimizer:
     adamm = Adamax(lr=lr, beta1=beta1, beta2=beta2, epsilon=epsilon, decay=decay)
     tf_adamm = tf.keras.optimizers.Adamax(learning_rate=lr, beta_1=beta1, beta_2=beta2, epsilon=epsilon, decay=decay)
 
-    first  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
-    second = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
-    third  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
+    first  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
+    second = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
+    third  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
 
     tf_first  = tf.Variable(first.copy())
     tf_second = tf.Variable(second.copy())
     tf_third  = tf.Variable(third.copy())
 
-    first_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
-    second_update = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
-    third_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
+    first_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
+    second_update = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
+    third_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
 
     tf_first_update  = tf.Variable(first_update.copy())
     tf_second_update = tf.Variable(second_update.copy())
@@ -289,17 +289,17 @@ class TestOptimizer:
     adag = Adagrad(lr=lr, epsilon=epsilon, decay=decay)
     tf_adag = tf.keras.optimizers.Adagrad(learning_rate=lr, epsilon=epsilon, initial_accumulator_value=0., decay=decay)
 
-    first  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
-    second = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
-    third  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
+    first  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
+    second = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
+    third  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
 
     tf_first  = tf.Variable(first.copy())
     tf_second = tf.Variable(second.copy())
     tf_third  = tf.Variable(third.copy())
 
-    first_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
-    second_update = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
-    third_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
+    first_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
+    second_update = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
+    third_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
 
     tf_first_update  = tf.Variable(first_update.copy())
     tf_second_update = tf.Variable(second_update.copy())
@@ -338,17 +338,17 @@ class TestOptimizer:
     adad = Adadelta(lr=lr, rho=rho, epsilon=epsilon, decay=decay)
     tf_adad = tf.keras.optimizers.Adadelta(learning_rate=lr, rho=rho, epsilon=epsilon, decay=decay)
 
-    first  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
-    second = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
-    third  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
+    first  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
+    second = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
+    third  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
 
     tf_first  = tf.Variable(first.copy())
     tf_second = tf.Variable(second.copy())
     tf_third  = tf.Variable(third.copy())
 
-    first_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
-    second_update = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
-    third_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
+    first_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
+    second_update = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
+    third_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
 
     tf_first_update  = tf.Variable(first_update.copy())
     tf_second_update = tf.Variable(second_update.copy())
@@ -388,17 +388,17 @@ class TestOptimizer:
     rms = RMSprop(lr=lr, rho=rho, epsilon=epsilon, decay=decay)
     tf_rms = tf.keras.optimizers.RMSprop(learning_rate=lr, rho=rho, epsilon=epsilon, momentum=momentum, decay=decay)
 
-    first  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
-    second = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
-    third  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype('float32')
+    first  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
+    second = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
+    third  = np.random.uniform(low=-100, high=100., size=(w, h, c)).astype(float)
 
     tf_first  = tf.Variable(first.copy())
     tf_second = tf.Variable(second.copy())
     tf_third  = tf.Variable(third.copy())
 
-    first_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
-    second_update = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
-    third_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype('float32')
+    first_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
+    second_update = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
+    third_update  = np.random.uniform(low=-1000, high=1000, size=(w, h, c)).astype(float)
 
     tf_first_update  = tf.Variable(first_update.copy())
     tf_second_update = tf.Variable(second_update.copy())

@@ -122,51 +122,51 @@ def timeit_fmat ():
 def test_pow2 ():
 
   x = np.pi
-  assert np.isclose(2**x,               pow2(x),    atol=1e-3)
+  assert np.isclose(2**x, pow2(x), atol=1e-3)
 
 def test_exp ():
 
   x = np.pi
-  assert np.isclose(np.exp(x),          exp(x),     atol=1e-5)
+  assert np.isclose(np.exp(x), exp(x), atol=1e-5)
 
 def test_pow ():
 
   x = np.pi
-  assert np.isclose(x**.2,              pow(x, .2), atol=1e-4)
+  assert np.isclose(x**.2, pow(x, .2), atol=1e-4)
 
 def test_log2 ():
 
   x = np.pi
-  assert np.isclose(np.log2(x),         log2(x),    atol=1e-4)
+  assert np.isclose(np.log2(x), log2(x), atol=1e-4)
 
 def test_log10 ():
 
   x = np.pi
-  assert np.isclose(np.log10(x),        log10(x),   atol=1e-3)
+  assert np.isclose(np.log10(x), log10(x), atol=1e-3)
 
 def test_log ():
 
   x = np.pi
-  assert np.isclose(np.log(x),          log(x),     atol=1e-4)
+  assert np.isclose(np.log(x), log(x), atol=1e-4)
 
 def test_arctanh ():
 
   c = 1e-2
   x = np.pi
-  assert np.isclose(np.arctanh(x*c),    atanh(x*c), atol=1e-4)
+  assert np.isclose(np.arctanh(x*c), atanh(x*c), atol=1e-4)
 
 def test_tanh ():
 
   x = np.pi
-  assert np.isclose(np.tanh(x),         tanh(x),    atol=1e-5)
+  assert np.isclose(np.tanh(x), tanh(x), atol=1e-5)
 
 def test_sqrt ():
 
   x = np.pi
-  assert np.isclose(np.sqrt(x),         sqrt(x),    atol=1e-5)
+  assert np.isclose(np.sqrt(x), sqrt(x), atol=1e-5)
 
 def test_rsqrt ():
 
   x = np.pi
-  assert np.isclose(1. / np.sqrt(x),    rsqrt(x),   atol=1e-5)
+  assert np.isclose(1. / np.sqrt(x), rsqrt(x), atol=1e-5)
 

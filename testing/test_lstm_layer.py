@@ -59,7 +59,7 @@ class TestLSTMlayer :
     assert inpt_keras.shape == (batch - timesteps, timesteps, features)
 
     weights = [np.random.uniform(size=(features, outputs)), np.random.uniform(size=(outputs,outputs))]
-    bias    = [np.zeros(shape=(outputs,)), np.zeros(shape=outputs)]
+    bias    = [np.zeros(shape=(outputs,), dtype=float), np.zeros(shape=outputs, dtype=float)]
 
     # assign same weights to all the kernel in keras as for NumPyNet
     keras_weights1 = np.concatenate([weights[0] for i in range(4)], axis=1)
@@ -67,10 +67,10 @@ class TestLSTMlayer :
     keras_bias     = np.concatenate([bias[0] for i in range(4)])
 
     for i in range(4):
-      assert np.allclose(keras_weights1[:,outputs*i:outputs*(i+1)], weights[0])
+      np.testing.assert_allclose(keras_weights1[:,outputs*i:outputs*(i+1)], weights[0], rtol=1e-5, atol=1e-8)
 
     for i in range(4):
-      assert np.allclose(keras_weights2[:,outputs*i:outputs*(i+1)], weights[1])
+      np.testing.assert_allclose(keras_weights2[:,outputs*i:outputs*(i+1)], weights[1], rtol=1e-5, atol=1e-8)
 
     inp   = Input(shape=(inpt_keras.shape[1:]))
     lstm  = LSTM(units=outputs, implementation=1, use_bias=False)(inp)
@@ -81,19 +81,19 @@ class TestLSTMlayer :
     inpt_numpynet = data.reshape(batch, 1, 1, features)
     layer = LSTM_layer(outputs=outputs, steps=timesteps, weights=weights, bias=bias, input_shape=inpt_numpynet.shape)
 
-    assert np.allclose(layer.uf.weights, model.get_weights()[0][:, :outputs])
-    assert np.allclose(layer.ui.weights, model.get_weights()[0][:, outputs:2*outputs])
-    assert np.allclose(layer.ug.weights, model.get_weights()[0][:, 2*outputs:3*outputs])
-    assert np.allclose(layer.uo.weights, model.get_weights()[0][:, 3*outputs:4*outputs])
+    np.testing.assert_allclose(layer.uf.weights, model.get_weights()[0][:, :outputs], rtol=1e-5, atol=1e-8)
+    np.testing.assert_allclose(layer.ui.weights, model.get_weights()[0][:, outputs:2*outputs], rtol=1e-5, atol=1e-8)
+    np.testing.assert_allclose(layer.ug.weights, model.get_weights()[0][:, 2*outputs:3*outputs], rtol=1e-5, atol=1e-8)
+    np.testing.assert_allclose(layer.uo.weights, model.get_weights()[0][:, 3*outputs:4*outputs], rtol=1e-5, atol=1e-8)
 
-    assert np.allclose(layer.wf.weights, model.get_weights()[1][:, :outputs])
-    assert np.allclose(layer.wi.weights, model.get_weights()[1][:, outputs:2*outputs])
-    assert np.allclose(layer.wg.weights, model.get_weights()[1][:, 2*outputs:3*outputs])
-    assert np.allclose(layer.wo.weights, model.get_weights()[1][:, 3*outputs:4*outputs])
+    np.testing.assert_allclose(layer.wf.weights, model.get_weights()[1][:, :outputs], rtol=1e-5, atol=1e-8)
+    np.testing.assert_allclose(layer.wi.weights, model.get_weights()[1][:, outputs:2*outputs], rtol=1e-5, atol=1e-8)
+    np.testing.assert_allclose(layer.wg.weights, model.get_weights()[1][:, 2*outputs:3*outputs], rtol=1e-5, atol=1e-8)
+    np.testing.assert_allclose(layer.wo.weights, model.get_weights()[1][:, 3*outputs:4*outputs], rtol=1e-5, atol=1e-8)
 
     forward_out_keras = model.predict(inpt_keras)
 
-    layer.forward(inpt_numpynet)
+    layer.forward(inpt=inpt_numpynet)
     forward_out_numpynet = layer.output.reshape(batch, outputs)
 
     # np.allclose(forward_out_numpynet, forward_out_keras)

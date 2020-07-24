@@ -87,67 +87,61 @@ class TestMaxpoolLayer :
          w = st.integers(min_value=15, max_value=100),
          h = st.integers(min_value=15, max_value=100),
          c = st.integers(min_value=1, max_value=10),
-         size   = st.tuples(st.integers(min_value=1, max_value=10),
-                            st.integers(min_value=1, max_value=10)),
+         size = st.tuples(st.integers(min_value=1, max_value=10),
+                          st.integers(min_value=1, max_value=10)),
          stride = st.tuples(st.integers(min_value=1, max_value=10),
                             st.integers(min_value=1, max_value=10)),
-         pad    = st.booleans())
+         pad = st.booleans())
   @settings(max_examples=10,
             deadline=None)
   def test_forward (self, b, w, h, c, size, stride, pad):
 
-    inpt    = np.random.uniform(low=-1., high=1., size=(b, w, h, c))
+    inpt = np.random.uniform(low=-1., high=1., size=(b, w, h, c)).astype(float)
 
     # NumPyNet model
     layer = Maxpool_layer(input_shape=inpt.shape, size=size, stride=stride, pad=pad)
 
-    if pad:
-      keras_pad = 'SAME'
-    else :
-      keras_pad = 'VALID'
+    keras_pad = 'SAME' if pad else 'VALID'
 
-    model = tf.keras.layers.MaxPool2D( pool_size=size, strides=stride,
-                                       padding=keras_pad,
-                                       data_format='channels_last')
+    model = tf.keras.layers.MaxPool2D(pool_size=size, strides=stride,
+                                      padding=keras_pad,
+                                      data_format='channels_last')
 
     forward_out_keras = model(inpt).numpy()
 
     # numpynet forward and output
-    layer.forward(inpt)
+    layer.forward(inpt=inpt)
     forward_out_numpynet = layer.output
 
     # Test for dimension and allclose of all output
     assert forward_out_numpynet.shape == forward_out_keras.shape
-    assert np.allclose(forward_out_numpynet, forward_out_keras, atol=1e-6)
+    np.testing.assert_allclose(forward_out_numpynet, forward_out_keras, rtol=1e-5, atol=1e-6)
 
 
   @given(b = st.integers(min_value=1, max_value=15),
          w = st.integers(min_value=15, max_value=100),
          h = st.integers(min_value=15, max_value=100),
          c = st.integers(min_value=1, max_value=10),
-         size   = st.tuples(st.integers(min_value=1, max_value=10),
-                            st.integers(min_value=1, max_value=10)),
+         size = st.tuples(st.integers(min_value=1, max_value=10),
+                          st.integers(min_value=1, max_value=10)),
          stride = st.tuples(st.integers(min_value=1, max_value=10),
                             st.integers(min_value=1, max_value=10)),
-         pad    = st.booleans())
+         pad = st.booleans())
   @settings(max_examples=10,
             deadline=None)
   def test_backward (self, b, w, h, c, size, stride, pad):
 
-    inpt    = np.random.uniform(low=0., high=1., size=(b, w, h, c))
+    inpt    = np.random.uniform(low=0., high=1., size=(b, w, h, c)).astype(float)
     inpt_tf = tf.Variable(inpt)
 
     # NumPyNet model
     layer = Maxpool_layer(input_shape=inpt.shape, size=size, stride=stride, pad=pad)
 
-    if pad:
-      keras_pad = 'SAME'
-    else :
-      keras_pad = 'VALID'
+    keras_pad = 'SAME' if pad else 'VALID'
 
-    model = tf.keras.layers.MaxPool2D( pool_size=size, strides=stride,
-                                       padding=keras_pad,
-                                       data_format='channels_last')
+    model = tf.keras.layers.MaxPool2D(pool_size=size, strides=stride,
+                                      padding=keras_pad,
+                                      data_format='channels_last')
 
     with tf.GradientTape() as tape:
       preds = model(inpt_tf)
@@ -157,12 +151,12 @@ class TestMaxpoolLayer :
       delta_keras = grads.numpy()
 
     # numpynet forward and output
-    layer.forward(inpt)
+    layer.forward(inpt=inpt)
     forward_out_numpynet = layer.output
 
     # Test for dimension and allclose of all output
     assert forward_out_numpynet.shape == forward_out_keras.shape
-    assert np.allclose(forward_out_numpynet, forward_out_keras, atol=1e-6)
+    np.testing.assert_allclose(forward_out_numpynet, forward_out_keras, rtol=1e-5, atol=1e-6)
 
     # BACKWARD
 
@@ -171,9 +165,9 @@ class TestMaxpoolLayer :
     delta = np.zeros(shape=inpt.shape, dtype=float)
 
     # numpynet Backward
-    layer.backward(delta)
+    layer.backward(delta=delta)
 
     # Back tests
     assert delta.shape == delta_keras.shape
     assert delta.shape == inpt.shape
-    assert np.allclose(delta, delta_keras, atol=1e-8)
+    np.testing.assert_allclose(delta, delta_keras, rtol=1e-5, atol=1e-8)

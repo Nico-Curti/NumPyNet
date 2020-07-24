@@ -19,6 +19,7 @@ from hypothesis import settings
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
+
 class TestDropoutLayer:
   '''
   Tests:
@@ -29,7 +30,7 @@ class TestDropoutLayer:
     - Check that both forward and backards works.
   '''
 
-  @given(prob=st.floats(min_value=-0.5, max_value=1.5))
+  @given(prob = st.floats(min_value=-0.5, max_value=1.5))
   @settings(max_examples=20,
             deadline=None)
   def test_constructor (self, prob):
@@ -39,7 +40,7 @@ class TestDropoutLayer:
       with pytest.raises(ValueError):
         layer = Dropout_layer(prob)
 
-    else :
+    else:
       layer = Dropout_layer(prob)
 
       assert layer.probability == prob
@@ -76,7 +77,7 @@ class TestDropoutLayer:
   def test_forward (self, b, w, h, c, prob):
 
     # Random input
-    inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
+    inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c)).astype(float)
 
     # Initialize the numpy_net model
     layer = Dropout_layer(input_shape=inpt.shape, prob=prob)
@@ -84,7 +85,7 @@ class TestDropoutLayer:
     # Tensor Flow dropout, just to see if it works
     # forward_out_keras = K.eval(tf.nn.dropout(inpt, seed=None, keep_prob=prob))
 
-    layer.forward(inpt)
+    layer.forward(inpt=inpt)
     forward_out_numpynet = layer.output
 
     zeros_out = np.count_nonzero(forward_out_numpynet)
@@ -95,12 +96,12 @@ class TestDropoutLayer:
 
     elif prob == 0.:
       assert zeros_out == b * w * h * c
-      assert np.allclose(forward_out_numpynet, inpt)
+      np.testing.assert_allclose(forward_out_numpynet, inpt, rtol=1e-5, atol=1e-8)
 
     else:
       assert forward_out_numpynet.shape == inpt.shape
 
-    assert np.allclose(layer.delta, np.zeros(shape=(b, w, h, c)))
+    np.testing.assert_allclose(layer.delta, np.zeros(shape=(b, w, h, c), dtype=float), rtol=1e-5, atol=1e-8)
 
 
   @given(b = st.integers(min_value=1, max_value=15 ),
@@ -114,7 +115,7 @@ class TestDropoutLayer:
 
     prob = 0.
     # Random input
-    inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
+    inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c)).astype(float)
 
     # Initialize the numpy_net model
     layer = Dropout_layer(input_shape=inpt.shape, prob=prob)
@@ -140,12 +141,12 @@ class TestDropoutLayer:
 
     elif prob == 0.:
       assert zeros_out == b * w * h * c
-      assert np.allclose(forward_out_numpynet, inpt)
+      np.testing.assert_allclose(forward_out_numpynet, inpt, rtol=1e-5, atol=1e-8)
 
     else:
       assert forward_out_numpynet.shape == inpt.shape
 
-    assert np.allclose(layer.delta, np.zeros(shape=(b, w, h, c)))
+    np.testing.assert_allclose(layer.delta, np.zeros(shape=(b, w, h, c), dtype=float), rtol=1e-5, atol=1e-8)
 
     # BACKWARD
 
@@ -160,7 +161,7 @@ class TestDropoutLayer:
       assert np.allclose(delta, prev_delta)
 
     elif prob == 1.:
-      assert np.allclose(delta, np.zeros(shape=inpt.shape))
+      np.testing.assert_allclose(delta, np.zeros(shape=inpt.shape, dtype=float), rtol=1e-5, atol=1e-8)
 
-    else :
-      assert ~np.allclose(delta, np.zeros(shape=inpt.shape))
+    else:
+      assert ~np.allclose(delta, np.zeros(shape=inpt.shape, dtype=float), rtol=1e-5, atol=1e-8)

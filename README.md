@@ -317,7 +317,7 @@ Thanks goes to all contributors of this project.
 
 If you have found `NumPyNet` helpful in your research, please consider citing this project repository
 
-```tex
+```BibTex
 @misc{NumPyNet,
   author = {Curti, Nico and Ceccarelli, Mattia},
   title = {NumPyNet},

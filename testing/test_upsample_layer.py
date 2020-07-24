@@ -38,8 +38,8 @@ class TestUpsampleLayer:
   @settings(max_examples=100, deadline=None)
   def test_constructor(self, b, w, h, c, stride, scales):
 
-    shape_choices  = [(b,w,h,c), None]
-    stride_choices = [(stride, stride), (stride, -stride), stride]
+    shape_choices  = np.asarray([(b, w, h, c), None], dtype=object)
+    stride_choices = np.asarray([(stride, stride), (stride, -stride), stride], dtype=object)
 
     input_shape = np.random.choice(shape_choices, p=[0.5, 0.5])
     stride = np.random.choice(stride_choices, p=[0.34, 0.33, 0.33])
@@ -109,7 +109,7 @@ class TestUpsampleLayer:
 
     scales = 1. # no scale factor for UpSampling2D
 
-    inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
+    inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c)).astype(float)
 
     # NumPyNet model
     layer = Upsample_layer(input_shape=inpt.shape, stride=stride, scale=scales)
@@ -125,12 +125,12 @@ class TestUpsampleLayer:
     forward_out_keras = model.predict(inpt)
 
     # numpynet forwrd
-    layer.forward(inpt)
+    layer.forward(inpt=inpt)
     forward_out_numpynet = layer.output
 
     # Forward check (Shape and Values)
     assert forward_out_keras.shape == forward_out_numpynet.shape
-    assert np.allclose(forward_out_keras, forward_out_numpynet)
+    np.testing.assert_allclose(forward_out_keras, forward_out_numpynet, rtol=1e-5, atol=1e-8)
 
 
   @given(b = st.integers(min_value=5, max_value=15),
@@ -143,7 +143,7 @@ class TestUpsampleLayer:
 
     scales = 1.
 
-    inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c))
+    inpt = np.random.uniform(low=0., high=1., size=(b, w, h, c)).astype(float)
 
     # NumPyNet model
     layer = Upsample_layer(input_shape=(b, w, h, c), stride=stride, scale=scales)
@@ -160,22 +160,17 @@ class TestUpsampleLayer:
     forward_out_keras = model.predict(inpt)
 
     # numpynet forwrd
-    layer.forward(inpt)
+    layer.forward(inpt=inpt)
     forward_out_numpynet = layer.output
 
     # Forward check (Shape and Values)
     assert forward_out_keras.shape == forward_out_numpynet.shape
-    assert np.allclose(forward_out_keras, forward_out_numpynet)
+    np.testing.assert_allclose(forward_out_keras, forward_out_numpynet, rtol=1e-5, atol=1e-8)
 
     # BACKWARD
 
     layer.delta = layer.output
     delta = np.empty(shape=inpt.shape, dtype=float)
-    layer.backward(delta)
+    layer.backward(delta=delta)
 
-    assert np.allclose(delta, inpt)
-
-if __name__ == '__main__':
-
-  test = TestUpsampleLayer()
-  test.test_constructor()
+    np.testing.assert_allclose(delta, inpt, rtol=1e-5, atol=1e-8)

@@ -84,10 +84,10 @@ class TestBatchnormLayer:
             deadline=None)
   def test_forward(self, b, w, h, c):
 
-    inpt = np.random.uniform(low=1., high=10., size=(b, w, h, c)).astype(np.float32)
+    inpt = np.random.uniform(low=1., high=10., size=(b, w, h, c)).astype(np.float32).astype(float)
 
-    bias   = np.random.uniform(low=0., high=1., size=(w, h, c)) # random biases
-    scales = np.random.uniform(low=0., high=1., size=(w, h, c)) # random scales
+    bias   = np.random.uniform(low=0., high=1., size=(w, h, c)).astype(float) # random biases
+    scales = np.random.uniform(low=0., high=1., size=(w, h, c)).astype(float) # random scales
 
     # inpt_tf = tf.convert_to_tensor(inpt.astype('float32'))
 
@@ -119,7 +119,7 @@ class TestBatchnormLayer:
     # Keras forward
     forward_out_keras = model(inpt).numpy()
 
-    numpynet.forward(inpt)
+    numpynet.forward(inpt=inpt)
     forward_out_numpynet = numpynet.output
 
     # Comparing outputs
@@ -127,14 +127,14 @@ class TestBatchnormLayer:
     assert forward_out_numpynet.shape == forward_out_keras.shape
     np.testing.assert_allclose(forward_out_keras, forward_out_numpynet, atol=1e-3, rtol=1e-5)
 
-    x_norm = (numpynet.x - numpynet.mean)*numpynet.var
+    x_norm = (numpynet.x - numpynet.mean) * numpynet.var
 
     # Own variable updates comparisons
-    assert np.allclose(numpynet.x, inpt)
+    np.testing.assert_allclose(numpynet.x, inpt, rtol=1e-5, atol=1e-8)
     assert numpynet.mean.shape == (w, h, c)
     assert numpynet.var.shape == (w, h, c)
     assert x_norm.shape == numpynet.x.shape
-    assert np.allclose(numpynet.x_norm, x_norm)
+    np.testing.assert_allclose(numpynet.x_norm, x_norm, rtol=1e-5, atol=1e-8)
 
 
   @given(b = st.integers(min_value=3, max_value=15 ),
@@ -145,12 +145,12 @@ class TestBatchnormLayer:
             deadline=None)
   def test_backward(self, b, w, h, c):
 
-    inpt = np.random.uniform(low=1., high=10., size=(b, w, h, c))
+    inpt = np.random.uniform(low=1., high=10., size=(b, w, h, c)).astype(float)
 
-    bias   = np.random.uniform(low=0., high=1., size=(w, h, c)) # random biases
-    scales = np.random.uniform(low=0., high=1., size=(w, h, c)) # random scales
+    bias   = np.random.uniform(low=0., high=1., size=(w, h, c)).astype(float) # random biases
+    scales = np.random.uniform(low=0., high=1., size=(w, h, c)).astype(float) # random scales
 
-    tf_input = tf.Variable(inpt.astype('float32'))
+    tf_input = tf.Variable(inpt.astype(float))
 
     # Numpy_net model
     numpynet = BatchNorm_layer(input_shape=inpt.shape, scales=scales, bias=bias)
@@ -188,22 +188,22 @@ class TestBatchnormLayer:
       delta_keras = grad1.numpy()
       updates     = grad2
 
-    numpynet.forward(inpt)
+    numpynet.forward(inpt=inpt)
     forward_out_numpynet = numpynet.output
 
     # Comparing outputs
     assert forward_out_numpynet.shape == (b, w, h, c)
-    assert forward_out_numpynet.shape == forward_out_keras.shape            # same shape
-    assert np.allclose(forward_out_keras, forward_out_numpynet, atol=1e-3)  # same output
+    assert forward_out_numpynet.shape == forward_out_keras.shape  # same shape
+    np.testing.assert_allclose(forward_out_keras, forward_out_numpynet, rtol=1e-5, atol=1e-3)  # same output
 
     x_norm = (numpynet.x - numpynet.mean)*numpynet.var
 
     # Own variable updates comparisons
-    assert np.allclose(numpynet.x, inpt)
+    np.testing.assert_allclose(numpynet.x, inpt, rtol=1e-5, atol=1e-8)
     assert numpynet.mean.shape == (w, h, c)
     assert numpynet.var.shape == (w, h, c)
     assert x_norm.shape == numpynet.x.shape
-    assert np.allclose(numpynet.x_norm, x_norm)
+    np.testing.assert_allclose(numpynet.x_norm, x_norm, rtol=1e-5, atol=1e-8)
 
     # BACKWARD
 
@@ -212,18 +212,18 @@ class TestBatchnormLayer:
     delta_numpynet = np.zeros(shape=inpt.shape, dtype=float)
 
     # numpynet bacward, updates delta_numpynet
-    numpynet.backward(delta_numpynet)
+    numpynet.backward(delta=delta_numpynet)
 
     # Testing delta, the precision change with the image
     assert delta_keras.shape == delta_numpynet.shape
-    assert np.allclose(delta_keras, delta_numpynet, rtol=1e-1, atol=1e-1)
+    np.testing.assert_allclose(delta_keras, delta_numpynet, rtol=1e-1, atol=1e-1)
 
     # Testing scales updates
     assert updates[0][0].shape == numpynet.scales_update.shape
-    assert np.allclose(updates[0], numpynet.scales_update, atol=1e-03)
+    np.testing.assert_allclose(updates[0][0], numpynet.scales_update, rtol=1e-5, atol=1e-3)
 
     # Testing Bias updates
     assert updates[1][0].shape == numpynet.bias_update.shape
-    assert np.allclose(updates[1], numpynet.bias_update, atol=1e-06)
+    np.testing.assert_allclose(updates[1][0], numpynet.bias_update, rtol=1e-5, atol=1e-6)
 
     # All passed, but precision it's not consistent, missing update functions
