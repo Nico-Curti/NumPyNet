@@ -11,6 +11,7 @@ from copy import copy
 import sys
 
 import inspect
+import platform
 import numpy as np
 from time import time as now
 
@@ -44,9 +45,12 @@ from NumPyNet.exception import LayerError
 from NumPyNet.exception import MetricsError
 from NumPyNet.exception import NetworkError
 
+from NumPyNet.utils import _redirect_stdout
+
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
+CRLF = '\r\x1B[K' if platform.system() != 'Windows' else '\r'
 
 class Network(object):
 
@@ -323,7 +327,7 @@ class Network(object):
     print(' '.join(' {}: {:1.3f}'.format(k, v) for k, v in results.items()))
 
 
-  def fit(self, X, y, max_iter=100, shuffle=True):
+  def fit(self, X, y, max_iter=100, shuffle=True, verbose=True):
     '''
     '''
 
@@ -333,53 +337,54 @@ class Network(object):
 
     batches = np.array_split(range(num_data), indices_or_sections=num_data // self.batch)
 
-    for _ in range(max_iter):
+    with _redirect_stdout(verbose):
+      for _ in range(max_iter):
 
-      start = now()
-
-      print('Epoch {:d}/{:d}'.format(_ + 1, max_iter)) # flush=True)
-
-      sys.stdout.flush() # compatibility with python 2.7
-
-      loss = 0.
-      seen = 0
-
-      if shuffle:
-        np.random.shuffle(batches)
-
-      for i, idx in enumerate(batches):
-
-        _input = X[idx, ...]
-        _truth = y[idx, ...]
-
-        _ = self._forward(X=_input, truth=_truth, trainable=True)
-        self._backward(X=_input, trainable=True)
-
-        loss += self._get_loss()
-        seen += len(idx)
-
-        done = int(50 * (i + 1) / len(batches))
-        print('\r{:>3d}/{:<3d} |{}{}| ({:1.1f} sec/iter) loss: {:3.3f}'.format( seen,
-                                                                                num_data,
-                                                                               r'█' * done,
-                                                                                '-' * (50 - done),
-                                                                                now() - start,
-                                                                                loss / seen
-                                                                              ), end='') #flush=True
-        sys.stdout.flush() # compatibility with pythonn 2.7
         start = now()
 
-      if self.metrics is not None:
+        print('Epoch {:d}/{:d}'.format(_ + 1, max_iter)) # flush=True)
 
-        y_pred = self.predict(X, truth=None, verbose=False)
-        self._evaluate_metrics(y, y_pred)
+        sys.stdout.flush() # compatibility with python 2.7
 
-      print('\n', end='') # flush=True)
-      sys.stdout.flush() # compatibility with pythonn 2.7
+        loss = 0.
+        seen = 0
 
+        if shuffle:
+          np.random.shuffle(batches)
 
-    end = now()
-    print('Training on {:d} epochs took {:1.1f} sec'.format(max_iter, end - begin))
+        for i, idx in enumerate(batches):
+
+          _input = X[idx, ...]
+          _truth = y[idx, ...]
+
+          _ = self._forward(X=_input, truth=_truth, trainable=True)
+          self._backward(X=_input, trainable=True)
+
+          loss += self._get_loss()
+          seen += len(idx)
+
+          done = int(50 * (i + 1) / len(batches))
+          print('{}{:>3d}/{:<3d} |{}{}| ({:1.1f} sec/iter) loss: {:3.3f}'.format( CRLF, 
+                                                                                  seen,
+                                                                                  num_data,
+                                                                                 r'█' * done,
+                                                                                  '-' * (50 - done),
+                                                                                  now() - start,
+                                                                                  loss / seen
+                                                                                ), end='') #flush=True
+          sys.stdout.flush() # compatibility with pythonn 2.7
+          start = now()
+
+        if self.metrics is not None:
+
+          y_pred = self.predict(X, truth=None, verbose=False)
+          self._evaluate_metrics(y, y_pred)
+
+        print('\n', end='') # flush=True)
+        sys.stdout.flush() # compatibility with pythonn 2.7
+
+      end = now()
+      print('Training on {:d} epochs took {:1.1f} sec'.format(max_iter, end - begin))
 
 
   def fit_generator(self, Xy_generator, max_iter=100):
@@ -425,19 +430,19 @@ class Network(object):
 
     output = []
 
-    for i, idx in enumerate(batches):
+    with _redirect_stdout(verbose):
+      for i, idx in enumerate(batches):
 
-      _input = X[idx, ...]
-      if truth is not None:
-        _truth = truth[idx, ...]
+        _input = X[idx, ...]
+        if truth is not None:
+          _truth = truth[idx, ...]
 
-      predict = self._forward(X=_input, truth=_truth, trainable=False)
-      output.append(predict)
+        predict = self._forward(X=_input, truth=_truth, trainable=False)
+        output.append(predict)
 
-      loss += self._get_loss()
-      seen += len(idx)
+        loss += self._get_loss()
+        seen += len(idx)
 
-      if verbose:
         done = int(50 * (i + 1) / len(batches))
         print('\r{:>3d}/{:<3d} |{}{}| ({:1.1f} sec/iter) loss: {:3.3f}'.format( seen,
                                                                                 num_data,
@@ -449,7 +454,6 @@ class Network(object):
         sys.stdout.flush() # compatibility with pythonn 2.7
         start = now()
 
-    if verbose:
       print('\n', end='') #flush=True)
       sys.stdout.flush() # compatibility with pythonn 2.7
 

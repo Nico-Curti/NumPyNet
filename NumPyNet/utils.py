@@ -4,9 +4,14 @@
 from __future__ import division
 from __future__ import print_function
 
+import os
+import sys
 import numpy as np
 from enum import Enum
+from io import StringIO
 from inspect import isclass
+from contextlib import contextmanager
+
 from NumPyNet import activations
 from NumPyNet.exception import NotFittedError
 
@@ -263,3 +268,31 @@ def data_to_timesteps (data, steps, shift=1):
   y = data[steps:]
 
   return X, y
+
+@contextmanager
+def _redirect_stdout (verbose):
+  '''
+  Redirect output stdout from cython wrap to devnull or not.
+  This function does not work for cython stdout!
+  If you want something for cython wraps you can refer to the
+  implementation in the rFBP package (https://github.com/Nico-Curti/rFBP)
+
+  Parameters
+  ----------
+    verbose : bool
+      Enable or disable stdout
+  '''
+
+  if verbose:
+    try:
+      yield
+    finally:
+      return
+
+  old_target = sys.stdout
+  try:
+    with open(os.devnull, "w") as new_target:
+      sys.stdout = new_target
+      yield new_target
+  finally:
+    sys.stdout = old_target

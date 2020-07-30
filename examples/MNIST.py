@@ -115,7 +115,7 @@ if __name__ == '__main__':
   print('\n***********START TRAINING***********\n')
 
   # Fit the model on the training set
-  model.fit(X=X_train, y=y_train, max_iter=10)
+  model.fit(X=X_train, y=y_train, max_iter=10, verbose=True)
 
   print('\n***********START TESTING**************\n')
 
