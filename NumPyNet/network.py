@@ -444,7 +444,8 @@ class Network(object):
         seen += len(idx)
 
         done = int(50 * (i + 1) / len(batches))
-        print('\r{:>3d}/{:<3d} |{}{}| ({:1.1f} sec/iter) loss: {:3.3f}'.format( seen,
+        print('{}{:>3d}/{:<3d} |{}{}| ({:1.1f} sec/iter) loss: {:3.3f}'.format( CRLF, 
+                                                                                seen,
                                                                                 num_data,
                                                                                r'█' * done,
                                                                                 '-' * (50 - done),
