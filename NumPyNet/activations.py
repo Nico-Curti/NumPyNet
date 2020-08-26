@@ -266,7 +266,7 @@ class Hardtan (Activations):
 
     y[x < -2.5] = 0.
     y[x >  2.5] = 1.
-    y = np.where(((x >= -2.5) & (x <= 2.5)), .2 * x + .5, x)
+    y = np.where(((x >= -2.5) & (x <= 2.5)), .2 * x + .5, y)
     return y
 
   @staticmethod
