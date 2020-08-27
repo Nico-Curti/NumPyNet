@@ -82,7 +82,7 @@ before_install:
 
   - python -m pip install numpy==1.15
   - python -m pip install Pillow==2.2.2
-  - python -m pip install opencv-python==4.1.2.30
+  - python -m pip install opencv-python<=4.1.2.30
   - python -m pip install matplotlib
   - python -m pip install pytest==3.0.7
   - python -m pip install enum34
