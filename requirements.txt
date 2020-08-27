@@ -1,4 +1,4 @@
-opencv-python==4.3.0.38
+opencv-python==4.1.2.30
 numpy>=1.15
 pillow
 pytest
