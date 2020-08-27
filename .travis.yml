@@ -77,6 +77,9 @@ matrix:
 before_install:
   - travis_retry eval "${MATRIX_EVAL}"
   #- pip install -r requirements.txt
+  - python -m pip install --upgrade pip
+  - python -m pip --version
+
   - python -m pip install numpy==1.15
   - python -m pip install Pillow==2.2.2
   - python -m pip install opencv-python
