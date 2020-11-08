@@ -331,11 +331,12 @@ class Network(object):
     '''
     '''
 
-    num_data = len(X)
+    num_data = X.shape[0]
     begin = now()
     self._fitted = True
 
-    batches = np.array_split(range(num_data), indices_or_sections=num_data // self.batch)
+    indices = np.arange(0, num_data).astype('int64')
+    num_batches = num_data // self.batch
 
     with _redirect_stdout(verbose):
       for _ in range(max_iter):
@@ -350,7 +351,9 @@ class Network(object):
         seen = 0
 
         if shuffle:
-          np.random.shuffle(batches)
+          np.random.shuffle(indices)
+
+        batches = np.lib.stride_tricks.as_strided(indices, shape=(num_batches, self.batch), strides=(self.batch * 8, 8))
 
         for i, idx in enumerate(batches):
 
@@ -364,7 +367,7 @@ class Network(object):
           seen += len(idx)
 
           done = int(50 * (i + 1) / len(batches))
-          print('{}{:>3d}/{:<3d} |{}{}| ({:1.1f} sec/iter) loss: {:3.3f}'.format( CRLF, 
+          print('{}{:>3d}/{:<3d} |{}{}| ({:1.1f} sec/iter) loss: {:3.3f}'.format( CRLF,
                                                                                   seen,
                                                                                   num_data,
                                                                                  r'█' * done,
@@ -444,7 +447,7 @@ class Network(object):
         seen += len(idx)
 
         done = int(50 * (i + 1) / len(batches))
-        print('{}{:>3d}/{:<3d} |{}{}| ({:1.1f} sec/iter) loss: {:3.3f}'.format( CRLF, 
+        print('{}{:>3d}/{:<3d} |{}{}| ({:1.1f} sec/iter) loss: {:3.3f}'.format( CRLF,
                                                                                 seen,
                                                                                 num_data,
                                                                                r'█' * done,

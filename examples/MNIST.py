@@ -50,7 +50,7 @@ if __name__ == '__main__':
 
   # add channels to images
   X = np.asarray([np.dstack((x, x, x)) for x in X])
-  X = X.transpose(0, 2, 3, 1)
+  #X = X.transpose(0, 2, 3, 1)
 
   X_train, X_test, y_train, y_test = train_test_split(X, y,
                                                       test_size=.33,
