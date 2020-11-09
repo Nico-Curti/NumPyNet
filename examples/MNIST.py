@@ -6,7 +6,7 @@ Little example on how to use the Network class to create a model and perform
 a basic classification of the MNIST dataset
 '''
 
-#from NumPyNet.layers.input_layer import Input_layer
+# from NumPyNet.layers.input_layer import Input_layer
 from NumPyNet.layers.connected_layer import Connected_layer
 from NumPyNet.layers.convolutional_layer import Convolutional_layer
 from NumPyNet.layers.maxpool_layer import Maxpool_layer
@@ -50,7 +50,6 @@ if __name__ == '__main__':
 
   # add channels to images
   X = np.asarray([np.dstack((x, x, x)) for x in X])
-  #X = X.transpose(0, 2, 3, 1)
 
   X_train, X_test, y_train, y_test = train_test_split(X, y,
                                                       test_size=.33,
@@ -59,8 +58,6 @@ if __name__ == '__main__':
   batch = 128
   num_classes = len(set(y))
 
-  # del X, y
-
   # normalization to [0, 1]
   X_train *= 1. / 255.
   X_test  *= 1. / 255.
@@ -68,7 +65,7 @@ if __name__ == '__main__':
   # reduce the size of the data set for testing
   ############################################
 
-  train_size = 512
+  train_size = 1000
   test_size  = 300
 
   X_train = X_train[:train_size, ...]
@@ -104,9 +101,9 @@ if __name__ == '__main__':
   # model.add(Cost_layer(cost_type=cost_type.mse))
 
   # model.compile(optimizer=SGD(lr=0.01, decay=0., lr_min=0., lr_max=np.inf))
-  model.compile(optimizer=Adam(), metrics=[accuracy])
+  model.compile(optimizer=Adam(lr=1., decay=0.001), metrics=[accuracy])
 
-  print('*************************************')
+  print('**************************************')
   print('\n Total input dimension: {}'.format(X_train.shape), '\n')
   print('**************MODEL SUMMARY***********')
 

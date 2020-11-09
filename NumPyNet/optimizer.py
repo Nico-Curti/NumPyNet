@@ -22,13 +22,15 @@ class Optimizer (object):
     self.lr_min = lr_min
     self.lr_max = lr_max
 
-    self.iterations = 0
+    self.iterations = 1
 
   def update (self, params, gradients):
     '''
     '''
     self.lr *= 1. / (self.decay * self.iterations + 1.)
     self.lr  = np.clip(self.lr, self.lr_min, self.lr_max)
+
+    self.iterations += 1
 
   def __str__ (self):
     return self.__class__.__name__
@@ -45,7 +47,7 @@ class SGD (Optimizer):
   def update (self, params, gradients):
 
     for p, g in zip(params, gradients):
-      p -= self.lr * g#np.clip(g, -1., 1.)
+      p -= self.lr * g  # np.clip(g, -1., 1.)
 
     super(SGD, self).update(params, gradients)
 
@@ -69,7 +71,7 @@ class Momentum (Optimizer):
       self.velocity = [np.zeros(shape=p.shape, dtype=float) for p in params]
 
     for i, (v, p, g) in enumerate(zip(self.velocity, params, gradients)):
-      v  = self.momentum * v - self.lr * g # np.clip(g, -1., 1.)
+      v  = self.momentum * v - self.lr * g  # np.clip(g, -1., 1.)
       p += v
       self.velocity[i] = v
 
@@ -95,8 +97,8 @@ class NesterovMomentum (Optimizer):
       self.velocity = [np.zeros(shape=p.shape, dtype=float) for p in params]
 
     for i, (v, p, g) in enumerate(zip(self.velocity, params, gradients)):
-      v  = self.momentum * v - self.lr * g # np.clip(g, -1., 1.)
-      p += self.momentum * v - self.lr * g # np.clip(g, -1., 1.)
+      v  = self.momentum * v - self.lr * g  # np.clip(g, -1., 1.)
+      p += self.momentum * v - self.lr * g  # np.clip(g, -1., 1.)
       self.velocity[i] = v
 
     super(NesterovMomentum, self).update(params, gradients)
@@ -143,7 +145,6 @@ class RMSprop (Optimizer):
     self.epsilon = epsilon
 
     self.cache = None
-    self.iterations = 0
 
   def update (self, params, gradients):
 
@@ -214,7 +215,6 @@ class Adam (Optimizer):
     self.vs = None
 
   def update (self, params, gradients):
-    self.iterations += 1
 
     a_t = self.lr * np.sqrt(1 - np.power(self.beta2, self.iterations)) / \
           (1 - np.power(self.beta1, self.iterations))
@@ -255,7 +255,6 @@ class Adamax (Optimizer):
     self.vs = None
 
   def update (self, params, gradients):
-    self.iterations += 1
 
     a_t = self.lr / (1 - np.power(self.beta1, self.iterations))
 

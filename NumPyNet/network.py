@@ -374,8 +374,8 @@ class Network(object):
                                                                                   '-' * (50 - done),
                                                                                   now() - start,
                                                                                   loss / seen
-                                                                                ), end='') #flush=True
-          sys.stdout.flush() # compatibility with pythonn 2.7
+                                                                                ), end='')  # flush=True
+          sys.stdout.flush()  # compatibility with pythonn 2.7
           start = now()
 
         if self.metrics is not None:
@@ -383,8 +383,8 @@ class Network(object):
           y_pred = self.predict(X, truth=None, verbose=False)
           self._evaluate_metrics(y, y_pred)
 
-        print('\n', end='') # flush=True)
-        sys.stdout.flush() # compatibility with pythonn 2.7
+        print('\n', end='')  # flush=True)
+        sys.stdout.flush()  # compatibility with pythonn 2.7
 
       end = now()
       print('Training on {:d} epochs took {:1.1f} sec'.format(max_iter, end - begin))
@@ -406,7 +406,7 @@ class Network(object):
         data, label, grabbed = Xy_generator.load_data()
 
 
-      self.fit(data, label, max_iter=1, shuffle=False) # data already shuffled
+      self.fit(data, label, max_iter=1, shuffle=False)  # data already shuffled
 
     Xy_generator.stop()
 
@@ -454,12 +454,12 @@ class Network(object):
                                                                                 '-' * (50 - done),
                                                                                 now() - start,
                                                                                 loss / seen
-                                                                              ), end='') # flush=True,
-        sys.stdout.flush() # compatibility with pythonn 2.7
+                                                                              ), end='')  # flush=True,
+        sys.stdout.flush()  # compatibility with pythonn 2.7
         start = now()
 
-      print('\n', end='') #flush=True)
-      sys.stdout.flush() # compatibility with pythonn 2.7
+      print('\n', end='')  # flush=True)
+      sys.stdout.flush()  # compatibility with pythonn 2.7
 
 
       end = now()
@@ -496,7 +496,7 @@ class Network(object):
       elif 'network' in forward_args:
         layer.forward(network=self)
 
-      else :
+      else:
         layer.forward(inpt=y[:])
 
       y = layer.output[:]
