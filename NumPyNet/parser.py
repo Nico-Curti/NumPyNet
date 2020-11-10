@@ -19,26 +19,27 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 class data_config (object):
 
+  '''
+  Data configuration parser
+
+  Parameters
+  ----------
+    filename : str
+      Configuration data filename or path
+
+  Returns
+  -------
+    data_config object
+
+  Notes
+  -----
+  The data configuration stores the global parameters for a given model (ex. cfg filename, weight filename, ...)
+  The file must be saved in a dictionary format like "cfg = config_filename.cfg"
+  '''
+
   _data = dict()
 
   def __init__ (self, filename):
-    '''
-    Data configuration parser
-
-    Parameters
-    ----------
-      filename : str
-        Configuration data filename or path
-
-    Returns
-    -------
-      data_config object
-
-    Notes
-    -----
-    The data configuration stores the global parameters for a given model (ex. cfg filename, weight filename, ...)
-    The file must be saved in a dictionary format like "cfg = config_filename.cfg"
-    '''
 
     if not os.path.isfile(filename):
       raise IOError('Could not open or find the data file. Given: {}'.format(filename))
@@ -65,7 +66,7 @@ class data_config (object):
       key : str
         config dictionary key
 
-      default : dtype (default = None)
+      default : dtype (default=None)
         the default value if the key is not found in the data config
     '''
 
@@ -85,6 +86,26 @@ class data_config (object):
 
 class net_config (object):
 
+  '''
+  Network config parser
+
+  Parameters
+  ----------
+    filename : str
+      Network config filename or path
+
+  Returns
+  -------
+    net_config object
+
+  Notes
+  -----
+  .. note::
+    The network configuration file must be stored in INI format.
+    Since multiple layers can have the same type the dictionary must be overloaded by a
+    custom OrderedDict
+  '''
+
   class multidict (OrderedDict):
 
     _unique = 0 # class variable
@@ -98,24 +119,6 @@ class net_config (object):
       OrderedDict.__setitem__(self, key, val)
 
   def __init__ (self, filename):
-    '''
-    Network config parser
-
-    Parameters
-    ----------
-      filename : str
-        Network config filename or path
-
-    Returns
-    -------
-      net_config object
-
-    Notes
-    -----
-    The network configuration file must be stored in INI format.
-    Since multiple layers can have the same type the dictionary must be overloaded by a
-    custom OrderedDict
-    '''
 
     if not os.path.isfile(filename):
       raise IOError('Could not open or find the config file. Given: {}'.format(filename))
@@ -182,7 +185,7 @@ class net_config (object):
       key : str
         config dictionary key
 
-      default : dtype (default = None)
+      default : dtype (default=None)
         the default value if the key is not found in the data config
     '''
 
@@ -234,7 +237,8 @@ def read_map (filename):
 
   Notes
   -----
-  This functioni is used by the Yolo layer
+  .. note::
+    This functioni is used by the Yolo layer
   '''
 
   with open(filename, 'r') as fp:

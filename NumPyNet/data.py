@@ -19,18 +19,86 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 class DataGenerator (object):
 
+  '''
+
+  Data generator in detached thread.
+
+  Parameters
+  ----------
+    load_func : function or lambda
+      Function to apply for the preprocessing on a single data/label pair
+
+    batch_size : int
+      Dimension of batch to load
+
+    source_path : str (default=None)
+      Path to the source files
+
+    source_file : str (default=None)
+      Filename in which is stored the list of source files
+
+    label_path : str (default=None)
+      Path to the label files
+
+    label_file : str (default=None)
+      Filename in which is stored the list of label files
+
+    source_extension : str (default='')
+      Extension of the source files
+
+    label_extension : str (default='')
+      Extension of the label files
+
+    seed : int
+      Random seed
+
+    **load_func_kwargs : dict
+      Optional parameters to use in the load_func
+
+  Example
+  -------
+  >>>  import pylab as plt
+  >>>
+  >>>  train_gen = DataGenerator(load_func=load_segmentation, batch_size=2,
+  >>>                            source_path='/path/to/train/images',
+  >>>                            label_path='/path/to/mask/images',
+  >>>                            source_extension='.png',
+  >>>                            label_extension='.png'
+  >>>                            )
+  >>>  train_gen.start()
+  >>>
+  >>>  fig, ((ax00, ax01), (ax10, ax11)) = plt.subplots(nrows=2, ncols=2)
+  >>>
+  >>>  for i in range(10):
+  >>>    grabbed = False
+  >>>
+  >>>    while not grabbed:
+  >>>
+  >>>      (data1, data2), (label1, label2), grabbed = train_gen.load_data()
+  >>>
+  >>>    ax00.imshow(data1.get(), cmap='gray')
+  >>>    ax00.axis('off')
+  >>>
+  >>>    ax01.imshow(label1.get(), cmap='gray')
+  >>>    ax01.axis('off')
+  >>>
+  >>>    ax10.imshow(data2.get(), cmap='gray')
+  >>>    ax10.axis('off')
+  >>>
+  >>>    ax11.imshow(label2.get(), cmap='gray')
+  >>>    ax11.axis('off')
+  >>>
+  >>>    plt.pause(1e-2)
+  >>>
+  >>>  plt.show()
+  >>>
+  >>>  train_gen.stop()
+  '''
+
   def __init__ (self, load_func, batch_size, source_path=None, source_file=None, label_path=None, label_file=None,
                       source_extension='', label_extension='', seed=123,
                       **load_func_kwargs):
-    '''
-    Data generator in detached thread.
 
-    Parameters
-    ----------
-      load_func : function or lambda of preprocessing on a single data/label pair
-
-      source_path :
-    '''
     np.random.seed(seed)
 
     if source_path is None and source_file is None:
@@ -88,6 +156,9 @@ class DataGenerator (object):
 
   @property
   def num_data (self):
+    '''
+    Get the number of data
+    '''
     return self._num_data
 
   def _randomize (self, source, label=None):
@@ -104,9 +175,11 @@ class DataGenerator (object):
 
     Return
     ------
-      source : array of source shuffled
+      source : array-like
+        Array of source shuffled
 
-      label : array of labels shuffled
+      label : array-like
+        Array of labels shuffled
     '''
 
     if label is not None:
@@ -123,6 +196,22 @@ class DataGenerator (object):
   def _load (self, sources, labels=None):
     '''
     Map the loading function over the sources and labels
+
+    Parameters
+    ----------
+      sources : list
+        List of filenames to load
+
+      labels : list (default=None)
+        List of labels filenames to load
+
+    Returns
+    -------
+      data : array-like
+        Data read according to the load_func
+
+      label : array-like
+        Labels read according to the load_func
     '''
 
     if labels is not None:
@@ -154,6 +243,14 @@ class DataGenerator (object):
     '''
     Infinite loop of batch reading.
     Each batch is read only if necessary (the previous is already used).
+
+    Parameters
+    ----------
+      source_files : list
+        List of source files to load
+
+      label_files : list
+        List of label files to load
     '''
 
     start_time = time.time()
@@ -206,6 +303,17 @@ class DataGenerator (object):
   def load_data (self):
     '''
     Get a batch of images and labels
+
+    Returns
+    -------
+      data : obj
+        Loaded data
+
+      label : obj
+        Loaded label
+
+      stopped : bool
+        Check if the end of the list is achieved
     '''
     data, label = (self._data, self._label)
     self._data = None
@@ -224,18 +332,30 @@ def load_super_resolution (hr_image_filename, patch_size=(48, 48), scale=4):
 
   Parameters
   ----------
-    hr_image_filename : string filename of the high resolution image
+    hr_image_filename : string
+      Filename of the high resolution image
 
-    patch_size : tuple of path dimension to cut
+    patch_size : tuple (default=(48, 48))
+      Dimension to cut
 
-    scale : downsampling scale factor
+    scale : int (default=4)
+      Downsampling scale factor
+
+  Returns
+  -------
+    data : Image obj
+      Loaded Image object
+
+    label : Image obj
+      Generated Image label
 
   Notes
   -----
-  In SR models the labels are given by the HR image while the input data are obtained
-  from the same image after a downsampling/resizing.
-  The upsample scale factor learned by the SR model will be the same used inside this
-  function.
+  .. note::
+    In SR models the labels are given by the HR image while the input data are obtained
+    from the same image after a downsampling/resizing.
+    The upsample scale factor learned by the SR model will be the same used inside this
+    function.
   '''
 
   hr_image = Image(hr_image_filename)
@@ -273,19 +393,29 @@ def load_segmentation (source_image_filename, mask_image_filename):
 
   Parameters
   ----------
-    source_image_filename : string filename of the source image
+    source_image_filename : str
+      Filename of the source image
 
-    mask_image_filename : string filename of the corresponding mask image
-                          in binary format
+    mask_image_filename : str
+      Filename of the corresponding mask image in binary format
+
+  Returns
+  -------
+    src_image : Image
+      Loaded Image object
+
+    mask_image : Image
+      Image label as mask image
 
   Notes
   -----
-  In Segmentation model we have to feed the model with a simple image and
-  the labels will be given by the mask (binary) of the same image in which
-  the segmentation parts are highlight
-  No checks are performed on the compatibility between source image and
-  corresponding mask file.
-  The only checks are given on the image size (channels are excluded)
+  .. note::
+    In Segmentation model we have to feed the model with a simple image and
+    the labels will be given by the mask (binary) of the same image in which
+    the segmentation parts are highlight
+    No checks are performed on the compatibility between source image and
+    corresponding mask file.
+    The only checks are given on the image size (channels are excluded)
   '''
 
   src_image  = Image(source_image_filename)

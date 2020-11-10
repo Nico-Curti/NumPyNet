@@ -13,6 +13,46 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 class Box (object):
 
+  '''
+  Detection box class
+
+  Parameters
+  ----------
+    coords : tuple (default=None)
+      Box Coordinates as (x, y, w, h)
+
+  Example
+  -------
+  >>> import pylab as plt
+  >>> from matplotlib.patches import Rectangle
+  >>>
+  >>> b1 = Box((.5, .3, .2, .1))
+  >>> x_1, y_1, w_1, h_1 = b1.box
+  >>> left_1, top_1, right_1, bottom_1 = b1.coords
+  >>>
+  >>> print('Box1: {}'.format(b1))
+  >>>
+  >>> b2 = Box((.4, .5, .2, .5))
+  >>> x_2, y_2, w_2, h_2 = b2.box
+  >>> left_2, top_2, right_2, bottom_2 = b2.coords
+  >>>
+  >>> print('Box2: {}'.format(b2))
+  >>>
+  >>> print('Intersection: {:.3f}'.format(b1.intersection(b2)))
+  >>> print('Union: {:.3f}'.format(b1.union(b2)))
+  >>> print('IOU: {:.3f}'.format(b1.iou(b2)))
+  >>> print('rmse: {:.3f}'.format(b1.rmse(b2)))
+  >>>
+  >>> plt.figure()
+  >>> axis = plt.gca()
+  >>> axis.add_patch(Rectangle(xy=(left_1, top_1),
+  >>>                          width=w_1, height=h_1,
+  >>>                          alpha=.5, linewidth=2, color='blue'))
+  >>> axis.add_patch(Rectangle(xy=(left_2, top_2),
+  >>>                          width=w_2, height=h_2,
+  >>>                          alpha=.5, linewidth=2, color='red'))
+  '''
+
   def __init__ (self, coords=None):
 
     if coords is not None:
@@ -29,6 +69,9 @@ class Box (object):
       self.x, self.y, self.w, self.h = (None, None, None, None)
 
   def _is_box (func):
+    '''
+    Decorator function to check if the input variable is a Box object
+    '''
 
     @wraps(func)
     def _ (self, b):
@@ -42,6 +85,14 @@ class Box (object):
 
   @property
   def box(self):
+    '''
+    Get the box coordinates
+
+    Returns
+    -------
+      coords : tuple
+        Box coordinates as (x, y, w, h)
+    '''
     return (self.x, self.y, self.w, self.h)
 
   def __iter__ (self):
@@ -56,17 +107,43 @@ class Box (object):
 
 
   def __eq__ (self, other):
+    '''
+    Check if the box coordinates are equal
+    '''
     return isinstance(other, Box) and tuple(self) == tuple(other)
 
   def __ne__ (self, other):
+    '''
+    Check if the box coordinates are NOT equal
+    '''
     return not (self == other)
 
   def __repr__ (self):
+    '''
+    Object representation
+    '''
     return type(self).__name__ + repr(tuple(self))
 
   def _overlap (self, x1, w1, x2, w2):
     '''
     Compute the overlap between (left, top) | (right, bottom) of the coordinates
+
+    Parameters
+    ----------
+      x1 : float
+        X coordinate
+
+      w1 : float
+        W coordinate
+
+      x2 : float
+
+      w2 : float
+
+    Returns
+    -------
+      overlap : float
+        The overlapping are between the two boxes
     '''
     half_w1, half_w2 = w1 * .5, w2 * .5
     l1, l2 = x1 - half_w1, x2 - half_w2
@@ -78,6 +155,16 @@ class Box (object):
   def intersection (self, other):
     '''
     Common area between boxes
+
+    Parameters
+    ----------
+      other : Box
+        2nd term of the evaluation
+
+    Returns
+    -------
+      intersection : float
+        Intersection area of two boxes
     '''
 
     w = self._overlap(self.x, self.w, other.x, other.w)
@@ -93,6 +180,16 @@ class Box (object):
   def union (self, other):
     '''
     Full area without intersection
+
+    Parameters
+    ----------
+      other : Box
+        2nd term of the evaluation
+
+    Returns
+    -------
+      union : float
+        Union area of the two boxes
     '''
 
     return self.area + other.area - self.intersection(other)
@@ -103,6 +200,16 @@ class Box (object):
   def iou (self, other):
     '''
     Intersection over union
+
+    Parameters
+    ----------
+      other : Box
+        2nd term of the evaluation
+
+    Returns
+    -------
+      iou : float
+        Intersection over union between boxes
     '''
 
     union = self.union(other)
@@ -115,6 +222,16 @@ class Box (object):
   def rmse (self, other):
     '''
     Root mean square error of the boxes
+
+    Parameters
+    ----------
+      other : Box
+        2nd term of the evaluation
+
+    Returns
+    -------
+      rmse : float
+        Root mean square error of the boxes
     '''
 
     diffs = tuple(map(operator.sub, self, other))
@@ -125,6 +242,11 @@ class Box (object):
   def center(self):
     '''
     In the current storage the x,y are the center of the box
+
+    Returns
+    -------
+      center : tuple
+        Center of the current box.
     '''
     x, y, _, _ = self._object.box
     return (x, y)
@@ -133,6 +255,11 @@ class Box (object):
   def dimensions(self):
     '''
     In the current storage the w,h are the dimensions of the rectangular box
+
+    Returns
+    -------
+      dims : tuple
+        Dimensions of the current box as (width, height).
     '''
     _, _, w, h = self._object.box
     return (w, h)
@@ -141,6 +268,11 @@ class Box (object):
   def area(self):
     '''
     Compute the are of the box
+
+    Returns
+    -------
+      area : float
+        Area of the current box.
     '''
     return self.w * self.h
 
@@ -148,12 +280,20 @@ class Box (object):
   def coords(self):
     '''
     Return box coordinates in clock order (left, top, right, bottom)
+
+    Returns
+    -------
+      coords : tuple
+        Coordinates as (left, top, right, bottom)
     '''
     x, y, w, h = self.box
     half_w, half_h = w * .5, h * .5
     return (x - half_w, y - half_h, x + half_w, y + half_h)
 
   def __str__(self):
+    '''
+    Printer
+    '''
     fmt = '(left={0:.3f}, bottom={1:.3f}, right={2:.3f}, top={3:.3f})'.format(*self.coords)
     return fmt
 

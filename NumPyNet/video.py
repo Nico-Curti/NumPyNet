@@ -25,22 +25,47 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 class VideoCapture (object):
 
+  '''
+  OpenCV VideoCapture wrap in detached thread.
+
+  Parameters
+  ----------
+    cam_index : integer or str
+      Filename or cam index
+
+    queue_size : int
+      Integer of maximum number of frame to store into the queue
+
+  Example
+  -------
+  >>> cap = VideoCapture()
+  >>> time.sleep(.1)
+  >>>
+  >>> cv2.namedWindow('Camera', cv2.WINDOW_NORMAL)
+  >>>
+  >>> cap.start()
+  >>>
+  >>> while cap.running():
+  >>>
+  >>>   frame = cap.read()
+  >>>   frame.show('Camera', ms=1)
+  >>>   print('FPS: {:.3f}'.format(cap.fps))
+  >>>
+  >>> cap.stop()
+  >>>
+  >>> cv2.destroyAllWindows()
+
+
+  Notes
+  -----
+  The object is inspired to the ImUtils implementation.
+
+  References
+  ----------
+  - https://github.com/jrosebr1/imutils
+  '''
+
   def __init__ (self, cam_index=0, queue_size=128):
-    '''
-    OpenCV VideoCapture wrap in detached thread.
-
-    Parameters
-    ----------
-      cam_index : integer or string filename of movie
-
-      queue_size : integer of maximum number of frame to store
-                   into the queue
-
-    Notes
-    -----
-    The object is inspired to the ImUtils implementation
-    provided in https://github.com/jrosebr1/imutils
-    '''
 
     self._stream = cv2.VideoCapture(cam_index)
 
@@ -94,6 +119,11 @@ class VideoCapture (object):
   def read (self):
     '''
     Get a frame as Image object
+
+    Returns
+    -------
+      im : Image obj
+        The loaded image
     '''
     im = Image()
     return im.from_frame(self._queue.get())
@@ -101,6 +131,11 @@ class VideoCapture (object):
   def running (self):
     '''
     Check if new frames are available
+
+    Returns
+    -------
+      running : bool
+        True if there are data into the queue, False otherwise
     '''
 
     tries = 0
@@ -124,14 +159,24 @@ class VideoCapture (object):
   @property
   def elapsed (self):
     '''
-    Elapsed time from start to up to now
+    Get the elapsed time from start to up to now
+
+    Returns
+    -------
+      elapsed : float
+        Elapsed time
     '''
     return time.time() - self._start
 
   @property
   def fps (self):
     '''
-    Frame per seconds
+    Get the frame per seconds
+
+    Returns
+    -------
+      fps : float
+        Frame per seconds
     '''
     return self._num_frames / self.elapsed
 

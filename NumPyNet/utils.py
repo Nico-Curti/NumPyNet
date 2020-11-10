@@ -40,12 +40,13 @@ def _check_activation (layer, activation_func):
       Layer object (ex. Activation_layer)
 
     activation_func : string or Activations object
-      activation function to check. If the Activations object is not created yet
-      the 'eval' is done on the object.
+      Activation function to check.
+      If the Activations object is not created yet the 'eval' is done on the object.
 
   Returns
   -------
-    Byron activation function index
+    act : Activation
+      Activation object
 
   Notes
   -----
@@ -54,7 +55,6 @@ def _check_activation (layer, activation_func):
 
   Examples
   --------
-
   >>> layer = Activation_layer(input_shape=(1,2,3))
   >>> print(_check_activation(layer, 'Linear'))
       6
@@ -100,7 +100,8 @@ def _check_cost (layer, cost):
       Layer object (ex. Cost_layer)
 
     cost : string or Cost object
-      cost function to check. The cost object can be use by the cost enum
+      Cost function to check.
+      The cost object can be use by the cost enum
 
   Returns
   -------
@@ -113,7 +114,6 @@ def _check_cost (layer, cost):
 
   Examples
   --------
-
   >>> layer = Cost_layer(input_shape=(1,2,3))
   >>> print(_check_cost(layer, 'mae'))
       2
@@ -155,8 +155,9 @@ def check_is_fitted (obj, variable='delta'):
     variable : str
       The variable name which allows the backward status if it is not None
 
-  Note
-  ----
+  Notes
+  -----
+  .. note::
     The backward function can be used ONLY after the forward procedure.
     This function allows to check if the forward function has been already applied.
   '''
@@ -177,16 +178,23 @@ def print_statistics (arr):
   Parameters
   ----------
     arr : array-like
+      Input array
 
   Returns
   -------
-    mse : Mean Squared Error, i.e sqrt(mean(x*x))
-    mean: Mean of the array
-    variance: Variance of the array
+    mse : float
+      Mean Squared Error, i.e sqrt(mean(x*x))
+
+    mean: float
+      Mean of the array
+
+    variance: float
+      Variance of the array
 
   Notes
   -----
-  The value are printed and returned
+  .. note::
+    The values are printed and returned
   '''
 
   mean = np.mean(arr)
@@ -205,7 +213,7 @@ def to_categorical (arr):
   Parameters
   ----------
     arr : array-like 1D
-      array of integer labels (without holes)
+      Array of integer labels (without holes)
 
   Returns
   -------
@@ -229,7 +237,7 @@ def from_categorical (categoricals):
   Parameters
   ----------
     categoricals : array-like 2D
-      one-hot encoding format of a label set
+      One-hot encoding format of a label set
 
   Returns
   -------
@@ -247,13 +255,22 @@ def data_to_timesteps (data, steps, shift=1):
 
   Parameters
   ----------
-  data : two or 4 dimensional numpy array, with shapes (Ndata, features) or (Ndata, w, h, c).
-  steps : integer, number of timesteps considered for the Recurrent layer
-  shift : integer, default is 1. TODO
+    data : array-like
+      2 or 4 dimensional numpy array, with shapes (Ndata, features) or (Ndata, w, h, c).
+
+    steps : int
+      Number of timesteps considered for the Recurrent layer
+
+    shift : int (default=1)
+      Temporal shift.
 
   Returns
   -------
-   X, a view on the data array of input, for Recurrent layers
+    X : array-like
+      A view on the data array of input, for Recurrent layers
+
+    y : array-like
+      Correspondig labels as time shifted values.
   '''
 
   X = data.reshape(data.shape[0], -1)

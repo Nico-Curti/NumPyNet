@@ -12,23 +12,90 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 class Activations (object):
 
+  '''
+  Base Activation class object
+
+  Parameters
+  ----------
+    name : str
+      Name of the activation function
+
+  '''
+
   def __init__ (self, name):
     self._name = name
 
   @staticmethod
   def activate (x, copy=False):
+    '''
+    Abstract activation function
+
+    Parameters
+    ----------
+      x : array-like
+        Input array to activate according to the desired function
+
+      copy : bool (default=False)
+        Make a copy of the input array or just modify it
+
+    Returns
+    -------
+      activated : array-like
+        The input array activated
+
+    Raises
+    ------
+    The abstract method raises a NotImplementedError since the
+    Activation class is just an abstract base class for the
+    object.
+    '''
     raise NotImplementedError
 
   @staticmethod
   def gradient (x, copy=False):
+    '''
+    Abstract gradient function
+
+    Parameters
+    ----------
+      x : array-like
+        Input array (already activated!) to evaluate according to the desired gradient function
+
+      copy : bool (default=False)
+        Make a copy of the input array or just modify it
+
+    Returns
+    -------
+      gradient : array-like
+        The gradient of the input array
+
+    Raises
+    ------
+    The abstract method raises a NotImplementedError since the
+    Activation class is just an abstract base class for the
+    object.
+    '''
     raise NotImplementedError
 
   @property
   def name (self):
+    '''
+    Get the name of the activation function
+    '''
     return self._name
 
   def __str__ (self):
+    '''
+    Printer
+    '''
     return '{} activation function'.format(self._name)
+
+  def __repr__ (self):
+    '''
+    Object representation
+    '''
+    class_name = self.__class__.__qualname__
+    return '{}()'.format(class_name)
 
 
 class Logistic (Activations):
