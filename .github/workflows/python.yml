@@ -36,7 +36,7 @@ jobs:
         # flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pytest ./testing --ignore ./NumPyNet --ignore ./testing/NumPyNet --ignore ./testing/test_progress.py --cov=Pyron --cov-config=.coveragerc
+        python -m pytest ./testing --cov=NumPyNet --cov-config=.coveragerc
 
 #  python-latest:
 #
@@ -67,5 +67,5 @@ jobs:
 #        # flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 #    - name: Test with pytest
 #      run: |
-#        pytest ./testing --ignore ./NumPyNet --ignore ./testing/NumPyNet --ignore ./testing/test_progress.py --cov=Pyron --cov-config=.coveragerc
+#        python -m pytest ./testing --cov=NumPyNet --cov-config=.coveragerc
 
