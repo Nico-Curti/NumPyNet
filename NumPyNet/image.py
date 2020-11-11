@@ -17,10 +17,17 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 class Image (object):
 
+  '''
+  Constructor of the image object. If filename the load function loads the image file.
+
+  Parameters
+  ----------
+    filename : str (default=None)
+      Image filename
+  '''
+
   def __init__ (self, filename=None):
-    '''
-    Constructor of the image object. If filename the load function loads the image file
-    '''
+
     if filename is not None:
       self.load(filename)
 
@@ -29,11 +36,18 @@ class Image (object):
 
   @property
   def shape (self):
+    '''
+    Get the image dimensions
+    '''
     return self._data.shape
 
   def add_single_batch (self):
     '''
     Add batch dimension for testing layer
+
+    Returns
+    -------
+      self
     '''
     self._data = np.expand_dims(self._data, axis=0)
     return self
@@ -41,6 +55,10 @@ class Image (object):
   def remove_single_batch (self):
     '''
     Remove batch dimension for testing layer
+
+    Returns
+    -------
+      self
     '''
     self._data = np.squeeze(self._data, axis=0)
     return self
@@ -48,7 +66,23 @@ class Image (object):
 
   def _image2cv (self, img):
     '''
-    convert image from image-fmt to opencv fmt
+    Convert image from image-fmt to opencv fmt
+
+    Parameters
+    ----------
+      img : array-like
+        Input image to convert
+
+    Returns
+    -------
+      cv_img : array-like
+        Image as uint8 nd-array
+
+    Notes
+    -----
+    .. note::
+      The channels are automatically converted from
+      RGB 2 BGR for OpenCV compatibility
     '''
     # constrain
     img = np.clip(img, 0., 1.)
@@ -64,7 +98,23 @@ class Image (object):
 
   def _cv2image (self, img):
     '''
-    convert image from opencv-fmt to image-fmt
+    Convert image from opencv-fmt to image-fmt
+
+    Parameters
+    ----------
+      img : array-like
+        Input image to convert
+
+    Returns
+    -------
+      Image_img : array-like
+        Image as float [0., 1.] nd-array
+
+    Notes
+    -----
+    .. note::
+      The channels are automatically converted from
+      BGR 2 RGB for Image compatibility
     '''
     img = img.astype('float64')
 
@@ -85,6 +135,9 @@ class Image (object):
     return self.data
 
   def _get_color (self, x, max):
+    '''
+    Get the color
+    '''
 
     ratio = (x / max) * len(image_utils.num_box_colors - 1)
     i, j = np.floor(ratio), np.ceil(ratio)
@@ -99,6 +152,11 @@ class Image (object):
   def get (self):
     '''
     Return the data object as a numpy array
+
+    Returns
+    -------
+      data : array-like
+        Image data as numpy array
     '''
     return self._data
 
@@ -106,6 +164,15 @@ class Image (object):
   def load (self, filename):
     '''
     Read Image from file
+
+    Parameters
+    ----------
+      filename : str
+        Image filename path
+
+    Returns
+    -------
+      self
     '''
 
     if not os.path.isfile(filename):
@@ -120,7 +187,19 @@ class Image (object):
 
   def standardize (self, means, process=normalization.normalize):
     '''
-    Remove train mean-image from current image
+    Remove or add train mean-image from current image
+
+    Parameters
+    ----------
+      means : array_like
+        Array of means to apply to the image
+
+      process : normalization (int, default = normalize)
+        Switch between normalization (0) and denormalization (1)
+
+    Returns
+    -------
+      self
     '''
     if process is normalization.normalize:
       self._data += means
@@ -133,6 +212,18 @@ class Image (object):
   def rescale (self, var, process=normalization.normalize):
     '''
     Divide or multiply by train variance-image
+
+    Parameters
+    ----------
+      variances : array_like
+        Array of variances to apply to the image
+
+      process : normalization (int)
+        Switch between normalization and denormalization
+
+    Returns
+    -------
+      self
     '''
     if process is normalization.normalize:
       inv_vars = 1. / var
@@ -145,7 +236,19 @@ class Image (object):
 
   def scale (self, scaling, process=normalization.normalize):
     '''
-    Multiply/Divide the image by a scale factor
+    Scale image values
+
+    Parameters
+    ----------
+      scale : float
+        Scale factor to apply to the image
+
+      process : normalization (int, default = normalize)
+        Switch between normalization (0) and denormalization (1)
+
+    Returns
+    -------
+      self
     '''
     if process is normalization.normalize:
       self._data *= scaling
@@ -159,6 +262,18 @@ class Image (object):
   def scale_between (self, minimum, maximum):
     '''
     Rescale image value between min and max
+
+    Parameters
+    ----------
+      minimum : float (default = 0.)
+        Min value
+
+      maximum : float (default = 1.)
+        Max value
+
+    Returns
+    -------
+      self
     '''
     diff = maximum - minimum
     self._data = self._data * diff + minimum
@@ -168,7 +283,14 @@ class Image (object):
     '''
     Normalize the current image as
 
-                image = (image - mean) / variance
+    .. code-block:: python
+
+      image = (image - mean) / variance
+
+
+    Returns
+    -------
+      self
     '''
     mean = np.mean(self._data)
     var  = 1. / np.var(self._data)
@@ -177,7 +299,16 @@ class Image (object):
 
   def flip (self, axis=-1):
     '''
-    Flip the image along given axis (0 - horizontal, 1 - vertical, -1 - z-flip)
+    Flip the image along given axis (0 - horizontal, 1 - vertical)
+
+    Parameters
+    ----------
+      axis : int (default=0)
+        Axis to flip
+
+    Returns
+    -------
+      self
     '''
     cv2.flip(self._data, axis)
     return self
@@ -185,16 +316,38 @@ class Image (object):
   def transpose (self):
     '''
     Transpose width and height
+
+    Returns
+    -------
+      self
     '''
     self._data = self._data.transpose(1, 0, 2)
     return self
 
   def rotate (self, angle):
     '''
-    Rotate the image according to the given angle in radiant fmt.
+    Rotate the image according to the given angle in degree fmt.
 
-    Note: this rotate preserve the original size so some original parts can be removed
-          from the rotated image. See 'rotate_bound' for a conservative rotation.
+    Parameters
+    ----------
+      angle : float
+        Angle in degree fmt
+
+    Returns
+    -------
+      rotated : Image
+        Rotated image
+
+    Note
+    ----
+    .. note::
+      This rotation preserves the original size so some original parts can be removed
+      from the rotated image.
+      See 'rotate_bound' for a conservative rotation.
+
+    References
+    ----------
+    https://www.pyimagesearch.com/2017/01/02/rotate-images-correctly-with-opencv-and-python/
     '''
     h, w = self._data.shape[:2]
 
@@ -205,12 +358,28 @@ class Image (object):
 
   def rotate_bound (self, angle):
     '''
-    Rotate the image according to the given angle in radiant fmt.
+    Rotate the image according to the given angle in degree fmt.
 
-    Note: this rotate preserve the original image, so the output can be greater than the
-          original size. See 'rotate' for a rotation which conserve the size.
+    Parameters
+    ----------
+      angle : float
+        Angle in degree fmt
 
-    Reference: https://www.pyimagesearch.com/2017/01/02/rotate-images-correctly-with-opencv-and-python/
+    Returns
+    -------
+      rotated : Image
+        Rotated image
+
+    Note
+    ----
+    .. note::
+      This rotation preserves the original image, so the output can be greater than the
+      original size.
+      See 'rotate' for a rotation which preserves the size.
+
+    References
+    ----------
+    https://www.pyimagesearch.com/2017/01/02/rotate-images-correctly-with-opencv-and-python/
     '''
 
     # grab the dimensions of the image and then determine the
@@ -240,6 +409,19 @@ class Image (object):
   def crop (self, dsize, size):
     '''
     Crop the image according to the given dimensions [dsize[0] : dsize[0] + size[0], dsize[1] : dsize[1] + size[1]]
+
+    Parameters
+    ----------
+      dsize : 2D iterable
+        (X, Y) of the crop
+
+      size : 2D iterable
+        (width, height) of the crop
+
+    Returns
+    -------
+      cropped : Image
+        Cropped image
     '''
     dx, dy = dsize
     sx, sy = size
@@ -250,6 +432,16 @@ class Image (object):
   def rgb2rgba (self):
     '''
     Add alpha channel to the original image
+
+    Returns
+    -------
+      self
+
+    Notes
+    -----
+    .. note::
+      Pay attention to the value of the alpha channel!
+      OpenCV does not set its values to null but they are and empty (garbage) array.
     '''
     self._data = cv2.cvtColor(self._data, cv2.COLOR_RGB2RGBA)
     return self
@@ -258,6 +450,19 @@ class Image (object):
   def show (self, window_name, ms=0, fullscreen=None):
     '''
     show the image
+
+    Parameters
+    ----------
+      window_name : str
+        Name of the plot
+
+      ms : int (default=0)
+        Milliseconds to wait
+
+    Returns
+    -------
+      check : bool
+        True if everything is ok
     '''
     img = self._image2cv(self._data)
 
@@ -272,10 +477,21 @@ class Image (object):
 
     cv2.waitKey(ms)
 
+    return True
+
 
   def save (self, filename):
     '''
     save the image
+
+    Parameters
+    ----------
+      filename : str
+        Output filename of the image
+
+    Returns
+    -------
+      True if everything is ok
     '''
     img = self._image2cv(self._data)
 
@@ -287,6 +503,15 @@ class Image (object):
   def from_numpy_matrix (self, array):
     '''
     Use numpy array as the image
+
+    Parameters
+    ----------
+      array : array_like
+        buffer of the input image as (width, height, channel)
+
+    Returns
+    -------
+      self
     '''
     self._data = array
     return self
@@ -301,6 +526,24 @@ class Image (object):
   def resize (self, dsize=None, scale_factor=(None, None)):
     '''
     Resize the image according to the new shape given
+
+    Parameters
+    ----------
+      dsize : 2D iterable (default=None)
+        Destination size of the image
+
+      scale_factor : 2D iterable (default=(None, None))
+        width scale factor, height scale factor
+
+    Returns
+    -------
+      res : Image
+        Resized Image
+
+    Notes
+    -----
+    .. note::
+      The resize is performed using the LANCZOS interpolation.
     '''
     fx, fy = scale_factor
 
@@ -310,6 +553,16 @@ class Image (object):
   def letterbox (self, net_dim):
     '''
     resize image with unchanged aspect ratio using padding
+
+    Parameters
+    ----------
+      net_dim : 2D iterable
+        width and height outputs
+
+    Returns
+    -------
+      resized : Image
+        Resized Image
     '''
     resized = Image()
 
@@ -335,7 +588,22 @@ class Image (object):
 
   def draw_detections (self, dets, thresh, names):
     '''
-    Draw detection-boxes over the image
+    Draw the detections into the current image
+
+    Parameters
+    ----------
+      dets : Detection list
+        List of pre-computed detection objects
+
+      thresh : float
+        Probability threshold to filter the boxes
+
+      names : iterable
+        List of object names as strings
+
+    Returns
+    -------
+      self
     '''
     width = 1 if self.height < 167 else int(self.height * 6e-3)
 
@@ -382,17 +650,27 @@ class Image (object):
         # label string
         cv2.putText(img=self._data, text=labels, org=(left, top + baseline - label_h), fontFace=cv2.FONT_HERSHEY_COMPLEX_SMALL, fontScale=1, color=(0, 0, 0), thickness=1, lineType=1)
 
+    return self
 
   @property
   def width(self):
+    '''
+    Get the image width
+    '''
     return self._data.shape[0]
 
   @property
   def height(self):
+    '''
+    Get the image height
+    '''
     return self._data.shape[1]
 
   @property
   def channels(self):
+    '''
+    Get the image number of channels
+    '''
     return self._data.shape[2]
 
 

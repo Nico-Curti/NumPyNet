@@ -8,11 +8,27 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 
 class normalization (int, Enum):
+
+  '''
+  Utility class with enum for normalization
+  algorithm.
+
+  This class is used for a pure readability purpose.
+  '''
+
   normalize = 0
   denormalize = 1
 
 
 class image_utils (object):
+
+  '''
+  Utility class for the Image object.
+
+  The class stores pre-determined set of
+  values related to the colors and colormaps
+  for the detection boxes.
+  '''
 
   num_box_colors = 6
   num_map_colors = 19

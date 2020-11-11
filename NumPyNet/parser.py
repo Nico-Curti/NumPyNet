@@ -33,8 +33,9 @@ class data_config (object):
 
   Notes
   -----
-  The data configuration stores the global parameters for a given model (ex. cfg filename, weight filename, ...)
-  The file must be saved in a dictionary format like "cfg = config_filename.cfg"
+  .. note::
+    The data configuration stores the global parameters for a given model (ex. cfg filename, weight filename, ...)
+    The file must be saved in a dictionary format like "cfg = config_filename.cfg"
   '''
 
   _data = dict()

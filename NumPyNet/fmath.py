@@ -12,6 +12,19 @@ __email__ = ['nico.curti2@unibo.it']
 
 
 def pow2 (x):
+  '''
+  Fast math version of 'pow2' function
+
+  Parameters
+  ----------
+    x : float
+      Value to evaluate
+
+  Returns
+  -------
+    res : float
+      Result of the function
+  '''
   offset = 1     if x < 0.    else 0
   clipp  = -126. if x < -126. else x
   z      = clipp - int(clipp) + offset
@@ -20,9 +33,35 @@ def pow2 (x):
   return struct.unpack('f', packed_x)[0]
 
 def exp (x):
+  '''
+  Fast math version of 'exp' function
+
+  Parameters
+  ----------
+    x : float
+      Value to evaluate
+
+  Returns
+  -------
+    res : float
+      Result of the function
+  '''
   return pow2(1.442695040 * x)
 
 def log2 (x):
+  '''
+  Fast math version of 'log2' function
+
+  Parameters
+  ----------
+    x : float
+      Value to evaluate
+
+  Returns
+  -------
+    res : float
+      Result of the function
+  '''
   packed_x = struct.pack('f', x)
   i = struct.unpack('i', packed_x)[0]
   mx = (i & 0x007FFFFF) | 0x3f000000
@@ -33,6 +72,19 @@ def log2 (x):
   return i - 124.22551499 - 1.498030302 * f - 1.72587999 / (0.3520887068 + f);
 
 def log (x):
+  '''
+  Fast math version of 'log' function
+
+  Parameters
+  ----------
+    x : float
+      Value to evaluate
+
+  Returns
+  -------
+    res : float
+      Result of the function
+  '''
   packed_x = struct.pack('f', x)
   i  = struct.unpack('i', packed_x)[0]
   y  = (i - 1064992212.25472) / (1092616192. - 1064992212.25472)
@@ -47,9 +99,38 @@ def log (x):
   return y
 
 def pow (a, b):
+  '''
+  Fast math version of 'pow' function
+
+  Parameters
+  ----------
+    a : float
+      Base
+
+    b : float
+      Exponent
+
+  Returns
+  -------
+    res : float
+      Result of the function
+  '''
   return pow2(b * log2(a))
 
 def log10 (x):
+  '''
+  Fast math version of 'log10' function
+
+  Parameters
+  ----------
+    x : float
+      Value to evaluate
+
+  Returns
+  -------
+    res : float
+      Result of the function
+  '''
   packed_x = struct.pack('f', x)
   i   = struct.unpack('i', packed_x)[0]
   y   = (i - 1064992212.25472) / (1092616192. - 1064992212.25472)
@@ -59,20 +140,72 @@ def log10 (x):
   y -= (y10 - x) / (2.302585092994046 * y10)
   return y
 
-def atanh (x): # consequentially wrong
+def atanh (x):
+  '''
+  Fast math version of 'atanh' function
+
+  Parameters
+  ----------
+    x : float
+      Value to evaluate
+
+  Returns
+  -------
+    res : float
+      Result of the function
+  '''
   return .5 * log((1. + x) / (1. - x))
 
 def tanh (x):
+  '''
+  Fast math version of 'tanh' function
+
+  Parameters
+  ----------
+    x : float
+      Value to evaluate
+
+  Returns
+  -------
+    res : float
+      Result of the function
+  '''
   e = exp(-2 * x)
   return (1. - e) / (1. + e)
 
 def hardtanh (x):
+  '''
+  Fast math version of 'hardtanh' function
+
+  Parameters
+  ----------
+    x : float
+      Value to evaluate
+
+  Returns
+  -------
+    res : float
+      Result of the function
+  '''
 
   if   x >= -1 and x <= 1.: return x
   elif x <  -1            : return -1.
   else                    : return 1.
 
 def sqrt (x):
+  '''
+  Fast math version of 'sqrt' function
+
+  Parameters
+  ----------
+    x : float
+      Value to evaluate
+
+  Returns
+  -------
+    res : float
+      Result of the function
+  '''
 
   xhalf = .5 * x
 
@@ -87,6 +220,19 @@ def sqrt (x):
   return x * y
 
 def rsqrt (x):
+  '''
+  Fast math version of 'rsqrt' function
+
+  Parameters
+  ----------
+    x : float
+      Value to evaluate
+
+  Returns
+  -------
+    res : float
+      Result of the function
+  '''
 
   xhalf = .5 * x
 

@@ -6,7 +6,12 @@ NumPyNet utility
 
    box
    data
+   detection
+   fmath
+   image
    metrics
+   network
+   optimizer
    parser
    utils
    video

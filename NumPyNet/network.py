@@ -54,6 +54,27 @@ CRLF = '\r\x1B[K' if platform.system() != 'Windows' else '\r'
 
 class Network(object):
 
+  '''
+  Neural Network object
+
+  Parameters
+  ----------
+    batch : int
+      Batch size
+
+    input_shape : tuple
+      Input dimensions
+
+    train : bool (default=True)
+      Turn on/off the parameters tuning
+
+  Notes
+  -----
+  .. warning::
+    Up to now the trainable variable is useless since the layer
+    doesn't take it into account!
+  '''
+
   LAYERS = {'activation'    :  Activation_layer,
             'avgpool'       :  Avgpool_layer,
             'batchnorm'     :  BatchNorm_layer,
@@ -77,9 +98,8 @@ class Network(object):
             'yolo'          :  Yolo_layer,
             }
 
-  def __init__(self, batch, input_shape=None, train=None):
-    '''
-    '''
+  def __init__(self, batch, input_shape=None, train=True):
+
     self.batch = batch
     self.train = train
 
@@ -105,6 +125,25 @@ class Network(object):
     '''
     Add a new layer to the network model.
     Layers are progressively appended to the tail of the model.
+
+    Parameters
+    ----------
+      layer : Layer object
+        Layer object to append to the current architecture
+
+    Returns
+    -------
+      self
+
+    Notes
+    -----
+    .. note::
+      If the architecture is empty a default InputLayer is used
+      to start the model.
+
+    .. warning::
+      The input layer type must be one of the types stored into the
+      LAYERS dict, otherwise a LayerError is raised.
     '''
     try:
       type_layer = layer.__class__.__name__.lower().split('_layer')[0]
@@ -131,10 +170,16 @@ class Network(object):
     return self
 
   def __iter__(self):
+    '''
+    Start the iteration along the architecture
+    '''
     self.layer_index = 0
     return self
 
   def __next__(self):
+    '''
+    Get the next layer
+    '''
     if self.layer_index < self.num_layers:
       self.layer_index += 1
       return self._net[self.layer_index - 1]
@@ -142,13 +187,24 @@ class Network(object):
     else:
       raise StopIteration
 
-  def next(self): # this should fix python2* problems with __iter__ and __next__
+  def next(self):
+    '''
+    Get the next layer
+
+    Notes
+    -----
+    This should fix python2* problems with __iter__ and __next__
+    '''
     return self.__next__()
 
 
   def summary(self):
     '''
     Print the network model summary
+
+    Returns
+    -------
+      None
     '''
     print('layer       filters  size              input                output')
     for i, layer in enumerate(self._net):
@@ -158,6 +214,18 @@ class Network(object):
   def load(self, cfg_filename, weights=None):
     '''
     Load network model from config file in INI fmt
+
+    Parameters
+    ----------
+      cfg_filename : str
+        Filename or path of the neural network configuration file in INI format
+
+      weights : str (default=None)
+        Filename of the weights
+
+    Returns
+    -------
+      self
     '''
 
     model = net_config(cfg_filename)
@@ -205,6 +273,21 @@ class Network(object):
   def load_weights(self, weights_filename):
     '''
     Load weight from filename in binary fmt
+
+    Parameters
+    ----------
+      weights_filename : str
+        Filename of the input weights file
+
+    Returns
+    -------
+      self
+
+    Notes
+    -----
+    .. note::
+      The weights are read and set to each layer which has
+      the load_weights member function.
     '''
     with open(weights_filename, 'rb') as fp:
 
@@ -223,6 +306,21 @@ class Network(object):
   def save_weights(self, filename):
     '''
     Dump current network weights
+
+    Parameters
+    ----------
+      filename : str
+        Filename of the output weights file
+
+    Returns
+    -------
+      self
+
+    Notes
+    -----
+    .. note::
+      The weights are extracted from each layer which has
+      the save_weights member function.
     '''
     full_weights = []
 
@@ -242,6 +340,22 @@ class Network(object):
   def load_model(self, model_filename):
     '''
     Load network model object as pickle
+
+    Parameters
+    ----------
+      model_filename : str
+        Filename or path of the model (binary) file
+
+    Returns
+    -------
+      self
+
+    Notes
+    -----
+    .. note::
+      The model loading is performed using pickle.
+      If the model was previously dumped with the save_model
+      function everything should be ok.
     '''
     with open(model_filename, 'rb') as fp:
       tmp_dict = pickle.load(fp)
@@ -257,6 +371,20 @@ class Network(object):
   def save_model(self, model_filename):
     '''
     Dump the current network model as pickle
+
+    Parameters
+    ----------
+      model_filename : str
+        Filename or path for the model dumping
+
+    Returns
+    -------
+      self
+
+    Notes
+    -----
+    .. note::
+      The model is dumped using pickle binary format.
     '''
     with open(model_filename, 'wb') as fp:
       pickle.dump(self.__dict__, fp, 2)
@@ -265,6 +393,22 @@ class Network(object):
 
   def compile(self, optimizer=Optimizer, metrics=None):
     '''
+    Compile the neural network model setting the optimizer
+    to each layer and the evaluation metrics
+
+    Parameters
+    ----------
+      optimizer : Optimizer
+        Optimizer object to use during the training
+
+      metrics : list (default=None)
+        List of metrics functions to use for the model evaluation.
+
+    Notes
+    -----
+    .. note::
+      The optimizer is copied into each layer object
+      which requires a parameters optimization.
     '''
 
     for layer in self:
@@ -297,6 +441,16 @@ class Network(object):
     The right signature must have only two required arguments (y_true, y_pred)
     plus other possible arguments with default values.
     The checked function are added to the list of network metric functions.
+
+    Parameters
+    ----------
+      metrics : list
+        List of metrics as functions
+
+    Returns
+    -------
+      check : bool
+        True if everything is ok
     '''
 
      # getfullargspec works only in python3.*
@@ -321,6 +475,24 @@ class Network(object):
 
   def _evaluate_metrics(self, y_true, y_pred):
     '''
+    Evaluate the training metrics
+
+    Parameters
+    ----------
+      y_true : 2d array-like
+        Ground truth (correct) labels expressed as image.
+
+      y_pred : 2d array-like
+        Predicted labels, as returned by the NN
+
+    Returns
+    -------
+      None
+
+    Notes
+    -----
+    .. note::
+      The resulting metrics are just printed in stdout.
     '''
 
     results = {func.__name__ : func(y_true, y_pred) for func in self.metrics}
@@ -329,6 +501,28 @@ class Network(object):
 
   def fit(self, X, y, max_iter=100, shuffle=True, verbose=True):
     '''
+    Fit/training function
+
+    Parameters
+    ----------
+      X : array-like
+        Input data
+
+      y : array-like
+        Ground truth or labels
+
+      max_iter : int (default=100)
+        Maximum number of iterations/epochs to perform
+
+      shuffle : bool (default=True)
+        Turn on/off the random shuffling of the data
+
+      verbose : bool (default=True)
+        Turn on/off the verbosity given by the training progress bar
+
+    Returns
+    -------
+      self
     '''
 
     num_data = X.shape[0]
@@ -389,10 +583,28 @@ class Network(object):
       end = now()
       print('Training on {:d} epochs took {:1.1f} sec'.format(max_iter, end - begin))
 
+    return self
+
 
   def fit_generator(self, Xy_generator, max_iter=100):
     '''
-    Fit function using a train generator (ref. DataGenerator in data.py)
+    Fit function using a train generator
+
+    Parameters
+    ----------
+      Xy_generator : DataGenerator
+        Data generator object
+
+      max_iter : int (default=100)
+        Maximum number of iterations/epochs to perform
+
+    Returns
+    -------
+      self
+
+    References
+    ----------
+    DataGenerator object in data.py
     '''
 
     Xy_generator.start()
@@ -412,10 +624,28 @@ class Network(object):
 
     self._fitted = True
 
+    return self
+
 
   def predict(self, X, truth=None, verbose=True):
     '''
     Predict the given input
+
+    Parameters
+    ----------
+      X : array-like
+        Input data
+
+      truth : array-like (default=None)
+        Ground truth or labels
+
+      verbose : bool (default=True)
+        Turn on/off the verbosity given by the training progress bar
+
+    Returns
+    -------
+      output : array-like
+        Output of the model as numpy array
     '''
     if not self._fitted:
       raise NetworkError('This Network model instance is not fitted yet. Please use the "fit" function before the predict')
@@ -470,6 +700,25 @@ class Network(object):
   def evaluate(self, X, truth, verbose=False):
     '''
     Return output and loss of the model
+
+    Parameters
+    ----------
+      X : array-like
+        Input data
+
+      truth : array-like
+        Ground truth or labels
+
+      verbose : bool (default=False)
+        Turn on/off the verbosity given by the training progress bar
+
+    Returns
+    -------
+      loss : float
+        The current loss of the model
+
+      output : array-like
+        Output of the model as numpy array
     '''
     output = self.predict(X, truth=truth, verbose=verbose)
     loss = self._get_loss() / len(X)
@@ -481,6 +730,28 @@ class Network(object):
     '''
     Forward function.
     Apply the forward method on all layers
+
+    Parameters
+    ----------
+      X : array-like
+        Input data
+
+      truth : array-like (default=None)
+        Ground truth or labels
+
+      trainable : bool (default=True)
+        Switch if train or not the model
+
+    Returns
+    -------
+      y : array-like
+        Output of the model
+
+    Notes
+    -----
+    .. warning::
+      Up to now the trainable variable is useless since the layer
+      doesn't take it into account!
     '''
     # TODO: add trainable to forward and backward of each layer signature
 
@@ -506,6 +777,24 @@ class Network(object):
   def _backward(self, X, trainable=True):
     '''
     BackPropagate the error
+
+    Parameters
+    ----------
+      X : array-like
+        Input data
+
+      trainable : bool (default=True)
+        Switch if train or not the model
+
+    Returns
+    -------
+      self
+
+    Notes
+    -----
+    .. warning::
+      Up to now the trainable variable is useless since the layer
+      doesn't take it into account!
     '''
 
     for i in reversed(range(1, self.num_layers)):
@@ -529,10 +818,24 @@ class Network(object):
 
     self._net[0].backward(delta=delta[:])
 
+    return self
+
 
   def _get_loss(self):
     '''
     Extract the loss value as the last cost in the network model
+
+    Returns
+    -------
+      loss : float
+        The value of the loss/cost stored in the latest layer
+        of the neural network ables to compute a cost function.
+
+    Notes
+    -----
+    .. note::
+      If no layers with the cost evaluation capability is found
+      the return value is None.
     '''
 
     for i in reversed(range(1, self.num_layers)):
@@ -546,27 +849,32 @@ class Network(object):
   @property
   def out_shape(self):
     '''
-    Output shape
+    Get the output shape
     '''
     return self._net[0].out_shape[1:]
 
   @property
   def input_shape(self):
     '''
-    Output shape
+    Get the input shape
     '''
     return (self.w, self.h, self.c)
 
   @property
   def num_layers(self):
     '''
-    Return the number of layers in the model
+    Get the number of layers in the model
     '''
     return len(self._net)
 
   def __getitem__(self, pos):
     '''
     Get the layer element
+
+    Parameters
+    ----------
+      pos : int
+        Index of the layer in the neural network structure
     '''
 
     if pos < 0 or pos >= self.num_layers:
