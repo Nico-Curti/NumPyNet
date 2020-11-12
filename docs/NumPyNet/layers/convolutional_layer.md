@@ -84,39 +84,49 @@ To have a look more in details on what's happening, here's the definition of `fo
 def forward(self, inpt, copy=False):
   '''
   Forward function of the Convolutional Layer: it convolves an image with 'channels_out'
-  filters with dimension (kx,ky, channels_in). In doing so, it creates a view of the image
-  with shape (batch * out_w * out_h, in_c * kx * ky) in order to perform a single matrix
-  multiplication with the reshaped filters array, wich shape is (in_c * kx * ky, out_c)
+    filters with dimension (kx,ky, channels_in). In doing so, it creates a view of the image
+    with shape (batch, out_w, out_h, in_c, kx, ky) in order to perform a single matrix
+    multiplication with the reshaped filters array, which shape is (in_c * kx * ky, out_c).
 
+  Parameters
+  ----------
+    inpt : array-like
+      input batch of images in format (batch, in_w, in_h, in _c)
 
-  Parameters:
-    inpt : input batch of images in format (batch, in_w, in_h, in _c)
-    copy : boolean, default is False. If False the activation function
-          modifies it's input, if True make a copy instead
+    copy : boolean (default=False).
+      If False the activation function modifies its input, if True make a copy instead
+
+  Returns
+  -------
+    self
   '''
+
+  self._check_dims(shape=self.input_shape, arr=inpt, func='Forward')
 
   kx, ky = self.size
   sx, sy = self.stride
+  _, w, h, _ = self.input_shape
+  inpt = inpt.astype('float64')
 
   # Padding
-  if self.pad :
-    self._evaluate_padding()
+  if self.pad:
     mat_pad = self._pad(inpt)
-  else :
+  else:
     # If no pad, every image in the batch is cut
-    mat_pad = inpt[:, : (self.w - kx) // sx*sx + kx, : (self.h - ky) // sy*sy + ky, ...]
-
+    mat_pad = inpt[:, : (w - kx) // sx * sx + kx, : (h - ky) // sy * sy + ky, ...]
 
   # Create the view of the array with shape (batch, out_w ,out_h, kx, ky, in_c)
-  self.view = self._asStride(mat_pad, self.size, self.stride) #self, is used also in backward. Better way?
+  self.view = self._asStride(mat_pad)
 
-  # the choice of numpy.einsum is due to reshape of self.view is a copy and not a view
-  # it seems to be slower though
+  # the choice of numpy.einsum is due to reshape of self.view being a copy
+  z = np.einsum('lmnijk, ijko -> lmno', self.view, self.weights, optimize=True) + self.bias
 
-  z = np.einsum('lmnijk,ijko -> lmno', self.view, self.weights, optimize=True) + self.bias
+  # (batch, out_w, out_h, out_c)
+  self.output = self.activation(z, copy=copy)
 
-  self.output = self.activation(z, copy=copy) # (batch, out_w, out_h, out_c)
   self.delta = np.zeros(shape=self.out_shape, dtype=float)
+
+  return self
 ```
 
 Those are the steps of the computation:
@@ -139,54 +149,41 @@ The Backward function instead:
 ```python
 def backward(self, delta, copy=False):
   '''
-  Backward function of the Convolutional layer
+  Backward function of the Convolutional layer. Source:
+  https://arxiv.org/abs/1603.07285
 
-  Parameters:
-    delta : array of shape (batch, in_w, in _h, in_c). Global delta to be
-      backpropagated
-    copy : bool, specifies if the gradient of the activation functions needs to
-      return a copy of its input
+  Parameters
+  ----------
+    delta : array-like
+      delta array of shape (batch, w, h, c). Global delta to be backpropagated.
 
+    copy : bool (default=False)
+      States if the activation function have to return a copy of the input or not.
+
+  Returns
+  -------
+    self
   '''
-  # delta padding to match dimension with padded input when computing the view
-  if self.pad:
-    mat_pad = self._pad(delta) # padded with same values as input
-  else  :
-    mat_pad = delta
 
-  # View on delta, I can use this to modify it
-  delta_view = self._asStride(mat_pad, self.size, self.stride)
+  check_is_fitted(self, 'delta')
+  self._check_dims(shape=self.input_shape, arr=delta, func='Backward')
+  delta[:] = delta.astype('float64')
 
   self.delta *= self.gradient(self.output, copy=copy)
 
-  # this operation should be +=, as darknet suggest (?)
-  self.weights_updates = np.einsum('ijklmn, ijko -> lmno', self.view, self.delta)
+  self.weights_update = np.einsum('ijklmn, ijko -> lmno', self.view, self.delta, optimize=True)
+  self.bias_update = self.delta.sum(axis=(0, 1, 2))  # shape = (channels_out)
 
-  # out_c number of bias_updates.
-  self.bias_updates = self.delta.sum(axis=(0, 1, 2)) # shape = (channels_out,)
+  # Rotated weights, as theory suggest
+  w_rot = np.rot90(self.weights, 2, axes=(0, 1))
 
-  # to access every pixel one at a time I need to create every combinations of indexes
-  b, w, h, kx, ky, c = delta_view.shape
-  combo = itertools.product(range(b), range(w), range(h) , range(kx), range(ky), range(c))
+  # Pad and dilate the delta array, then stride it and convolve
+  self.delta = self._dilate_pad(self.delta)
+  delta_view = self._asStride(self.delta, back=True)
 
-  # Actual operation to be performed, it's basically the convolution of self.delta with weights.transpose
-  operator = np.einsum('ijkl, mnol -> ijkmno', self.delta, self.weights)
+  delta[:] = np.einsum('ijklmn, lmon -> ijko', delta_view, w_rot, optimize=True)
 
-  # Atomically modify , really slow as for maxpool and avgpool
-  for i, j, k, l, m, n in combo:
-    delta_view[i, j, k, l, m, n] += operator[i, j, k, l, m, n]
-
-  # Here delta is updated correctly
-  if self.pad :
-    _ , w_pad, h_pad, _ = mat_pad.shape
-    delta[:] = mat_pad[:, self.pad_top : w_pad-self.pad_bottom, self.pad_left : h_pad - self.pad_right ,:]
-  else  :
-    delta[:] = mat_pad
+  return self
 ```
 
-Which computes &delta;W, &delta;&beta; and the error &delta; to be backpropagated:
-
-  * `delta` is padded to match dimensions with the input, then a **view** of the padded `delta` is generated by means of `_asStride`.
-  * &delta;W and &delta;&beta; are the computed using einsum, in the same way as before.
-  * &delta; is the matrix multiplication of between the last axis of `layer.delta` and the last axis of `layer.weights`. At this point, every value of `delta_view` is atomically updated, since the parallel operations doesn't return the correct result. (As for Pooling layers is because operating at the same time on the same memory is not thread safe.)
-  * Then `delta` is updated with values from `mat_pad`
+Which computes &delta;W, &delta;&beta; and the error &delta; to be backpropagated through a Deconvolution operation (or transposed convolution) of &delta; with the rotated weights matrix. The aritmetics (input and output dimension) of the operations is described in details in [this article](https://arxiv.org/pdf/1603.07285.pdf).

@@ -26,7 +26,8 @@ from random import choice
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
-class TestConvolutionalLayer :
+
+class TestConvolutionalLayer:
   '''
   Tests:
     - costructor of Convolutional_layer object
@@ -37,7 +38,6 @@ class TestConvolutionalLayer :
   to be:
     update function
   '''
-
 
   @given(b = st.integers(min_value=1,  max_value=10),
          w = st.integers(min_value=30, max_value=100),
@@ -72,7 +72,7 @@ class TestConvolutionalLayer :
 
       weights_choice = [np.random.uniform(low=-1, high=1., size=(size[0], size[1], c, filters)), None]
 
-    else :
+    else:
       if size <= 0:
         with pytest.raises(LayerError):
           layer = Convolutional_layer(filters=filters, size=size)
@@ -149,13 +149,13 @@ class TestConvolutionalLayer :
          stride1 = st.integers(min_value=1, max_value=10),
          stride2 = st.integers(min_value=1, max_value=10),
          pad     = st.booleans())
-  @settings(max_examples=10,
+  @settings(max_examples=100,
             deadline=None)
-  def test_forward (self, b, w, h, c,  filters, size1, size2, stride1, stride2, pad):
+  def test_forward (self, b, w, h, c, filters, size1, size2, stride1, stride2, pad):
 
     if pad:
       keras_pad = 'same'
-    else :
+    else:
       keras_pad = 'valid'
 
     keras_activs    = ['relu', 'sigmoid', 'tanh','linear']
@@ -178,8 +178,8 @@ class TestConvolutionalLayer :
 
       # Tensorflow layer
       model = tf.keras.layers.Conv2D( filters=filters,
-                                      kernel_initializer=lambda shape, dtype=None : weights,
-                                      bias_initializer=lambda shape, dtype=None : bias,
+                                      kernel_initializer=lambda shape, dtype=None: weights,
+                                      bias_initializer=lambda shape, dtype=None: bias,
                                       kernel_size=size, strides=stride,
                                       padding=keras_pad,
                                       activation=keras_activ,
@@ -214,10 +214,10 @@ class TestConvolutionalLayer :
 
     if pad:
       keras_pad = 'same'
-    else :
+    else:
       keras_pad = 'valid'
 
-    keras_activs    = ['relu', 'sigmoid', 'tanh','linear']
+    keras_activs    = ['relu', 'sigmoid', 'tanh', 'linear']
     numpynet_activs = [Relu, Logistic, Tanh, Linear]
 
     size   = (size1, size2)
@@ -254,7 +254,7 @@ class TestConvolutionalLayer :
 
       # FORWARD
 
-      with tf.GradientTape(persistent=True) as tape :
+      with tf.GradientTape(persistent=True) as tape:
         preds = model(tf_input)
         grad1 = tape.gradient(preds, tf_input)
         grad2 = tape.gradient(preds, model.trainable_weights)

@@ -5,3 +5,4 @@ NumPyNet layers
    :maxdepth: 4
 
    activation_layer
+   convolutional_layer
