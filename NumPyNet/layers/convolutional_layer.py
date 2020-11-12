@@ -23,37 +23,35 @@ class Convolutional_layer(BaseLayer):
 
   Parameters
   ----------
-    filters : integer
+    filters : int
       Number of filters to be slided over the input, and also the number of channels of the output (channels_out)
 
-    size : tuple of int
+    size : tuple
       Size of the kernel of shape (kx, ky).
 
-    stride : tuple of int (default=None)
+    stride : tuple (default=None)
       Step of the kernel, with shape (st1, st2). If None, stride is assigned size values.
 
-    input_shape : tuple, (default=None)
+    input_shape : tuple (default=None)
       Shape of the input in the format (batch, w, h, c), None is used when the layer is part of a Network model.
 
-    weights : numpy array (default=None)
+    weights : array-like (default=None)
       Filters of the convolutionanl layer, with shape (kx, ky, channels_in, filters). If None, random weights are initialized
 
-    bias : numpy array, (default=None)
+    bias : array-like (default=None)
       Bias of the convolutional layer. If None, bias init is random with shape (filters, )
 
-    pad : boolean, (default=False).
+    pad : bool (default=False)
       If False the image is cutted along the last raws and columns, if True the input is padded following keras SAME padding
 
     activation : str or Activation object
-      Activation function of the layer
+      Activation function of the layer.
 
   Example
   -------
   >>>  import os
-  >>>
   >>>  from PIL import Image
   >>>  import pylab as plt
-  >>>
   >>>  from NumPyNet import activations
   >>>
   >>>  img_2_float = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 1.)).astype(float)
@@ -112,9 +110,7 @@ class Convolutional_layer(BaseLayer):
   >>>  fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
   >>>  fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
   >>>
-  >>>  fig.suptitle(('Convolutional Layer\n activation : {}, '+
-  >>>                'size : {}, stride : {}, '+
-  >>>                'output channels : {}').format(layer_activation.name, size, stride, channels_out))
+  >>>  fig.suptitle('Convolutional Layer')
   >>>
   >>>  ax1.imshow(float_2_img(inpt[0]))
   >>>  ax1.set_title('Original image')
@@ -198,6 +194,14 @@ class Convolutional_layer(BaseLayer):
       self._build()
 
   def _build(self):
+    '''
+    Init layer weights and biases and set the correct
+    layer out_shapes.
+
+    Returns
+    -------
+      self
+    '''
 
     _, w, h, c = self.input_shape
 
@@ -213,6 +217,8 @@ class Convolutional_layer(BaseLayer):
 
     self.out_w = 1 + (w + self.pad_top + self.pad_bottom - self.size[0]) // self.stride[0]
     self.out_h = 1 + (h + self.pad_left + self.pad_right - self.size[1]) // self.stride[1]
+
+    return self
 
   def __str__(self):
     '''
@@ -235,6 +241,9 @@ class Convolutional_layer(BaseLayer):
 
   @property
   def out_shape(self):
+    '''
+    Get the output shape as (batch, out_w, out_h, out_channels)
+    '''
     return (self.input_shape[0], self.out_w, self.out_h, self.channels_out)
 
   def load_weights(self, chunck_weights, pos=0):
@@ -246,12 +255,13 @@ class Convolutional_layer(BaseLayer):
       chunck_weights : array-like
         model weights and bias
 
-      pos : integer (default=0)
+      pos : int (default=0)
         Current position of the array
 
     Returns
     ----------
-    pos
+      pos : int
+        Updated stream position.
     '''
 
     c = self.input_shape[-1]
@@ -283,15 +293,16 @@ class Convolutional_layer(BaseLayer):
 
     Parameters
     ----------
-      arr : numpy-array
+      arr : array-like
         input batch of images to be convoluted with shape = (b, w, h, c)
 
-      back : boolean, (default=False)
+      back : bool (default=False)
         Define whether the function is called from forward or backward functions.
 
     Returns
     -------
-      View of the input array with shape (batch, out_w, out_h, kx, ky, out_c)
+      subs : array-view
+        View of the input array with shape (batch, out_w, out_h, kx, ky, out_c)
     '''
 
     B, s0, s1, c1 = arr.strides
@@ -325,12 +336,13 @@ class Convolutional_layer(BaseLayer):
 
     Parameters
     ----------
-      arr : numpy-array
+      arr : array-like
        input array to be dilated and padded with shape (b, out_w, out_h, out_c)
 
     Returns
     -------
-      the dilated array
+      dilated : array-like
+        The dilated array
     '''
 
     b, ow, oh, oc = self.out_shape
@@ -399,12 +411,13 @@ class Convolutional_layer(BaseLayer):
 
     Parameters
     ----------
-      inpt : numpy array
+      inpt : array-like
         input images to pad in the format (batch, in_w, in_h, in_c).
 
     Returns
     -------
-      padded input array, following keras SAME padding format.
+      padded : array-like
+        Padded input array, following keras SAME padding format.
     '''
 
     # return the zeros-padded image, in the same format as inpt (batch, in_w + pad_w, in_h + pad_h, in_c)
@@ -421,9 +434,9 @@ class Convolutional_layer(BaseLayer):
     Parameters
     ----------
       inpt : array-like
-        input batch of images in format (batch, in_w, in_h, in _c)
+        Input batch of images in format (batch, in_w, in_h, in _c)
 
-      copy : boolean (default=False).
+      copy : bool (default=False)
         If False the activation function modifies its input, if True make a copy instead
 
     Returns
@@ -498,8 +511,12 @@ class Convolutional_layer(BaseLayer):
 
   def update(self):
     '''
-    update function for the convolution layer. optimizer must be assigned
-      externally as an optimizer object.
+    Update function for the convolution layer.
+    Optimizer must be assigned externally as an optimizer object.
+
+    Returns
+    -------
+      self
     '''
     check_is_fitted(self, 'delta')
 
@@ -575,9 +592,9 @@ if __name__ == '__main__':
   fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
   fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
 
-  fig.suptitle(('Convolutional Layer\n activation : {}, ' +
+  fig.suptitle('Convolutional Layer\n activation : {}, ' +
                 'size : {}, stride : {}, ' +
-                'output channels : {}').format(layer_activation.name, size, stride, channels_out))
+                'output channels : {}'.format(layer_activation.name, size, stride, channels_out))
 
   ax1.imshow(float_2_img(inpt[0]))
   ax1.set_title('Original image')
