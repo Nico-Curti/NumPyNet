@@ -1,7 +1,7 @@
-Activation layer
+Connected layer
 ----------------
 
-.. automodule:: layers.activation_layer
+.. automodule:: layers.connected_layer
    :members:
    :undoc-members:
    :show-inheritance:

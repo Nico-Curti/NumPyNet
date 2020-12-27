@@ -21,11 +21,11 @@ class BaseLayer (object):
       Input layer dimension
   '''
 
-  def __init__ (self, input_shape=None):
+  def __init__(self, input_shape=None):
     self.input_shape = input_shape
     self.output, self.delta = (None, None)
 
-  def __str__ (self):
+  def __str__(self):
     '''
     Print the layer
     '''
@@ -43,20 +43,19 @@ class BaseLayer (object):
                       for k in params])
     return '{0}({1})'.format(class_name, args)
 
-  def _build (self, *args, **kwargs):
+  def _build(self, *args, **kwargs):
     '''
     Build layer parameters
     '''
     pass
 
-  def _check_dims (self, shape, arr, func):
+  def _check_dims(self, shape, arr, func):
     '''
     Check shape array
     '''
     if shape[1:] != arr.shape[1:]:
       class_name = self.__class__.__name__
       raise ValueError('{0} {1}. Incorrect input shape. Expected {2} and given {3}'.format(func, class_name, shape[1:], arr.shape[1:]))
-
 
   def __call__(self, previous_layer):
     '''
@@ -91,7 +90,7 @@ class BaseLayer (object):
     '''
     return self.input_shape
 
-  def forward (self, input, *args, **kwargs):
+  def forward(self, input, *args, **kwargs):
     '''
     Abstract Forward function
 
@@ -108,7 +107,7 @@ class BaseLayer (object):
     '''
     raise NotImplementedError
 
-  def backward (self, delta, input=None, *args, **kwargs):
+  def backward(self, delta, input=None, *args, **kwargs):
     '''
     Abstract Backward function
 
