@@ -68,7 +68,7 @@ class Dropout_layer(BaseLayer):
   >>> fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
   >>> fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
   >>>
-  >>> fig.suptitle('Dropout Layer\nDrop Probability : {}'.format(prob))
+  >>> fig.suptitle('Dropout Layer Drop Probability : {}'.format(prob))
   >>> # Shown first image of the batch
   >>> ax1.imshow(float_2_img(inpt[0]))
   >>> ax1.set_title('Original image')
