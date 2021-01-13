@@ -37,7 +37,6 @@ class Avgpool_layer(BaseLayer):
 
   Examples
   --------
-
   >>> import os
 
   >>> import pylab as plt
@@ -278,7 +277,7 @@ class Avgpool_layer(BaseLayer):
 
   def backward(self, delta):
     '''
-    backward function of the average_pool layer: the function modifies the net delta
+    Backward function of the averagepool layer: the function modifies the net delta
     to be backpropagated.
 
     Parameters

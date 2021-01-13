@@ -17,16 +17,16 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 class GRU_layer (object):
 
-  def __init__ (self, outputs, steps, input_shape=None, weights=None, bias=None):
+  def __init__(self, outputs, steps, input_shape=None, weights=None, bias=None):
 
     if isinstance(outputs, int) and outputs > 0:
       self.outputs = outputs
-    else :
+    else:
       raise ValueError('GRU layer : Parameter "outputs" must be an integer and > 0')
 
     if isinstance(steps, int) and steps > 0:
       self.steps = steps
-    else :
+    else:
       raise ValueError('GRU layer : Parameter "steps" must be an integer and > 0')
 
     self.input_shape = input_shape
@@ -35,16 +35,15 @@ class GRU_layer (object):
     self.Wr = weights[1]
     self.Wh = weights[2]
 
-    self.Uz = weights[3] # shape (outputs, outputs)
+    self.Uz = weights[3]  # shape (outputs, outputs)
     self.Ur = weights[4]
     self.Uh = weights[5]
 
-    self.bz = bias[0] # shape (outputs, )
+    self.bz = bias[0]  # shape (outputs, )
     self.br = bias[1]
     self.bh = bias[2]
 
-
-  def __call__ (self, prev_layer):
+  def __call__(self, prev_layer):
     raise NotImplementedError
 
   @property
@@ -59,21 +58,20 @@ class GRU_layer (object):
     X = arr.reshape(arr.shape[0], -1)
 
     Npoints, features = X.shape
-    stride0, stride1  = X.strides
+    stride0, stride1 = X.strides
 
-    shape   = (Npoints - self.steps*shift, self.steps, features)
-    strides = (shift*stride0, stride0, stride1)
+    shape = (Npoints - self.steps * shift, self.steps, features)
+    strides = (shift * stride0, stride0, stride1)
 
     X = np.lib.stride_tricks.as_strided(arr, shape=shape, strides=strides)
 
     return np.swapaxes(X, 0, 1)
 
-
   def forward(self, inpt):
 
     inpt = inpt.astype('float64')
     _input = self._as_Strided(inpt)
-    state  = np.zeros(shape=(_input.shape[1], self.outputs))
+    state = np.zeros(shape=(_input.shape[1], self.outputs))
 
     self.output = np.zeros_like(state)
 
@@ -92,7 +90,7 @@ class GRU_layer (object):
 
       hh = np.einsum(op, state * rt, self.Uh)
 
-      state  = zt * state + (1 - zt) * Tanh.activate(xh + hh)
+      state = zt * state + (1 - zt) * Tanh.activate(xh + hh)
 
     # implementation "no sequence"
     self.output = state

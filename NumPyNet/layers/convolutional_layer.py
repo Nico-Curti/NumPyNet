@@ -8,9 +8,9 @@ from NumPyNet.activations import Activations
 from NumPyNet.utils import _check_activation
 from NumPyNet.utils import check_is_fitted
 from NumPyNet.layers.base import BaseLayer
+from NumPyNet.exception import LayerError
 
 import numpy as np
-from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
