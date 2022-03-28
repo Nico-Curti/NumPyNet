@@ -22,13 +22,73 @@ class Avgpool_layer(BaseLayer):
 
     Parameters
     ----------
-      size    : tuple with two integers (kx, ky) or integer, size of the kernel to be slided over the input image.
-      stride  : tuple of two integers, default None. Represents the horizontal and vertical stride of the kernel.
-                If None or 0, stride is assigned the values of size.
-      input_shape : tuple of 4 integers: input shape of the layer.
-      pad     : boolean, default False. If False the image is cut to fit the size and stride dimensions, if True the
-                image is padded following keras SAME padding, as indicated here:
-                https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
+      size : tuple
+        Tuple with two integers (kx, ky) or integer, size of the kernel to be slided over the input image.
+
+      stride : tuple (default=None)
+        Tupleof two integers representing the horizontal and vertical stride of the kernel.
+        If None or 0, stride is assigned the values of size.
+
+      pad : bool (default=False)
+        If False the image is cut to fit the size and stride dimensions, if True the
+        image is padded following keras SAME padding, as indicated in [0].
+
+      input_shape : tuple (default=None)
+        Input shape of the layer.
+
+    Example
+    -------
+    >>> import os
+    >>> import pylab as plt
+    >>> from PIL import Image
+    >>>
+    >>> img_2_float = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 1.)).astype(float)
+    >>> float_2_img = lambda im : ((im - im.min()) * (1./(im.max() - im.min()) * 255.)).astype(np.uint8)
+    >>>
+    >>> filename = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'dog.jpg')
+    >>> inpt = np.asarray(Image.open(filename), dtype=float)
+    >>> inpt.setflags(write=1)
+    >>> inpt = img_2_float(inpt)
+    >>>
+    >>> inpt = np.expand_dims(inpt, axis=0)
+    >>> pad  = False
+    >>> size   = 3
+    >>> stride = 2
+    >>>
+    >>> # Model initialization
+    >>> layer = Avgpool_layer(input_shape=inpt.shape, size=size, stride=stride, padding=pad)
+    >>>
+    >>> # FORWARD
+    >>> layer.forward(inpt)
+    >>> forward_out = layer.output.copy()
+    >>>
+    >>> # BACKWARD
+    >>> delta = np.random.uniform(low=0., high=1.,size=inpt.shape)
+    >>> layer.delta = np.ones(layer.out_shape, dtype=float)
+    >>> layer.backward(delta)
+    >>>
+    >>> # Visualizations
+    >>>
+    >>> fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
+    >>> fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
+    >>>
+    >>> fig.suptitle('Average Pool Layer')
+    >>>
+    >>> ax1.imshow(float_2_img(inpt)[0])
+    >>> ax1.set_title('Original image')
+    >>> ax1.axis('off')
+    >>>
+    >>> ax2.imshow(float_2_img(layer.output[0]))
+    >>> ax2.set_title('Forward')
+    >>> ax2.axis('off')
+    >>>
+    >>> ax3.imshow(float_2_img(delta[0]))
+    >>> ax3.set_title('Backward')
+    >>> ax3.axis('off')
+
+    References
+    ----------
+      - https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
     '''
 
     self.size = size
@@ -58,12 +118,18 @@ class Avgpool_layer(BaseLayer):
     self._build(input_shape)
 
   def _build(self, input_shape=None):
+    '''
+    Set the input shape and re-evaluate padding
+    '''
     if input_shape is not None:
 
       if self.pad:
         self._evaluate_padding()
 
   def __str__(self):
+    '''
+    Printer
+    '''
     batch, w, h, c = self.input_shape
     _, out_width, out_height, out_channels = self.out_shape
     return 'avg         {} x {} / {}  {:>4d} x{:>4d} x{:>4d} x{:>4d}   ->  {:>4d} x{:>4d} x{:>4d}'.format(
@@ -73,6 +139,14 @@ class Avgpool_layer(BaseLayer):
 
   @property
   def out_shape(self):
+    '''
+    Get the output shape
+
+    Returns
+    -------
+      out_shape : tuple
+        Output shape as (batch, out_width, out_height, out_channels)
+    '''
     batch, w, h, c = self.input_shape
     out_height   = (h + self.pad_left + self.pad_right - self.size[1]) // self.stride[1] + 1
     out_width    = (w + self.pad_top + self.pad_bottom - self.size[0]) // self.stride[0] + 1
@@ -84,15 +158,15 @@ class Avgpool_layer(BaseLayer):
     _asStride returns a view of the input array such that a kernel of size = (kx,ky)
     is slided over the image with stride = (st1, st2)
 
-    better reference here :
-    https://docs.scipy.org/doc/numpy/reference/generated/numpy.lib.stride_tricks.as_strided.html
-
-    see also:
-    https://stackoverflow.com/questions/42463172/how-to-perform-max-mean-pooling-on-a-2d-array-using-numpy
-
     Parameters
     ----------
-      inpt  : input batch of images to be stride with shape = (batch, w, h, c)
+      inpt : array-like
+        Input batch of images to be stride with shape = (batch, w, h, c)
+
+    References
+    ----------
+      - https://docs.scipy.org/doc/numpy/reference/generated/numpy.lib.stride_tricks.as_strided.html
+      - https://stackoverflow.com/questions/42463172/how-to-perform-max-mean-pooling-on-a-2d-array-using-numpy
     '''
 
     batch_stride, s0, s1 = inpt.strides[:3]
@@ -112,8 +186,11 @@ class Avgpool_layer(BaseLayer):
 
   def _evaluate_padding(self):
     '''
-    Compute padding dimensions, following keras VALID and SAME criteria. See:
-    https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
+    Compute padding dimensions, following keras VALID and SAME criteria.
+
+    References
+    ----------
+      - https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
     '''
     _, w, h, _ = self.input_shape
     # Compute how many raws are needed to pad the image in the 'w' axis
@@ -134,19 +211,25 @@ class Avgpool_layer(BaseLayer):
     self.pad_left   = pad_h >> 1
     self.pad_right  = pad_h - self.pad_left
 
+    return self
+
   def _pad(self, inpt):
     '''
     Padd every image in a batch with np.nan following keras SAME padding
-    See also:
-      https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
 
     Parameters
     ----------
-      inpt : input images in the format (batch, width, height, channels).
+      inpt : array-like
+        Input images in the format (batch, width, height, channels).
 
     Returns
+    -------
+      pad : array-like
+        A padded batch of images, following keras SAME padding.
+
+    References
+      - https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
     ----------
-    A padded batch of images, following keras SAME padding.
     '''
 
     # return the nan-padded image, in the same format as inpt (batch, width + pad_w, height + pad_h, channels)
@@ -160,13 +243,14 @@ class Avgpool_layer(BaseLayer):
     it computes the average value without considering NAN value (padding), and passes it
     to the output.
 
-    Parameters.
+    Parameters
     ----------
-      inpt : input batch of image, with the shape (batch, input_w, input_h, input_c).
+      inpt : array-like
+        Input batch of image, with the shape (batch, input_w, input_h, input_c).
 
-    Returns.
-    ----------
-    A Avgpool_layer object.
+    Returns
+    -------
+      self
     '''
     self._check_dims(shape=self.input_shape, arr=inpt, func='Forward')
 
@@ -193,16 +277,17 @@ class Avgpool_layer(BaseLayer):
 
   def backward(self, delta):
     '''
-    backward function of the average_pool layer: the function modifies the net delta
+    Backward function of the average_pool layer: the function modifies the net delta
     to be backpropagated.
 
     Parameters
     ----------
-      delta : global delta to be backpropagated with shape (batch, out_w, out_h, out_c).
+      delta : array-like
+        Global delta to be backpropagated with shape (batch, out_w, out_h, out_c).
 
     Returns
     ----------
-    A Avgpool_layer object.
+      self
     '''
 
     check_is_fitted(self, 'delta')

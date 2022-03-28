@@ -206,7 +206,7 @@ class Convolutional_layer(BaseLayer):
     _, w, h, c = self.input_shape
 
     if self.weights is None:
-      scale = np.sqrt(2 / (self.size[0] * self.size[1] * c))
+      scale = np.sqrt(2. / (self.size[0] * self.size[1] * c))
       self.weights = np.random.normal(loc=scale, scale=1., size=(self.size[0], self.size[1], c, self.channels_out))
 
     if self.bias is None:
@@ -230,7 +230,7 @@ class Convolutional_layer(BaseLayer):
            out_c, self.size[0], self.size[1], self.stride[0],
            batch, w, h, c,
            out_w, out_h, out_c,
-           (2 * self.weights.size * out_h * out_w) * 1e-9)
+           (2. * self.weights.size * out_h * out_w) * 1e-9)
 
   def __call__(self, previous_layer):
 
@@ -285,12 +285,6 @@ class Convolutional_layer(BaseLayer):
     _asStride returns a view of the input array such that a kernel of size = (kx,ky)
     is slided over the image with stride = (st1, st2)
 
-    better reference here :
-    https://docs.scipy.org/doc/numpy/reference/generated/numpy.lib.stride_tricks.as_strided.html
-
-    see also:
-    https://stackoverflow.com/questions/42463172/how-to-perform-max-mean-pooling-on-a-2d-array-using-numpy
-
     Parameters
     ----------
       arr : array-like
@@ -303,6 +297,11 @@ class Convolutional_layer(BaseLayer):
     -------
       subs : array-view
         View of the input array with shape (batch, out_w, out_h, kx, ky, out_c)
+
+    References
+    ----------
+      - https://docs.scipy.org/doc/numpy/reference/generated/numpy.lib.stride_tricks.as_strided.html
+      - https://stackoverflow.com/questions/42463172/how-to-perform-max-mean-pooling-on-a-2d-array-using-numpy
     '''
 
     B, s0, s1, c1 = arr.strides
