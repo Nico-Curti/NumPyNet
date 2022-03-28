@@ -1,7 +1,7 @@
-Activation layer
-----------------
+Input layer
+-------------
 
-.. automodule:: layers.activation_layer
+.. automodule:: layers.input_layer
    :members:
    :undoc-members:
    :show-inheritance:

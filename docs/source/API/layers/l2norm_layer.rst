@@ -1,7 +1,7 @@
-Activation layer
-----------------
+L2Norm layer
+-------------
 
-.. automodule:: layers.activation_layer
+.. automodule:: layers.l2norm_layer
    :members:
    :undoc-members:
    :show-inheritance:

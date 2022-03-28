@@ -20,15 +20,16 @@ __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
 
 # Enum of cost_function, declarations inside class
 class cost_type(int, Enum):
-  mse = 0 # mean square error
+  mse = 0  # mean square error
   masked = 1
-  mae = 2 # mean absolute error
+  mae = 2  # mean absolute error
   seg = 3
   smooth = 4
   wgan = 5
   hellinger = 6
   hinge = 7
   logcosh = 8
+
 
 def _check_activation (layer, activation_func):
   '''
@@ -246,6 +247,7 @@ def from_categorical (categoricals):
 
   return np.argmax(categoricals, axis=-1)
 
+
 def data_to_timesteps (data, steps, shift=1):
   '''
   Prepare data for a Recurrent model, dividing a series of data with shape (Ndata, features)
@@ -276,15 +278,16 @@ def data_to_timesteps (data, steps, shift=1):
   X = data.reshape(data.shape[0], -1)
 
   Npoints, features = X.shape
-  stride0, stride1  = X.strides
+  stride0, stride1 = X.strides
 
-  shape   = (Npoints - steps*shift, steps, features)
-  strides = (shift*stride0, stride0, stride1)
+  shape = (Npoints - steps * shift, steps, features)
+  strides = (shift * stride0, stride0, stride1)
 
   X = np.lib.stride_tricks.as_strided(data, shape=shape, strides=strides)
   y = data[steps:]
 
   return X, y
+
 
 @contextmanager
 def _redirect_stdout (verbose):

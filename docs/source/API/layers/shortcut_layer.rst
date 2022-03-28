@@ -1,7 +1,7 @@
-Activation layer
-----------------
+Shortcut layer
+-------------
 
-.. automodule:: layers.activation_layer
+.. automodule:: layers.shortcut_layer
    :members:
    :undoc-members:
    :show-inheritance:

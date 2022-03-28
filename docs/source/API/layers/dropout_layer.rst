@@ -1,7 +1,7 @@
-Activation layer
-----------------
+Dropout layer
+-------------
 
-.. automodule:: layers.activation_layer
+.. automodule:: layers.dropout_layer
    :members:
    :undoc-members:
    :show-inheritance:

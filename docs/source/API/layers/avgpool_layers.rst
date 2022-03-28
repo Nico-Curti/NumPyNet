@@ -1,7 +1,7 @@
-Activation layer
-----------------
+Avgpool layer
+-------------
 
-.. automodule:: layers.activation_layer
+.. automodule:: layers.avgpool_layer
    :members:
    :undoc-members:
    :show-inheritance:

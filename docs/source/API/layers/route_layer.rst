@@ -1,7 +1,7 @@
-Activation layer
-----------------
+Route layer
+-------------
 
-.. automodule:: layers.activation_layer
+.. automodule:: layers.route_layer
    :members:
    :undoc-members:
    :show-inheritance:

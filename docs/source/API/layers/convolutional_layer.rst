@@ -1,5 +1,5 @@
-Convolutional_layer
-----------------
+Convolutional layer
+-------------------
 
 .. automodule:: layers.convolutional_layer
    :members:

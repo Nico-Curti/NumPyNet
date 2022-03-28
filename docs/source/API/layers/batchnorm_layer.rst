@@ -1,7 +1,7 @@
-Activation layer
-----------------
+Batchnorm layer
+---------------
 
-.. automodule:: layers.activation_layer
+.. automodule:: layers.batchnorm_layer
    :members:
    :undoc-members:
    :show-inheritance:

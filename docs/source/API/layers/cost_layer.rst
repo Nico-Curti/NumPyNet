@@ -1,7 +1,7 @@
-Activation layer
+Cost layer
 ----------------
 
-.. automodule:: layers.activation_layer
+.. automodule:: layers.cost_layer
    :members:
    :undoc-members:
    :show-inheritance:

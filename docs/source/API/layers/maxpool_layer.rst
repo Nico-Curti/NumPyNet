@@ -1,7 +1,7 @@
-Activation layer
-----------------
+Maxpool layer
+-------------
 
-.. automodule:: layers.activation_layer
+.. automodule:: layers.maxpool_layer
    :members:
    :undoc-members:
    :show-inheritance:

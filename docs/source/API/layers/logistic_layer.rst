@@ -1,7 +1,7 @@
-Activation layer
-----------------
+Logistic layer
+-------------
 
-.. automodule:: layers.activation_layer
+.. automodule:: layers.logistic_layer
    :members:
    :undoc-members:
    :show-inheritance:

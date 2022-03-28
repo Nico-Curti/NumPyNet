@@ -8,9 +8,9 @@ from NumPyNet.activations import Activations
 from NumPyNet.utils import _check_activation
 from NumPyNet.utils import check_is_fitted
 from NumPyNet.layers.base import BaseLayer
+from NumPyNet.exception import LayerError
 
 import numpy as np
-from NumPyNet.exception import LayerError
 
 __author__ = ['Mattia Ceccarelli', 'Nico Curti']
 __email__ = ['mattia.ceccarelli3@studio.unibo.it', 'nico.curti2@unibo.it']
@@ -36,13 +36,15 @@ class Convolutional_layer(BaseLayer):
       Shape of the input in the format (batch, w, h, c), None is used when the layer is part of a Network model.
 
     weights : array-like (default=None)
-      Filters of the convolutionanl layer, with shape (kx, ky, channels_in, filters). If None, random weights are initialized
+      Filters of the convolutionanl layer, with shape (kx, ky, channels_in, filters).
+      If None, random weights are initialized
 
     bias : array-like (default=None)
       Bias of the convolutional layer. If None, bias init is random with shape (filters, )
 
     pad : bool (default=False)
-      If False the image is cutted along the last raws and columns, if True the input is padded following keras SAME padding
+      If False the image is cutted along the last raws and columns,
+      if True the input is padded following keras SAME padding
 
     activation : str or Activation object
       Activation function of the layer.
@@ -126,8 +128,6 @@ class Convolutional_layer(BaseLayer):
   >>>
   >>>  fig.tight_layout()
   >>>  plt.show()
-
-  .. image:: ../../../NumPyNet/images/.png
 
   References
   ----------
@@ -305,9 +305,9 @@ class Convolutional_layer(BaseLayer):
     '''
 
     B, s0, s1, c1 = arr.strides
-    b, m1, n1, c  = arr.shape
+    b, m1, n1, c = arr.shape
 
-    m2, n2   = self.size
+    m2, n2 = self.size
     st1, st2 = self.stride
 
     if back:
@@ -382,8 +382,8 @@ class Convolutional_layer(BaseLayer):
   def _evaluate_padding(self):
     '''
     Compute padding dimensions following keras SAME padding.
-      See also:
-      https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
+    See also:
+    https://stackoverflow.com/questions/53819528/how-does-tf-keras-layers-conv2d-with-padding-same-and-strides-1-behave
     '''
     _, w, h, _ = self.input_shape
     # Compute how many Raws are needed to pad the image in the 'w' axis
@@ -399,10 +399,10 @@ class Convolutional_layer(BaseLayer):
       pad_h = max(self.size[1] - (h % self.stride[1]), 0)
 
     # Number of raws/columns to be added for every directons
-    self.pad_top    = pad_w >> 1  # bit shift, integer division by two
+    self.pad_top = pad_w >> 1  # bit shift, integer division by two
     self.pad_bottom = pad_w - self.pad_top
-    self.pad_left   = pad_h >> 1
-    self.pad_right  = pad_h - self.pad_left
+    self.pad_left = pad_h >> 1
+    self.pad_right = pad_h - self.pad_left
 
   def _pad(self, inpt):
     '''
@@ -426,9 +426,9 @@ class Convolutional_layer(BaseLayer):
   def forward(self, inpt, copy=False):
     '''
     Forward function of the Convolutional Layer: it convolves an image with 'channels_out'
-      filters with dimension (kx,ky, channels_in). In doing so, it creates a view of the image
-      with shape (batch, out_w, out_h, in_c, kx, ky) in order to perform a single matrix
-      multiplication with the reshaped filters array, which shape is (in_c * kx * ky, out_c).
+    filters with dimension (kx, ky, channels_in). In doing so, it creates a view of the image
+    with shape (batch, out_w, out_h, in_c, kx, ky) in order to perform a single matrix
+    multiplication with the reshaped filters array, which shape is (in_c * kx * ky, out_c).
 
     Parameters
     ----------
@@ -472,8 +472,8 @@ class Convolutional_layer(BaseLayer):
 
   def backward(self, delta, copy=False):
     '''
-    Backward function of the Convolutional layer. Source:
-    https://arxiv.org/abs/1603.07285
+    Backward function of the Convolutional layer.
+    Source: https://arxiv.org/abs/1603.07285
 
     Parameters
     ----------
@@ -548,16 +548,16 @@ if __name__ == '__main__':
   inpt = np.expand_dims(inpt, axis=0)  # shape from (w, h, c) to (1, w, h, c)
 
   channels_out = 10
-  size         = (3, 3)
-  stride       = (1, 1)
-  pad          = False
+  size = (3, 3)
+  stride = (1, 1)
+  pad = False
 
   layer_activation = activations.Relu()
 
   np.random.seed(123)
 
   b, w, h, c = inpt.shape
-  filters    = np.random.uniform(-1., 1., size=(size[0], size[1], c, channels_out))
+  filters = np.random.uniform(-1., 1., size=(size[0], size[1], c, channels_out))
   # bias       = np.random.uniform(-1., 1., size = (channels_out,))
   bias = np.zeros(shape=(channels_out,))
 
@@ -591,9 +591,9 @@ if __name__ == '__main__':
   fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
   fig.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.15)
 
-  fig.suptitle('Convolutional Layer\n activation : {}, ' +
-                'size : {}, stride : {}, ' +
-                'output channels : {}'.format(layer_activation.name, size, stride, channels_out))
+  fig.suptitle(('Convolutional Layer\n activation: {}, ' +
+                'size: {}, stride: {}, ' +
+                'output channels: {}').format(layer_activation.name, size, stride, channels_out))
 
   ax1.imshow(float_2_img(inpt[0]))
   ax1.set_title('Original image')
