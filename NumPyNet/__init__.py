@@ -15,7 +15,7 @@ from .image_utils import normalization
 from .image_utils import image_utils
 from .network import Network
 
-import parser
+from . import parser
 from . import rnn_utils
 from .utils import print_statistics
 from .video import VideoCapture
