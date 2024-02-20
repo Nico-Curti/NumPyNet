@@ -653,7 +653,10 @@ class Network(object):
     num_data = len(X)
     _truth = None
 
-    batches = np.array_split(range(num_data), indices_or_sections=num_data // self.batch)
+    if num_data > 1:
+      batches = np.array_split(range(num_data), indices_or_sections=num_data // self.batch)
+    else:
+      batches = [np.array([0])]
 
     begin = now()
     start = begin
@@ -685,11 +688,11 @@ class Network(object):
                                                                                 now() - start,
                                                                                 loss / seen
                                                                               ), end='')  # flush=True,
-        sys.stdout.flush()  # compatibility with pythonn 2.7
+        sys.stdout.flush()  # compatibility with python 2.7
         start = now()
 
       print('\n', end='')  # flush=True)
-      sys.stdout.flush()  # compatibility with pythonn 2.7
+      sys.stdout.flush()  # compatibility with python 2.7
 
 
       end = now()
